@@ -360,6 +360,15 @@
                         </a>
                         。
                     </p>
+                    <p class="notice">
+                        在点乘的时候，输入的两个向量必须维度相同，否则会抛出
+                        <code>
+                            <a href="constants.html#error-VectorDimensionError">
+                                VectorDimensionError
+                            </a>
+                        </code>
+                        错误。
+                    </p>
                     <div class="io">
                         <p class="input">
                             <code>
@@ -386,15 +395,80 @@
                     <h3 id="Vector.length">
                         length
                     </h3>
+                    <p>
+                        该方法可以返回向量的长度，或者创建一个缩放过的向量。
+                    </p>
                     <div class="io">
-                        <p class="input"></p>
+                        <div class="input">
+                            <p></p>
+                            <p>
+                                <code>
+                                    <span class="type">
+                                        double
+                                    </span>
+                                    scale
+                                </code>
+                                代表你要缩放之后向量的长度。特别地，如果输入
+                                <code>
+                                    1
+                                </code>
+                                ，那么会返回该向量的单位向量。
+                            </p>
+                        </div>
+                        <div class="output">
+                            <p>
+                                <code>
+                                    <span class="type">
+                                        double
+                                    </span>
+                                </code>
+                                即向量的长度。
+                            </p>
+                            <p>
+                                <code>
+                                    <span class="type">
+                                        <a href="#Vector">
+                                            Vector
+                                        </a>
+                                    </span>
+                                </code>
+                                为缩放之后的向量。
+                            </p>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <h3 id="Vector.angle">
+                        angle
+                    </h3>
+                    <p class="notice">
+                        在计算夹角的时候，输入的两个向量必须维度相同，否则会抛出
+                        <code>
+                            <a href="constants.html#error-VectorDimensionError">
+                                VectorDimensionError
+                            </a>
+                        </code>
+                        错误。
+                    </p>
+                    <div class="io">
+                        <p class="input">
+                            <code>
+                                <span class="type">
+                                    <a href="#Vector">
+                                        Vector&
+                                    </a>
+                                </span>
+                                other
+                            </code>
+                            表示你要计算夹角的向量对象。
+                        </p>
                         <p class="output">
                             <code>
                                 <span class="type">
                                     double
                                 </span>
                             </code>
-                            即向量的长度。
+                            为两个向量之间的夹角。
                         </p>
                     </div>
                 </section>
