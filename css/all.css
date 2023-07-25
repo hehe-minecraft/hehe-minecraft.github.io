@@ -1,0 +1,146 @@
+body
+{
+    background-color: #FFFFEE;
+    margin: 0px 15px 20px 15px;
+}
+
+nav>p:not(#return)
+{
+    padding: 5px;
+    background-color: #888888;
+    color: #FFFFFF;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0px;
+}
+
+ol.catalogue, ol.catalogue ol
+{
+    list-style: none;
+    counter-reset: catalogue;
+}
+
+ol.catalogue
+{
+    margin-top: 0px;
+    padding: 5px 10px 5px 10px;
+    background-color: #EEEEEE;
+}
+
+ol.catalogue ol
+{
+    padding-left: 0px;
+}
+
+ol.catalogue>li::before, ol.catalogue ol>li::before
+{
+    counter-increment: catalogue;
+    content: counters(catalogue, ".") ".";
+    font-family: "Cascadia Mono";
+    font-size: small;
+    color: #AAAAAA;
+}
+
+ol.catalogue a
+{
+    color: #000000;
+}
+
+ol.tree, ol.tree ol
+{
+    list-style: none;
+    counter-reset: tree;
+}
+
+ol.tree
+{
+    margin-top: 0px;
+    padding: 5px 10px 5px 10px;
+}
+
+ol.tree ol
+{
+    padding-left: 0px;
+}
+
+ol.tree>li::before, ol.tree ol>li::before
+{
+    counter-increment: tree;
+    content: counters(tree, ".") ".";
+    font-family: "Cascadia Mono";
+    font-size: small;
+    color: #AAAAAA;
+}
+
+code
+{
+    font-family: "Cascadia Mono", "Courier New", monospace;
+}
+
+p.definition, p.notice, p.warning
+{
+    padding: 8px;
+}
+
+p.definition
+{
+    background-color: #EEEEEE;
+}
+
+p.notice
+{
+    background-color: #DDEEFF;
+}
+
+p.warning
+{
+    background: #FFF5B0;
+}
+
+p#return
+{
+    text-align: center;
+}
+
+dfn
+{
+    font-style: normal;
+    border-bottom: 2px dotted #AAAAAA;
+}
+
+a
+{
+    text-decoration: none;
+}
+
+a:link:not(ol.catalogue a)
+{
+    color: #AAA560;
+}
+
+a:visited:not(ol.catalogue a)
+{
+    color: #6060AA;
+}
+
+@media (min-width: 1000px)
+{
+    nav
+    {
+        width: 28%;
+        float: left;
+    }
+
+    main
+    {
+        width: 69%;
+        float: right;
+    }
+
+    body::after
+    {
+        content: '';
+        display: block;
+        clear: both;
+    }
+}

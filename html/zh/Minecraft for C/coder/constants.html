@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initialscale=1.0">
+        <link rel="stylesheet" type="text/css" href="../../../../css/all.css"/>
+        <title>
+            Wiki - constants.cpp
+        </title>
+    </head>
+    <body>
+        <h1>
+            Wiki - constants.cpp
+        </h1>
+        <nav>
+            <p>
+                常量索引
+            </p>
+            <ol class="catalogue">
+                <li>
+                    <a href="#errors">
+                        errors
+                    </a>
+                    <ol>
+                        <li>
+                            <a href="#errors-BasicError">
+                                BasicError
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#errors-MathError">
+                                MathError
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#errors-MatrixDimensionError">
+                                MatrixDimensionError
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#errors-VectorDimensionError">
+                                VectorDimensionError
+                            </a>
+                        </li>
+                    </ol>
+                </li>
+            </ol>
+            <p id="return">
+                <a href="index.html">
+                    返回上一页： Minecraft for C (coder)
+                </a>
+            </p>
+        </nav>
+        <main>
+            <section>
+                <h2 id="errors">
+                    errors
+                </h2>
+                <p>
+                    这里定义了项目中所会抛出的所有错误，其层级关系如下：
+                </p>
+                <ol class="tree">
+                    <li>
+                        <code>
+                            <a href="errors-BasicError">
+                                BasicError
+                            </a>
+                        </code>
+                        <ol>
+                            <li>
+                                <code>
+                                    <a href="errors-MathError">
+                                        MathError
+                                    </a>
+                                </code>
+                            </li>
+                            <ol>
+                                <li>
+                                    <code>
+                                        <a href="errors-MatrixDimensionError">
+                                            MatrixDimensionError
+                                        </a>
+                                    </code>
+                                </li>
+                                <li>
+                                    <code>
+                                        <a href="errors-VectorDimensionError">
+                                            VectorDimensionError
+                                        </a>
+                                    </code>
+                                </li>
+                            </ol>
+                        </ol>
+                    </li>
+                </ol>
+                <section>
+                    <h3 id="errors-BasicError">
+                        BasicError
+                    </h3>
+                    <p>
+                        这是自定义错误中最基本的错误，所有项目错误都基于它。
+                    </p>
+                </section>
+                <section>
+                    <h3 id="errors-MathError">
+                        MathError
+                    </h3>
+                    <p>
+                        数学运算出错会抛出这个错误。
+                    </p>
+                </section>
+                <section>
+                    <h3 id="errors-MatrixDimensionError">
+                        MatrixDimensionError
+                    </h3>
+                    <p>
+                        矩阵大小不匹配会抛出这个错误。
+                    </p>
+                </section>
+                <section>
+                    <h3 id="errors-VectorDimensionError">
+                        VectorDimensionError
+                    </h3>
+                    <p>
+                        向量维度不匹配会抛出这个错误。
+                    </p>
+                </section>
+            </section>
+        </main>
+    </body>
+</html>
