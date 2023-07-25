@@ -1,118 +1,118 @@
 .input::before, .output::before
 {
-    content: '';
-    position: absolute;
-    padding: 0.4em;
-    top: -0.3em;
-    width: 0;
-    height: 0;
+	content: '';
+	position: absolute;
+	padding: 0.4em;
+	top: -0.3em;
+	width: 0;
+	height: 0;
 }
 
 .input, .output
 {
-    margin-top: 1em;
-    margin-bottom: 0;
-    position: relative;
-    border-radius: 10px;
+	margin-top: 1em;
+	margin-bottom: 0;
+	position: relative;
+	border-radius: 10px;
 }
 
 .input::before
 {
-    transform: rotate(-30deg);
-    background-color: #AAAAFF;
-    border: #8888FF solid 0.2em;
-    left: -0.3em;
+	transform: rotate(-30deg);
+	background-color: #AAAAFF;
+	border: #8888FF solid 0.2em;
+	left: -0.3em;
 }
 
 .input:not(:empty)
 {
-    background-color: #DDDDFF;
-    padding: 15px 8px 8px 8px;
-    margin-left: 1em;
+	background-color: #DDDDFF;
+	padding: 15px 8px 8px 8px;
+	margin-left: 1em;
 }
 
 .input:empty
 {
-    outline: 2px dashed #AAAAFF;
-    outline-offset: -2px;
-    padding: 15px 8px 8px 8px;
-    margin-left: 1em;
-    height: 1em;
+	outline: 2px dashed #AAAAFF;
+	outline-offset: -2px;
+	padding: 15px 8px 8px 8px;
+	margin-left: 1em;
+	height: 1em;
 }
 
 .output::before
 {
-    transform: rotate(30deg);
-    background-color: #FFAAAA;
-    border: #FF8888 solid 0.2em;
-    right: -0.3em;
+	transform: rotate(30deg);
+	background-color: #FFAAAA;
+	border: #FF8888 solid 0.2em;
+	right: -0.3em;
 }
 
 .output:not(:empty)
 {
-    background-color: #FFCCCC;
-    padding: 15px 8px 8px 8px;
-    margin-right: 1em;
+	background-color: #FFCCCC;
+	padding: 15px 8px 8px 8px;
+	margin-right: 1em;
 }
 
 .output:empty
 {
-    outline: 2px dashed #FFAAAA;
-    outline-offset: -2px;
-    padding: 15px 8px 8px 8px;
-    margin-right: 1em;
-    height: 1em;
+	outline: 2px dashed #FFAAAA;
+	outline-offset: -2px;
+	padding: 15px 8px 8px 8px;
+	margin-right: 1em;
+	height: 1em;
 }
 
 div.input p, div.output p
 {
-    margin: 0;
+	margin: 0;
 }
 
 div.input p:not(:first-child), div.output p:not(:first-child)
 {
-    padding-top: 10px;
-    border-top: 1px solid #AAAAAA;
+	padding-top: 10px;
+	border-top: 1px solid #AAAAAA;
 }
 
 div.input p:not(:last-child), div.output p:not(:last-child)
 {
-    padding-bottom: 10px;
-    border-bottom: 1px solid #AAAAAA;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #AAAAAA;
 }
 
 div.io
 {
-    margin-bottom: 8px;
+	margin-bottom: 8px;
 }
 
 span.type
 {
-    color: #AA77AA;
+	color: #AA77AA;
 }
 
 @media (min-width: 700px)
 {
-    .input, .output
-    {
-        width: 45%;
-    }
+	.input, .output
+	{
+		width: 45%;
+	}
 
-    .input
-    {
-        float: left;
-    }
+	.input
+	{
+		float: left;
+	}
 
-    
-    .output
-    {
-        float: right;
-    }
+	
+	.output
+	{
+		float: right;
+	}
 
-    div.io::after
-    {
-        content: '';
-        display: block;
-        clear: both;
-    }
+	div.io::after
+	{
+		content: '';
+		display: block;
+		clear: both;
+	}
 }
