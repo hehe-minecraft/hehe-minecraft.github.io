@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initialscale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/all.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/code.css"/>
+		<title>
+			Wiki - transformation.cpp
+		</title>
+	</head>
+	<body>
+		<h1>
+			Wiki - transformation.cpp
+		</h1>
+		<nav>
+			<p>
+				方法列表
+			</p>
+			<ol class="catalogue">
+				<li>
+					<a href="#rotate">
+						rotate
+					</a>
+				</li>
+				<li>
+					<a href="#scale">
+						scale
+					</a>
+				</li>
+				<li>
+					<a href="#translate">
+						translate
+					</a>
+				</li>
+			</ol>
+			<p id="return">
+				<a href="../index.html">
+					返回上一页： Minecraft for C (coder)
+				</a>
+			</p>
+		</nav>
+		<main>
+			<p class="notice">
+				一般地，在矩阵乘法中，我们会将先进行变换的矩阵放在右侧而不是左侧，因为它会先乘上向量。在对代码优化的过程中，将矩阵先组合起来在乘上每一个向量是更明智的选择。
+			</p>
+			<section>
+				<h2 id="rotate">
+					rotate
+				</h2>
+				<p>
+					构造一个旋转矩阵。特别地，如果输入的是三个方向的旋转角度，则旋转次序为 x &rightarrow; y &rightarrow; z 。
+				</p>
+				<p class="notice">
+					输入的
+					<code>
+						axis
+					</code>
+					参数必须是介于
+					<code>
+						choices::axis_x, choices::axis_y, choices::axis_z
+					</code>
+					之间的，否则会抛出
+					<a href="constants.html#errors-ChoiceError">
+						ChoiceError
+					</a>
+					错误。
+				</p>
+				<div class="io">
+					<div class="input">
+						<p>
+							<code>
+								<span class="type">
+									<a href="constants.html#choices-axis">
+										choices::axis
+									</a>
+								</span>
+								axis
+							</code>
+							为旋转轴。
+							<br/>
+							<code>
+								<span class="type">
+									double
+								</span>
+								theta
+							</code>
+							为旋转角度（顺时针，角度制）。
+						</p>
+						<p>
+							<code>
+								<span class="type">
+									double
+								</span>
+								theta_x
+							</code>
+							为绕 x 轴旋转的角度。
+							<br/>
+							<code>
+								<span class="type">
+									double
+								</span>
+								theta_y
+							</code>
+							为绕 y 轴旋转的角度。
+							<br/>
+							<code>
+								<span class="type">
+									double
+								</span>
+								theta_z
+							</code>
+							为绕 z 轴旋转的角度。
+						</p>
+					</div>
+					<p class="output">
+						<code>
+							<span class="type">
+								<a href="math.html#Matrix">
+									Matrix
+								</a>
+							</span>
+						</code>
+						即针对该旋转角度的旋转矩阵。
+					</p>
+				</div>
+			</section>
+			<section>
+				<h2 id="scale">
+					scale
+				</h2>
+				<p>
+					构造一个放缩矩阵。
+				</p>
+				<div class="io">
+					<p class="input">
+						<code>
+							<span class="type">
+								double
+							</span>
+							ratio
+						</code>
+						为放大或缩小的比率。
+					</p>
+					<p class="output">
+						<code>
+							<span class="type">
+								<a href="math.html#Matrix">
+									Matrix
+								</a>
+							</span>
+						</code>
+						即针对该放缩比率的放缩矩阵。
+					</p>
+				</div>
+			</section>
+			<section>
+				<h2 id="translate">
+					translate
+				</h2>
+				<p>
+					构造一个位移矩阵。
+				</p>
+				<div class="io">
+					<p class="input">
+						<code>
+							<span class="type">
+								double
+							</span>
+							x
+						</code>
+						为向 x 轴正方向平移的距离。
+						<br/>
+						<code>
+							<span class="type">
+								double
+							</span>
+							y
+						</code>
+						为向 y 轴正方向平移的距离。
+						<br/>
+						<code>
+							<span class="type">
+								double
+							</span>
+							z
+						</code>
+						为向 z 轴正方向平移的距离。
+					</p>
+					<p class="output">
+						<code>
+							<span class="type">
+								<a href="math.html#Matrix">
+									Matrix
+								</a>
+							</span>
+						</code>
+						即生成的位移矩阵。
+					</p>
+				</div>
+			</section>
+		</main>
+	</body>
+</html>

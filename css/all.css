@@ -36,7 +36,7 @@ ol.catalogue>li::before, ol.catalogue ol>li::before
 {
 	counter-increment: catalogue;
 	content: counters(catalogue, ".") ".";
-	font-family: "Cascadia Mono";
+	font-family: "Cascadia Mono", "Consolas", "Courier New", monospace;
 	font-size: small;
 	color: #AAAAAA;
 }
@@ -67,14 +67,47 @@ ol.tree>li::before, ol.tree ol>li::before
 {
 	counter-increment: tree;
 	content: counters(tree, ".") ".";
-	font-family: "Cascadia Mono";
+	font-family: "Cascadia Mono", "Consolas", "Courier New", monospace;
 	font-size: small;
 	color: #AAAAAA;
 }
 
+table
+{
+	width: 100%;
+	border-collapse: collapse;
+}
+
+table col.title
+{
+	width: 25%;
+}
+
+table td, table th
+{
+	padding: 3px 8px 3px 8px;
+	border: 1.2px solid #EE858C;
+}
+
+table th
+{
+	font-weight: normal;
+	background-color: #FFD5D9;
+}
+
+table td
+{
+	background-color: #FFF8CC;
+}
+
 code
 {
-	font-family: "Cascadia Mono", "Courier New", monospace;
+	font-family: "Cascadia Mono", "Consolas", "Courier New", monospace;
+}
+
+math:not([inline])
+{
+	display: block math;
 }
 
 p.definition, p.notice, p.warning
@@ -143,4 +176,9 @@ a:visited:not(ol.catalogue a)
 		display: block;
 		clear: both;
 	}
+}
+
+@font-face {
+	font-family: "Consolas";
+	src: url("../fonts/consolas.ttf");
 }
