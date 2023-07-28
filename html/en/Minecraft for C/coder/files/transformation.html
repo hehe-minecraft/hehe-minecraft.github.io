@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en-us">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initialscale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/all.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/code.css"/>
+		<title>
+			Wiki - transformation.cpp
+		</title>
+	</head>
+	<body>
+		<h1>
+			Wiki - transformation.cpp
+		</h1>
+		<nav>
+			<p>
+				Functions
+			</p>
+			<ol class="catalogue">
+				<li>
+					<a href="#rotate">
+						rotate
+					</a>
+				</li>
+				<li>
+					<a href="#scale">
+						scale
+					</a>
+				</li>
+				<li>
+					<a href="#translate">
+						translate
+					</a>
+				</li>
+			</ol>
+			<p id="return">
+				<a href="../index.html">
+					Return to previous page:
+					<br/>
+					Minecraft for C (coder)
+				</a>
+			</p>
+		</nav>
+		<main>
+			<p class="notice">
+				Generally speaking, in a matrix multiplication, we put the first matrix on the right side rather on the left side, because it multiplies the vector first. While optimizing the code, it is better to combine all the matrixes before multiplying.
+			</p>
+			<section>
+				<h2 id="rotate">
+					rotate
+				</h2>
+				<p>
+					Build a rotation matrix. Specially, if the inputs are rotating angles in three directions, then the order will be x &rightarrow; y &rightarrow; z .
+				</p>
+				<p class="notice">
+					The parameter
+					<code>
+						axis
+					</code>
+					needs to be among
+					<code>
+						choices::axis_x, choices::axis_y, choices::axis_z
+					</code>
+					, or it will throw a
+					<a href="constants.html#errors-ChoiceError">
+						ChoiceError
+					</a>
+					.
+				</p>
+				<div class="io">
+					<div class="input">
+						<p>
+							<code>
+								<span class="type">
+									<a href="constants.html#choices-axis">
+										choices::axis
+									</a>
+								</span>
+								axis
+							</code>
+							is the rotating axis.
+							<br/>
+							<code>
+								<span class="type">
+									double
+								</span>
+								theta
+							</code>
+							is the rotating angle (clockwise, in degrees).
+						</p>
+						<p>
+							<code>
+								<span class="type">
+									double
+								</span>
+								theta_x
+							</code>
+							is the rotating angle along x-axis.
+							<br/>
+							<code>
+								<span class="type">
+									double
+								</span>
+								theta_y
+							</code>
+							is the rotating angle along y-axis.
+							<br/>
+							<code>
+								<span class="type">
+									double
+								</span>
+								theta_z
+							</code>
+							is the rotating angle along z-axis.
+						</p>
+					</div>
+					<p class="output">
+						<code>
+							<span class="type">
+								<a href="math.html#Matrix">
+									Matrix
+								</a>
+							</span>
+						</code>
+						is the rotation matrix based on this angle.
+					</p>
+				</div>
+			</section>
+			<section>
+				<h2 id="scale">
+					scale
+				</h2>
+				<p>
+					Build a scalar matrix.
+				</p>
+				<div class="io">
+					<p class="input">
+						<code>
+							<span class="type">
+								double
+							</span>
+							ratio
+						</code>
+						is the ratio of scaling.
+					</p>
+					<p class="output">
+						<code>
+							<span class="type">
+								<a href="math.html#Matrix">
+									Matrix
+								</a>
+							</span>
+						</code>
+						is the scalar matrix based on this ratio.
+					</p>
+				</div>
+			</section>
+			<section>
+				<h2 id="translate">
+					translate
+				</h2>
+				<p>
+					Build a translation matrix.
+				</p>
+				<div class="io">
+					<p class="input">
+						<code>
+							<span class="type">
+								double
+							</span>
+							x
+						</code>
+						is the translating distance towards x-axis.
+						<br/>
+						<code>
+							<span class="type">
+								double
+							</span>
+							y
+						</code>
+						is the translating distance towards y-axis.
+						<br/>
+						<code>
+							<span class="type">
+								double
+							</span>
+							z
+						</code>
+						is the translating distance towards z-axis.
+					</p>
+					<p class="output">
+						<code>
+							<span class="type">
+								<a href="math.html#Matrix">
+									Matrix
+								</a>
+							</span>
+						</code>
+						is the translation matrix.
+					</p>
+				</div>
+			</section>
+		</main>
+	</body>
+</html>
