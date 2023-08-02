@@ -5,6 +5,7 @@
 		<meta name="viewport" content="width=device-width, initialscale=1.0"/>
 		<link rel="stylesheet" type="text/css" href="../../../../css/all.css"/>
 		<link rel="stylesheet" type="text/css" href="../../../../css/code.css"/>
+		<script defer src="../../../../js/details.js"></script>
 		<title>
 			Wiki - Minecraft for C
 		</title>
@@ -29,6 +30,11 @@
 						<li>
 							<a href="files/math.html">
 								math.cpp
+							</a>
+						</li>
+						<li>
+							<a href="files/threads.html">
+								threads.cpp
 							</a>
 						</li>
 						<li>
@@ -141,6 +147,29 @@
 			<div class="io">
 				<p class="input"></p>
 				<p class="output"></p>
+			</div>
+			<p>
+				在函数的传参与返回值中可能有些较为难懂的声明，这时候你可以点击一下这个声明，就会有图形解释。例如：
+			</p>
+			<div class="io">
+				<p class="input">
+					<code onclick="details_flip('test.input')">
+						<span class="type">
+							std::queue&lt;std::function&lt;int &lpar;*&rpar;&lpar;&rpar;&gt;&gt;
+						</span>
+					</code>
+					这是输入。
+					<img id="test.input" class="svg" src="../../../../images/Minecraft for C/[[int()]].svg" alt="声明样例"/>
+				</p>
+				<p class="output">
+					<code onclick="details_flip('test.output')">
+						<span class="type">
+							std::queue&lt;std::function&lt;int &lpar;*&rpar;&lpar;&rpar;&gt;&gt;
+						</span>
+					</code>
+					这是输出。
+					<img id="test.output" class="svg" src="../../../../images/Minecraft for C/[[int()]].svg" alt="声明样例"/>
+				</p>
 			</div>
 		</main>
 	</body>

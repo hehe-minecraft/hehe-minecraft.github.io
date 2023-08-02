@@ -100,6 +100,11 @@ table td
 	background-color: #FFF8CC;
 }
 
+details
+{
+	display: inline-block;
+}
+
 code
 {
 	font-family: "Cascadia Mono", "Consolas", "Courier New", monospace;
@@ -181,4 +186,56 @@ a:visited:not(ol.catalogue a)
 @font-face {
 	font-family: "Consolas";
 	src: url("../fonts/consolas.ttf");
+}
+
+@media(prefers-color-scheme: dark)
+{
+	body
+	{
+		background-color: #111100;
+		color: #FFFFFF;
+	}
+
+	p.definition
+	{
+		background-color: #444444;
+	}
+	
+	p.notice
+	{
+		background-color: #112233;
+	}
+	
+	p.warning
+	{
+		background: #444500;
+	}
+
+	nav>p:not(#return)
+	{
+		background-color: #666666;
+	}
+
+	ol.catalogue
+	{
+		margin-top: 0px;
+		padding: 5px 10px 5px 10px;
+		background-color: #222222;
+	}
+
+	ol.catalogue a
+	{
+		color: #FFFFFF;
+	}
+
+	table th
+	{
+		font-weight: normal;
+		background-color: #4F2529;
+	}
+
+	table td
+	{
+		background-color: #2a2942;
+	}
 }

@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initialscale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/all.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/code.css"/>
+		<script defer src="../../../../../js/details.js"></script>
+		<title>
+			Wiki - threads.cpp
+		</title>
+	</head>
+	<body>
+		<h1>
+			Wiki - threads.cpp
+		</h1>
+		<nav>
+			<p>
+				方法列表
+			</p>
+			<ol class="catalogue">
+				<li>
+					<a href="#BasicThread">
+						BasicThread
+					</a>
+					<ol>
+						<li>
+							<a href="#BasicThread.get_state">
+								get_state
+							</a>
+						</li>
+						<li>
+							<a href="#BasicThread.pause">
+								pause
+							</a>
+						</li>
+						<li>
+							<a href="#BasicThread.resume">
+								resume
+							</a>
+						</li>
+						<li>
+							<a href="#BasicThread.run">
+								&lpar;protected&rpar; run
+							</a>
+						</li>
+						<li>
+							<a href="#BasicThread.sleep">
+								&lpar;protected&rpar; sleep
+							</a>
+						</li>
+						<li>
+							<a href="#BasicThread.stop">
+								stop
+							</a>
+						</li>
+						<li>
+							<a href="#BasicThread.work">
+								work
+							</a>
+						</li>
+					</ol>
+				</li>
+				<li>
+					<a href="#DistributeThread">
+						DistributeThread
+					</a>
+					<ol>
+						<li>
+							<a href="#DistributeThread.create">
+								create
+							</a>
+						</li>
+						<li>
+							<a href="#DistributeThread.get">
+								get
+							</a>
+						</li>
+						<li>
+							<a href="#DistributeThread-plan">
+								plan
+							</a>
+							<ol>
+								<li>
+									<a href="#DistributeThread-plan.delay">
+										delay
+									</a>
+								</li>
+								<li>
+									<a href="#DistributeThread-plan.function">
+										function
+									</a>
+								</li>
+								<li>
+									<a href="#DistributeThread-plan.thread">
+										thread
+									</a>
+								</li>
+							</ol>
+						</li>
+						<li>
+							<a href="#DistributeThread-queue_item">
+								queue_item
+							</a>
+						</li>
+						<li>
+							<a href="#DistributeThread.repeat_work">
+								repeat_work
+							</a>
+						</li>
+						<li>
+							<a href="#DistributeThread.run">
+								&lpar;protected&rpar; run
+							</a>
+						</li>
+						<li>
+							<a href="#DistributeThread.start">
+								start
+							</a>
+						</li>
+						<li>
+							<a href="#DistributeThread.work">
+								work
+							</a>
+						</li>
+					</ol>
+				</li>
+			</ol>
+			<p id="return">
+				<a href="../index.html">
+					返回上一页： Minecraft for C (coder)
+				</a>
+			</p>
+		</nav>
+		<main>
+			<section>
+				<h2 id="BasicThread">
+					BasicThread
+				</h2>
+				<p>
+					一个包装线程的类，提供简便的操控线程方法。
+				</p>
+				<p class="notice">
+					这个类的函数，除
+					<a href="#BasicThread.run">
+						run
+					</a>
+					、
+					<a href="#BasicThread.sleep">
+						sleep
+					</a>
+					函数之外，均在原线程上运行。
+				</p>
+				<p>
+					该类包含以下友元类：
+				</p>
+				<ol class="tree">
+					<li>
+						<a href="#DistributeThread">
+							DistributeThread
+						</a>
+					</li>
+				</ol>
+				<div class="io">
+					<p class="input">
+						<code>
+							<span class="type">
+								const char*
+							</span>
+							name
+						</code>
+						为线程的名字。
+					</p>
+					<p class="output">
+						<code>
+							<span class="type">
+								std::string
+							</span>
+							name
+						</code>
+						即线程的名字。
+						<br/>
+						<code>
+							<span class="keyword">
+								protected:
+							</span>
+						</code>
+						<br>
+						<code>
+							<span class="type">
+								std::condition_variable
+							</span>
+							alarm
+						</code>
+						是线程的条件变量，可以挂起或唤醒线程。
+						<br/>
+						<code>
+							<span class="type">
+								std::unique_lock&lt;std::mutex&gt; *
+							</span>
+							lock
+						</code>
+						是线程的锁，为条件变量
+						<code>
+							alarm
+						</code>
+						创造的必需品。
+						<br/>
+						<code>
+							<span class="type">
+								std::mutex
+							</span>
+							mutex
+						</code>
+						是该线程专属的互斥量，为锁
+						<code>
+							lock
+						</code>
+						创造的必需品。
+						<br/>
+						<code onclick="details_flip('BasicThread-queue')">
+							<span class="type">
+								std::queue&lt;std::function&lt;void &lpar;*&rpar;&lpar;&rpar;&gt;&gt;
+							</span>
+							queue
+						</code>
+						是线程的任务列表。
+						<img id="BasicThread-queue" class="svg" src="../../../../../images/Minecraft for C/[[void()]].svg" alt="声明样例"/>
+						<br/>
+						<code>
+							<span class="type">
+								bool
+							</span>
+							running
+						</code>
+						是线程是否被人为终止（是为 False ）。
+						<br/>
+						<code>
+							<span class="type">
+								choices::state
+							</span>
+							state
+						</code>
+						是线程的状态。
+						<br/>
+						<code>
+							<span class="type">
+								std::thread *
+							</span>
+							thread
+						</code>
+						是真正的线程。
+					</p>
+				</div>
+				<section>
+					<h3 id="BasicThread.get_state">
+						get_state
+					</h3>
+					<p>
+						获取该线程的状态。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output">
+							<code>
+								<span class="type">
+									<a href="constants.html#choice-state">
+										choices::state
+									</a>
+								</span>
+							</code>
+							即线程的状态。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="BasicThread.pause">
+						pause
+					</h3>
+					<p>
+						暂停（挂起）该线程，线程不会完成该任务。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output"></p>
+					</div>
+				</section>
+				<section>
+					<h3 id="BasicThread.resume">
+						resume
+					</h3>
+					<p>
+						恢复该线程，线程将继续完成之前的任务。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output"></p>
+					</div>
+				</section>
+				<section>
+					<h3 id="BasicThread.run">
+						<span class="keyword">
+							protected
+						</span>
+						run
+					</h3>
+					<p>
+						线程内部的运行函数。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output"></p>
+					</div>
+				</section>
+				<section>
+					<h3 id="BasicThread.sleep">
+						<span class="keyword">
+							protected
+						</span>
+						sleep
+					</h3>
+					<p>
+						线程内部任务完成后自动挂起函数。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output"></p>
+					</div>
+				</section>
+				<section>
+					<h3 id="BasicThread.stop">
+						stop
+					</h3>
+					<p>
+						停止该线程。线程将会完成当前任务。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output"></p>
+					</div>
+				</section>
+				<section>
+					<h3 id="BasicThread.work">
+						work
+					</h3>
+					<p>
+						为线程新添任务。
+					</p>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									std::function&lt;void &lpar;*&rpar;&lpar;&rpar;&gt;
+								</span>
+								function
+							</code>
+							为新的任务函数。
+						</p>
+						<p class="output"></p>
+					</div>
+				</section>
+			</section>
+			<section>
+				<h2 id="DistributeThread">
+					DistributeThread
+				</h2>
+				<p>
+					任务分配线程。
+				</p>
+				<div class="io">
+					<p class="input"></p>
+					<p class="output">
+						<code>
+							<span class="type">
+								unsigned long long
+							</span>
+							game_time
+						</code>
+						是线程运行的时间（毫秒）。
+						<br/>
+						<code>
+							<span class="type">
+								std::string
+							</span>
+							name
+						</code>
+						是线程的名字。
+						<br/>
+						<code>
+							<span class="keyword">
+								protected:
+							</span>
+						</code>
+						<br/>
+						<code>
+							<span class="type">
+								unsigned int
+							</span>
+							last_id
+						</code>
+						是上一个计划的 id 。
+						<br/>
+						<code>
+							<span class="type">
+								std::unordered_map&lt;std::string, std::unique_lock&lt;std::mutex&gt;&gt;
+							</span>
+							locks
+						</code>
+						是分配的线程的锁。
+						<br/>
+						<code onclick="details_flip('DistributeThread-plans')">
+							<span class="type">
+								std::map&lt;unsigned int,
+								<a href="#DistributeThread-plan">
+									plan
+								</a>
+								&gt;
+							</span>
+							plans
+						</code>
+						是创建的任务计划列表。
+						<img id="DistributeThread-plans" class="svg" src="../../../../../images/Minecraft for C/{int,[int,void(),∗BasicThread]}.svg" alt="声明样例"/>
+						<br/>
+						<code onclick="details_flip('DistributeThread-queue')">
+							<span class="type">
+								std::priority_queue&lt;
+								<a href="#DistributeThread-queue_item">
+									queue_item
+								</a>
+								, std::vector&lt;
+								<a href="#DistributeThread-queue_item">
+									queue_item
+								</a>
+								&gt;, std::greater&lt;
+								<a href="#DistributeThread-queue_item">
+									queue_item
+								</a>
+								&gt;&gt;
+							</span>
+							queue
+						</code>
+						是即将运行的任务。
+						<img id="DistributeThread-queue" class="svg" src="../../../../../images/Minecraft for C/[[long long,int]].svg" alt="声明样例"/>
+						<br/>
+						<code>
+							<span class="type">
+								bool
+							</span>
+							running
+						</code>
+						是线程是否被人为终止（是为 False ）。
+						<br/>
+						<code onclick="details_flip('DistributeThread-threads')">
+							<span class="type">
+								std::unordered_map&lt;std::string, 
+								<a href="#BasicThread">
+									BasicThread*
+								</a>
+								&gt;
+							</span>
+							threads
+						</code>
+						是分配的线程。
+						<img id="DistributeThread-threads" class="svg" src="../../../../../images/Minecraft for C/{string,∗BasicThread}.svg" alt="声明样例"/>
+						<br/>
+						<code>
+							<span class="type">
+								std::thread*
+							</span>
+							thread
+						</code>
+						是任务分配线程自己的线程。
+					</p>
+				</div>
+				<section>
+					<h3 id="DistributeThread.create">
+						create
+					</h3>
+					<p>
+						为该分配线程创建新的分配目标。
+					</p>
+					<p class="notice">
+						如果创建一个已经创建过的线程，那么会抛出
+						<code>
+							<a href="constants.html#errors-ThreadExistError">
+								ThreadExistError
+							</a>
+						</code>
+						错误。
+					</p>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									const char*
+								</span>
+								name
+							</code>
+							为新建线程的名称。
+						</p>
+						<p class="output">
+							<code>
+								<span class="type">
+									<a href="#BasicThread">
+										BasicThread*
+									</a>
+								</span>
+							</code>
+							为新建的线程。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="DistributeThread.get">
+						get
+					</h3>
+					<p>
+						获取分配线程分配的目标线程。如果目标线程不存在则创建一个。
+					</p>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									const char*
+								</span>
+								name
+							</code>
+							为查找线程的名称。
+						</p>
+						<p class="output">
+							<code>
+								<span class="type">
+									<a href="#BasicThread">
+										BasicThread*
+									</a>
+								</span>
+							</code>
+							为查找到的线程。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="DistributeThread-plan">
+						plan
+					</h3>
+					<p>
+						任务计划。
+					</p>
+					<section>
+						<h4 id="DistributeThread-plan.delay">
+							delay
+						</h4>
+						<p>
+							指定该计划的循环间隔时间（毫秒）。
+						</p>
+					</section>
+					<section>
+						<h4 id="DistributeThread-plan.function">
+							function
+						</h4>
+						<p>
+							指定该计划的方法。
+						</p>
+					</section>
+					<section>
+						<h4 id="DistributeThread-plan.thread">
+							thread
+						</h4>
+						<p>
+							指定该计划的目标线程。
+						</p>
+					</section>
+				</section>
+				<section>
+					<h3 id="DistributeThread-queue_item">
+						queue_item
+					</h3>
+					<p>
+						队列任务。
+					</p>
+					<p>
+						该结构其实是这样的：
+						<code>
+							std::pair&lt;unsigned long long, unsigned int&gt;
+						</code>
+						<br/>
+						第一项
+						<code>
+							unsigned long long
+						</code>
+						是该任务的运行时刻（自线程运行开始，毫秒）。
+						<br/>
+						第二项
+						<code>
+							unsigned int
+						</code>
+						是该任务的 id ，对应了
+						<code>
+							<a href="#DistributeThread">
+								DistributeThread
+							</a>
+						</code>
+						的
+						<code>
+							plans
+						</code>
+						属性。
+					</p>
+				</section>
+				<section>
+					<h3 id="DistributeThread.repeat_work">
+						repeat_work
+					</h3>
+					<p>
+						为线程新添循环定时任务，如果线程不存在则创建线程。
+					</p>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									const char*
+								</span>
+								thread_name
+							</code>
+							为循环定时任务的目标线程名。
+							<br/>
+							<code>
+								<span class="type">
+									unsigned int
+								</span>
+								delay
+							</code>
+							为定时任务的循环时间。
+							<br/>
+							<code>
+								<span class="type">
+									std::function&lt;void &lpar;*&rpar;&lpar;&rpar;&gt;
+								</span>
+								function
+							</code>
+							为新的任务函数。
+						</p>
+						<p class="output"></p>
+					</div>
+				</section>
+				<section>
+					<h3 id="DistributeThread.run">
+						<span class="keyword">
+							protected
+						</span>
+						run
+					</h3>
+					<p>
+						线程内部的运行函数。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output"></p>
+					</div>
+				</section>
+				<section>
+					<h3 id="DistributeThread.start">
+						start
+					</h3>
+					<p>
+						开始分配任务并计时。
+					</p>
+					<p>
+						如果没有任务则不会开始，返回 False 。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output">
+							<code>
+								<span class="type">
+									bool
+								</span>
+							</code>
+							为运行是否成功。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="DistributeThread.work">
+						work
+					</h3>
+					<p>
+						为线程立刻新添任务，不需要开始运行，如果线程不存在则创建线程。
+					</p>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									const char*
+								</span>
+								thread_name
+							</code>
+							为该任务的目标线程名。
+							<br/>
+							<code>
+								<span class="type">
+									std::function&lt;void &lpar;*&rpar;&lpar;&rpar;&gt;
+								</span>
+								function
+							</code>
+							为新的任务函数。
+						</p>
+						<p class="output"></p>
+					</div>
+				</section>
+			</section>
+		</main>
+	</body>
+</html>

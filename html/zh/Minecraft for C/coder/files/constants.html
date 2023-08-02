@@ -28,6 +28,23 @@
 								axis
 							</a>
 						</li>
+						<li>
+							<a href="#choices-state">
+								state
+							</a>
+						</li>
+					</ol>
+				</li>
+				<li>
+					<a href="#constants">
+						constants
+					</a>
+					<ol>
+						<li>
+							<a href="#constants-pi">
+								pi
+							</a>
+						</li>
 					</ol>
 				</li>
 				<li>
@@ -53,6 +70,11 @@
 						<li>
 							<a href="#errors-MatrixDimensionError">
 								MatrixDimensionError
+							</a>
+						</li>
+						<li>
+							<a href="#errors-ThreadExistError">
+								ThreadExistError
 							</a>
 						</li>
 						<li>
@@ -128,6 +150,83 @@
 						</tr>
 					</table>
 				</section>
+				<section>
+					<h3 id="choices-state">
+						state
+					</h3>
+					<p>
+						函数或线程的运行状态。
+					</p>
+					<table>
+						<colgroup>
+							<col class="title"/>
+						</colgroup>
+						<tr>
+							<th>
+								值
+							</th>
+							<th>
+								含义
+							</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									state_running
+								</code>
+							</td>
+							<td>
+								正在运行。
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									state_free
+								</code>
+							</td>
+							<td>
+								空闲，等待输入。
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									state_paused
+								</code>
+							</td>
+							<td>
+								已暂停。
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									state_stopped
+								</code>
+							</td>
+							<td>
+								已终止。
+							</td>
+						</tr>
+					</table>
+				</section>
+			</section>
+			<section>
+				<h2 id="constants">
+					constants
+				</h2>
+				<p>
+					这里记录了项目中所需要的数学及科学常数。
+				</p>
+				<section>
+					<h3 id="constants-pi">
+						pi
+					</h3>
+					<p>
+						圆周率，圆周长与半径的比值。
+					</p>
+				</section>
 			</section>
 			<section>
 				<h2 id="errors">
@@ -174,6 +273,11 @@
 									</li>
 								</ol>
 							</li>
+							<li>
+								<a href="#errors-ThreadExistError">
+									ThreadExistError
+								</a>
+							</li>
 						</ol>
 					</li>
 				</ol>
@@ -207,6 +311,14 @@
 					</h3>
 					<p>
 						矩阵大小不匹配会抛出这个错误。
+					</p>
+				</section>
+				<section>
+					<h3 id="errors-ThreadExistError">
+						ThreadExistError
+					</h3>
+					<p>
+						在线程已存在却还要创造线程时会抛出这个错误。
 					</p>
 				</section>
 				<section>

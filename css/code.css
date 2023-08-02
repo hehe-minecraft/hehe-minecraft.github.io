@@ -91,6 +91,17 @@ span.type
 	color: #AA77AA;
 }
 
+img.svg
+{
+	display: none;
+	width: 100%;
+}
+
+span.keyword
+{
+	color: #8888DD;
+}
+
 @media (min-width: 700px)
 {
 	.input, .output
@@ -114,5 +125,42 @@ span.type
 		content: '';
 		display: block;
 		clear: both;
+	}
+}
+
+@media(prefers-color-scheme: dark)
+{
+	.input:not(:empty)
+	{
+		background-color: #333355;
+	}
+
+	.output:not(:empty)
+	{
+		background-color: #553333;
+		padding: 15px 8px 8px 8px;
+		margin-right: 1em;
+	}
+
+	.input::before
+	{
+		background-color: #666688;
+		border-color: #444466;
+	}
+
+	.input:empty
+	{
+		outline-color: #666688;
+	}
+
+	.output::before
+	{
+		background-color: #886666;
+		border-color: #664444;
+	}
+
+	.output:empty
+	{
+		outline-color: #886666;
 	}
 }
