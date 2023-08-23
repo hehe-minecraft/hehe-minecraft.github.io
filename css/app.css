@@ -1,0 +1,66 @@
+body
+{
+	background-color: #FFFFEE;
+	margin: 0px 15px 20px 15px;
+}
+
+div.list
+{
+	display: flex;
+	flex-direction: column;
+	border: 1px dotted #AAA560;
+	padding: 3px;
+	margin: 2px 2px 2px 0px ;
+}
+
+label[for]
+{
+	cursor: pointer;
+}
+
+input[type="text"], input[type="number"]
+{
+	border: none;
+	padding: 0 3px 0 3px;
+	border-bottom: 1.5px solid #666666;
+	background-color: inherit;
+}
+
+dfn
+{
+	font-style: normal;
+}
+
+dfn:hover
+{
+	border-bottom: dotted 2px #AAAAAA;
+}
+
+button
+{
+	cursor: pointer;
+	background-color: inherit;
+	border: none;
+	padding: 0px;
+}
+
+@font-face
+{
+	font-family: "Consolas";
+	src: url("../fonts/consolas.ttf");
+}
+
+@font-face
+{
+	font-family: "Minecraft";
+	src: url("../fonts/minecraft.ttf");
+}
+
+@media(prefers-color-scheme: dark)
+{
+	body
+	{
+		background-color: #111100;
+		color: #FFFFFF;
+	}
+}

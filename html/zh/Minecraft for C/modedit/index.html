@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initialscale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="../../../../css/app.css"/>
+		<title>
+			Wiki - 模组编辑器
+		</title>
+		<style>
+			main
+			{
+				font-family: "Minecraft";
+			}
+
+			div.menu
+			{
+				border: dashed 2px #DDDDCC;
+				border-radius: 10px;
+				padding: 5px;
+				margin: 5px 0px 5px 0px;
+				display: flex;
+			}
+
+			div.list+img
+			{
+				margin-top: 5px;
+			}
+
+			.require-file:not(:has(div))::before
+			{
+				content: "请先输入模组文件夹才能进行操作";
+				text-align: center;
+			}
+
+			#mods-menu
+			{
+				justify-content: space-between;
+				flex-wrap: wrap;
+				max-height: 30em;
+				overflow-y: auto;
+			}
+
+			#mods-menu>div
+			{
+				border-radius: 5px;
+				margin: 5px;
+				width: 10em;
+				height: 10em;
+				cursor: pointer;
+				text-align: center;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			#mods-menu>div:not(:last-of-type)
+			{
+				background-color: #FFDDDD;
+			}
+
+			#mods-menu>div:last-of-type
+			{
+				background-color: #DDDDFF;
+			}
+
+			#mods-menu>div::before
+			{
+				content: "";
+				height: 100%;
+				vertical-align: middle;
+				display: inline-block;
+			}
+
+			#mods-menu>div.chosen
+			{
+				background-color: #DDFFDD;
+			}
+
+			#elements-menu
+			{
+				overflow: auto;
+				max-height: 60em;
+				flex-direction: column;
+			}
+
+			#elements-menu>div:first-of-type
+			{
+				font-weight: bold;
+				text-align: center;
+			}
+
+			#elements-menu>div:not(:first-of-type)
+			{
+				cursor: pointer;
+			}
+
+			#elements-menu>div:not(:last-of-type)
+			{
+				grid-template-columns: 3fr 3fr 2fr;
+				display: grid;
+			}
+
+			#elements-menu span:not(:last-of-type)
+			{
+				border-collapse: collapse;
+				border-right: 1px solid #CCCCCC;
+			}
+
+			#elements-menu span
+			{
+				padding: 0 3px 0 3px;
+				overflow: auto;
+			}
+
+			#elements-menu span::-webkit-scrollbar
+			{
+				display: none;
+			}
+
+			#elements-menu:has(div:nth-of-type(3))>div:first-of-type>span
+			{
+				padding-bottom: 3px;
+				border-bottom: 1px solid #CCCCCC;
+			}
+
+			#elements-menu>div:first-of-type+div>span
+			{
+				padding-top: 3px;
+			}
+
+			#elements-menu>div:last-of-type
+			{
+				margin-top: 3px;
+				background-color: #DDDDFF;
+				border-radius: 3px;
+				padding: 3px;
+				text-align: center;
+			}
+
+			#details
+			{
+				border: dashed 2px #DDDDCC;
+				border-radius: 10px;
+				padding: 5px;
+				margin: 5px 0px 5px 0px;
+				columns: 20em 5;
+			}
+
+			#details>div
+			{
+				display: grid;
+				grid-template-columns: 1fr 4fr 18px;
+				break-inside: avoid;
+			}
+
+			#details label
+			{
+				margin-top: 5px;
+			}
+
+			#element-types-menu
+			{
+				justify-content: space-between;
+			}
+
+			#element-types-menu>button
+			{
+				width: 3em;
+				height: 2em;
+				background-color: #DDDDFF;
+				border-radius: 3px;
+			}
+
+			button
+			{
+				float: right;
+				font-family: inherit;
+				font-size: inherit;
+			}
+
+			input[type="text"], input[type="number"]
+			{
+				font-family: inherit;
+			}
+
+			input[type="text"]:focus-visible, input[type="number"]:focus-visible
+			{
+				outline: none;
+				background-color: #FFF5B0;
+			}
+
+			input[type="text"]:invalid, input[type="number"]:invalid
+			{
+				color: #FFB5B0;
+			}
+
+			@media(prefers-color-scheme: dark)
+			{
+				div.menu>div:not(:last-of-type)
+				{
+					background-color: #884444;
+				}
+
+				div.menu>div:last-of-type
+				{
+					background-color: #444488;
+					text-align: center;
+				}
+
+				input[type="text"]:focus-visible, input[type="number"]:focus-visible
+				{
+					outline: none;
+					background-color: #2A2942;
+				}
+
+				input[type="text"]:valid, input[type="number"]:valid
+				{
+					color: #FFFFFF;
+				}
+			}
+		</style>
+		<!-- Packages Required : JSZip -->
+		<script async src="https://cdn.jsdelivr.net/npm/jszip@3.7.1/dist/jszip.min.js"></script>
+		<script defer>
+			var mods = [];
+			var chosen_mod = "";
+			var file_reader = new FileReader();
+			function file_upload()
+			{
+				let input = document.getElementById("file-upload");
+				if (!input.files || !input.files[0])
+				{
+					alert("请输入文件夹，如果没有输入则会采用上一次的输入。");
+					input.files = mods;
+					return;
+				};
+				if (!input.files[0].webkitRelativePath.startsWith("mods"))
+				{
+					alert("输入的文件夹必须是 mods 文件夹！");
+					input.files = mods;
+					return;
+				};
+				if (!mods[0])
+				{
+					let download_container = document.createElement("button");
+					download_container.style.float = "right";
+					download_container.style.marginLeft = "3px";
+					download_container.onclick = download;
+					download_container.innerHTML = '<img src="../../../../images/Minecraft for C/modedit/download mods.svg" alt="下载模组 zip 文件" title="下载模组 zip 文件"/>'
+					document.getElementsByTagName("body")[0].insertBefore(download_container, document.getElementsByTagName("body")[0].children[0]);
+				};
+				let picture = document.getElementById("file-picture");
+				let mods_menu = document.getElementById("mods-menu");
+				let loaded_mod_list = [];
+				mods = [];
+				mods_menu.innerHTML = "";
+				for (each_file of input.files)
+				{
+					mods.push(new File([each_file], each_file.webkitRelativePath.substring(each_file.webkitRelativePath.indexOf("/") + 1)));
+					if (loaded_mod_list.indexOf(each_file.name) == -1)
+					{
+						mods_menu.innerHTML += `<div onclick="choose_mod(this)">${each_file.webkitRelativePath.split("/", 2)[1]}</div>`;
+						loaded_mod_list.push(each_file.name);
+					};
+				};
+				mods_menu.innerHTML += '<div onclick="new_mod()">新建……</div>';
+				picture.src = "../../../../images/Minecraft for C/modedit/uploaded mods.svg";
+				picture.title = "成功上传模组文件夹";
+			};
+
+			function new_mod()
+			{
+				let options =
+				{
+					threads: ["线程", "text?[1-9][0-9]?|0", "模组的占用线程数"],
+					namespace: ["命名空间", "text?[a-z0-9_]+", "模组自身的命名空间，会与其他模组冲突"],
+					name: ["名字", "text?[a-zA-Z0-9_.]+", "模组的译名 id"],
+					requirement: ["前置", "text+?[a-z0-9_]+", "模组的前置，需要输入前置模组的命名空间"],
+					link: ["联动", "text+?[a-z0-9_]+", "模组的联动，在同时加载两个模组时生效，必须要双向联动才能让联动有效"]
+				};
+				generate_details(options);
+				document.getElementById("details-submit").onclick = function ()
+				{
+					let options = save();
+					if (!options)
+					{
+						return;
+					};
+					mods.push(new File([JSON.stringify(options)], `${options.namespace}/general.json`));
+					let mods_menu_item = document.createElement("div");
+					mods_menu_item.innerHTML = options.namespace;
+					mods_menu_item.setAttribute("onclick", "choose_mod(this)");
+					document.getElementById("mods-menu").insertBefore(mods_menu_item, document.getElementById("mods-menu").children[0]);
+					choose_mod(document.getElementById("mods-menu").children[0]);
+				};
+			};
+
+			function new_element()
+			{
+				if (!mods[0])
+				{
+					return;
+				};
+				document.getElementById("element-types-menu").style.display = "";
+			};
+
+			function new_block()
+			{
+				let options =
+				{
+					namespace: ["命名空间", "text?[a-z0-9_]+", "方块的命名空间，不需要再写模组名"],
+					model: ["模型", "text?[a-z0-9_]+\\.[a-z0-9_]+", "方块的模型的 id"],
+					textures: ["贴图", "text+?[a-z0-9_]+\\/image\\/[a-zA-Z0-9_]+\\.(png|jpg|gif)", "数量应该与模型面数一致，并按顺序一一对应，图片均存储在“模组命名空间/image/”中"]
+				};
+				generate_details(options);
+				document.getElementById("element-types-menu").style.display = "none";
+				document.getElementById("details-submit").onclick = function ()
+				{
+					let options = save();
+					if (!options)
+					{
+						return;
+					};
+					mods.push(new File([JSON.stringify(options)], `${chosen_mod}/block/${options.namespace}.json`));
+					choose_mod(document.querySelector("#mods-menu>.chosen"));
+				};
+			};
+
+			function choose_mod(element)
+			{
+				let elements_menu = document.getElementById("elements-menu");
+				let delete_elements = Array.from(elements_menu.children).slice(1, -1); // skip thead and tfoot
+				for (let each_element of delete_elements)
+				{
+					each_element.remove();
+				};
+				for (each_file of mods)
+				{
+					let file_mod = each_file.name.split("/", 1)[0];
+					if (file_mod != element.innerText)
+					{
+						continue;
+					};
+					let file_id = each_file.name.split("/").slice(-1)[0].split(".", 1)[0];
+					let elements_menu_item = document.createElement("div");
+					let elements_menu_id = document.createElement("span");
+					let elements_menu_file = document.createElement("span");
+					let elements_menu_type = document.createElement("span");
+					elements_menu_id.innerText = `${file_mod}.${file_id}`;
+					elements_menu_file.innerText = each_file.name;
+					if (each_file.name.split("/").length == 3)
+					{
+						elements_menu_type.innerText = each_file.name.split("/")[1];
+					};
+					elements_menu_item.appendChild(elements_menu_id);
+					elements_menu_item.appendChild(elements_menu_file);
+					elements_menu_item.appendChild(elements_menu_type);
+					elements_menu.insertBefore(elements_menu_item, elements_menu.children[elements_menu.children.length - 1]);
+				};
+				chosen_mod = element.innerText;
+				document.getElementById("element-create").style.display = ""
+				focus_mod(element.parentElement, element);
+			};
+
+			function focus_mod(parent_element, element_or_index)
+			{
+				let element;
+				if (isNaN(element_or_index))
+				{
+					element = element_or_index;
+				}
+				else
+				{
+					element = parent_element.children[element_or_index];
+				};
+				for (each_element of parent_element.children)
+				{
+					each_element.classList.remove("chosen");
+				};
+				element.classList.add("chosen");
+			};
+
+			function generate_details(options)
+			{
+				let details = document.getElementById("details");
+				details.innerHTML = "";
+				for (let each_option in options)
+				{
+					let option_name = options[each_option][0];
+					let option_type = options[each_option][1].split("?", 1)[0];
+					let option_info = options[each_option][2];
+					let option_re = options[each_option][1].slice(options[each_option][1].indexOf("?") + 1);
+					let appendixes = "";
+					if (option_type.endsWith("+"))
+					{
+						option_type = option_type.slice(0, -1);
+						appendixes += "+";
+					};
+					{
+						let detail_item = document.createElement("div");
+						let detail_label = document.createElement("label");
+						let detail_input;
+						detail_item.appendChild(detail_label);
+						details.appendChild(detail_item);
+						detail_label.dataset.option = each_option;
+						if (option_info)
+						{
+							let detail_explanation = document.createElement("dfn");
+							detail_explanation.title = option_info;
+							detail_explanation.innerText = option_name;
+							detail_label.appendChild(detail_explanation);
+						}
+						else
+						{
+							detail_label.innerText = option_name;
+						};
+						if (appendixes.includes("+"))
+						{
+							detail_input = document.createElement("div");
+							detail_input.classList.add("list");
+							detail_item.appendChild(detail_input);
+							let detail_add_picture = document.createElement("img");
+							detail_add_picture.src = "../../../../images/Minecraft for C/modedit/add.svg";
+							detail_add_picture.setAttribute("onclick", `blank_add(this, '${option_type}', '${option_re}')`);
+							detail_item.appendChild(detail_add_picture);
+						}
+						else
+						{
+							detail_input = document.createElement("input");
+							detail_input.required = true;
+							detail_input.type = option_type;
+							if (option_re)
+							{
+								detail_input.pattern = option_re;
+							};
+							detail_item.appendChild(detail_input);
+						};
+					};
+				};
+			};
+
+			function save()
+			{
+				if (!mods[0])
+				{
+					return;
+				};
+				let options = {};
+				let details = document.getElementById("details");
+				if (!details.checkValidity())
+				{
+					return;
+				};
+				for (let each_detail of details.children)
+				{
+					let label = each_detail.children[0]; // label element
+					let input = each_detail.children[1]; // input element
+					let input_values;
+					if (input.nodeName == "DIV")
+					{
+						input_values = [];
+						for (let each_input of input.children)
+						{
+							input_values.push(each_input.value);
+						};
+					}
+					else
+					{
+						input_values = input.value;
+					};
+					options[label.dataset.option] = input_values;
+				};
+				details.innerHTML = "";
+				console.log("Data Collected:", options);
+				document.getElementById("details-submit").onclick = null;
+				return options;
+			};
+
+			function blank_add(element, option_type, option_re)
+			{
+				// finding the img element, and its previous is div.list and label
+				let node = document.createElement("input");
+				node.type = option_type;
+				node.required = true;
+				if (option_re != "undefined")
+				{
+					node.pattern = option_re;
+				};
+				node.ondblclick = function(){blank_delete_start(node)};
+				element.previousElementSibling.appendChild(node);
+			};
+
+			function blank_delete_start(element)
+			{
+				element.style.backgroundColor = "#FF959C";
+				element.onclick = element.remove;
+				element.oncontextmenu = function ()
+				{
+					element.onclick = null;
+					element.ondblclick = function (){blank_delete_start(element)};
+					element.style.backgroundColor = "";
+				};
+			};
+
+			function download()
+			{
+				let zip = JSZip();
+				console.log("Making zip ...")
+				for (each_file of mods)
+				{
+					console.log("Adding file:", each_file.name);
+					zip.file(each_file.name, each_file);
+				};
+				zip.generateAsync({type: "blob"}).then(content =>
+				{
+					link = document.createElement("a");
+					link.href = URL.createObjectURL(content);
+					link.download = "mods.zip";
+					link.target = "_blank";
+					link.click();
+				});
+			};
+		</script>
+	</head>
+	<body>
+		<form action="" style="float: right;">
+			<label for="file-upload">
+				<img id="file-picture" src="../../../../images/Minecraft for C/modedit/upload mods.svg" alt="上传完整模组文件夹" title="上传完整模组文件夹"/>
+			</label>
+			<input id="file-upload" type="file" webkitdirectory onchange="file_upload()" style="display: none;"/>
+		</form>
+		<h1>
+			Wiki - 模组编辑器
+		</h1>
+		<main>
+			<div id="mods-menu" class="require-file menu"></div>
+			<div id="elements-menu" class="require-file menu">
+				<div>
+					<span>
+						id
+					</span>
+					<span>
+						文件
+					</span>
+					<span>
+						类型
+					</span>
+				</div>
+				<div id="element-create" onclick="new_element()" style="display: none;">
+					新建……
+				</div>
+			</div>
+			<div id="element-types-menu" class="menu" style="display: none;">
+				<button onclick="new_block()">
+					方块
+				</button>
+				<button>
+					物品
+				</button>
+				<button>
+					模型
+				</button>
+			</div>
+			<form id="details" class="require-file"></form>
+			<button id="details-submit">
+				<img src="../../../../images/Minecraft for C/modedit/submit.svg" alt="确认" title="确认"/>
+			</button>
+		</main>
+		<noscript>
+			对不起，你的浏览器不支持 Javascript ，无法编辑模组。你可以换一个浏览器试试。
+		</noscript>
+	</body>
+</html>

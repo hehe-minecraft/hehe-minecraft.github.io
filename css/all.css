@@ -166,7 +166,16 @@ a:visited:not(ol.catalogue a)
 	nav
 	{
 		width: 28%;
+		height: 100vh;
 		float: left;
+		position: sticky;
+		top: 0px;
+	}
+
+	ol.catalogue
+	{
+		max-height: calc(100% - 7em);
+		overflow-y: auto;
 	}
 
 	main
@@ -183,7 +192,8 @@ a:visited:not(ol.catalogue a)
 	}
 }
 
-@font-face {
+@font-face
+{
 	font-family: "Consolas";
 	src: url("../fonts/consolas.ttf");
 }
@@ -236,6 +246,6 @@ a:visited:not(ol.catalogue a)
 
 	table td
 	{
-		background-color: #2a2942;
+		background-color: #2A2942;
 	}
 }

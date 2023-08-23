@@ -1,5 +1,5 @@
 function details_flip(flip_id) {
-	var item = document.getElementById(flip_id);
+	let item = document.getElementById(flip_id);
 	console.log(item);
 	if (item)
 	{
