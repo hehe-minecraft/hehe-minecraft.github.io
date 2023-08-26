@@ -18,13 +18,19 @@
 				border: dashed 2px #DDDDCC;
 				border-radius: 10px;
 				padding: 5px;
-				margin: 5px 0px 5px 0px;
+				margin: 5px 0 5px 0;
 				display: flex;
 			}
 
 			div.list+img
 			{
 				margin-top: 5px;
+			}
+
+			div.list>div
+			{
+				display: grid;
+				grid-template-columns: 1fr auto 1fr;
 			}
 
 			.require-file:not(:has(div))::before
@@ -128,7 +134,7 @@
 				padding-top: 3px;
 			}
 
-			#elements-menu>div:last-of-type
+			#element-create
 			{
 				margin-top: 3px;
 				background-color: #DDDDFF;
@@ -142,14 +148,14 @@
 				border: dashed 2px #DDDDCC;
 				border-radius: 10px;
 				padding: 5px;
-				margin: 5px 0px 5px 0px;
+				margin: 5px 0 5px 0;
 				columns: 20em 5;
 			}
 
 			#details>div
 			{
 				display: grid;
-				grid-template-columns: 1fr 4fr 18px;
+				grid-template-columns: 1fr 3fr 18px;
 				break-inside: avoid;
 			}
 
@@ -178,42 +184,47 @@
 				font-size: inherit;
 			}
 
-			input[type="text"], input[type="number"]
+			input
 			{
 				font-family: inherit;
 			}
 
-			input[type="text"]:focus-visible, input[type="number"]:focus-visible
+			input:focus-visible
 			{
 				outline: none;
 				background-color: #FFF5B0;
 			}
 
-			input[type="text"]:invalid, input[type="number"]:invalid
+			input:invalid
 			{
 				color: #FFB5B0;
 			}
 
+			textarea
+			{
+				background-color: rgba(128, 128, 128, 0.1);
+				margin: 1px 0 1px 0;
+			}
+
 			@media(prefers-color-scheme: dark)
 			{
-				div.menu>div:not(:last-of-type)
+				#mods-menu>div:not(:last-of-type)
 				{
 					background-color: #884444;
 				}
 
-				div.menu>div:last-of-type
+				#mods-menu>div:last-of-type, #element-create
 				{
 					background-color: #444488;
-					text-align: center;
 				}
 
-				input[type="text"]:focus-visible, input[type="number"]:focus-visible
+				input:focus-visible
 				{
 					outline: none;
 					background-color: #2A2942;
 				}
 
-				input[type="text"]:valid, input[type="number"]:valid
+				input:valid, textarea
 				{
 					color: #FFFFFF;
 				}
@@ -221,6 +232,62 @@
 		</style>
 		<!-- Packages Required : JSZip -->
 		<script async src="https://cdn.jsdelivr.net/npm/jszip@3.7.1/dist/jszip.min.js"></script>
+		<script>
+			const dom_observer = new MutationObserver(function (mutationsList)
+			{
+				for (let each_element of document.getElementsByTagName("textarea"))
+				{
+					height_update(each_element);
+					each_element.oninput = function (){height_update(each_element)};
+				};
+				for (let each_element of document.querySelectorAll(":not(textarea, button, input)"))
+				{
+					if (each_element.onclick)
+					{
+						each_element.onkeydown = function (){barrier_free(event, each_element)};
+					};
+				};
+			});
+			dom_observer.observe(document, {childList: true, subtree: true});
+
+			function height_update(element)
+			{
+				element.style.height = "0";
+				element.style.height = element.scrollHeight + "px";
+			};
+
+			function barrier_free(event, element)
+			{
+				if (event.code === "Enter" || event.code === "Space")
+				{
+					element.click();
+				};
+			};
+
+			function code(event)
+			{
+				switch (event.key)
+				{
+					case "Tab":
+						event.preventDefault();
+						insert_before_cursor(event.target, "\t");
+						break;
+					case "Enter":
+						event.preventDefault();
+						let current_line = event.target.value.substring(event.target.value.substring(0, event.target.selectionStart).lastIndexOf("\n"), event.target.selectionStart);
+						insert_before_cursor(event.target, current_line.match(/\n\t*/) ? current_line.match(/\n\t*/)[0] : "\n");
+						break;
+				};
+				height_update(event.target);
+			};
+		
+			function insert_before_cursor(element, string)
+			{
+				let select_position = element.selectionStart;
+				element.value = `${element.value.substring(0, element.selectionStart)}${string}${element.value.substring(element.selectionEnd)}`;
+				element.selectionStart = element.selectionEnd = select_position + string.length;
+			};
+		</script>
 		<script defer>
 			var mods = [];
 			var chosen_mod = "";
@@ -246,6 +313,7 @@
 					download_container.style.float = "right";
 					download_container.style.marginLeft = "3px";
 					download_container.onclick = download;
+					download_container.tabIndex = 1;
 					download_container.innerHTML = '<img src="../../../../images/Minecraft for C/modedit/download mods.svg" alt="下载模组 zip 文件" title="下载模组 zip 文件"/>'
 					document.getElementsByTagName("body")[0].insertBefore(download_container, document.getElementsByTagName("body")[0].children[0]);
 				};
@@ -256,14 +324,15 @@
 				mods_menu.innerHTML = "";
 				for (each_file of input.files)
 				{
+					let mod_name = each_file.webkitRelativePath.split("/", 2)[1];
 					mods.push(new File([each_file], each_file.webkitRelativePath.substring(each_file.webkitRelativePath.indexOf("/") + 1)));
-					if (loaded_mod_list.indexOf(each_file.name) == -1)
+					if (loaded_mod_list.indexOf(mod_name) == -1)
 					{
-						mods_menu.innerHTML += `<div onclick="choose_mod(this)">${each_file.webkitRelativePath.split("/", 2)[1]}</div>`;
-						loaded_mod_list.push(each_file.name);
+						mods_menu.innerHTML += `<div onclick="choose_mod(this)" tabindex="0">${mod_name}</div>`;
+						loaded_mod_list.push(mod_name);
 					};
 				};
-				mods_menu.innerHTML += '<div onclick="new_mod()">新建……</div>';
+				mods_menu.innerHTML += '<div onclick="new_mod()" tabindex="0">新建……</div>';
 				picture.src = "../../../../images/Minecraft for C/modedit/uploaded mods.svg";
 				picture.title = "成功上传模组文件夹";
 			};
@@ -275,7 +344,7 @@
 					threads: ["线程", "text?[1-9][0-9]?|0", "模组的占用线程数"],
 					namespace: ["命名空间", "text?[a-z0-9_]+", "模组自身的命名空间，会与其他模组冲突"],
 					name: ["名字", "text?[a-zA-Z0-9_.]+", "模组的译名 id"],
-					requirement: ["前置", "text+?[a-z0-9_]+", "模组的前置，需要输入前置模组的命名空间"],
+					requirement: ["前置", "text+?[a-z0-9_]+", "模组的前置，需要输入前置模组的命名空间，前置模组可以让联动单向有效"],
 					link: ["联动", "text+?[a-z0-9_]+", "模组的联动，在同时加载两个模组时生效，必须要双向联动才能让联动有效"]
 				};
 				generate_details(options);
@@ -289,7 +358,8 @@
 					mods.push(new File([JSON.stringify(options)], `${options.namespace}/general.json`));
 					let mods_menu_item = document.createElement("div");
 					mods_menu_item.innerHTML = options.namespace;
-					mods_menu_item.setAttribute("onclick", "choose_mod(this)");
+					mods_menu_item.tabIndex = 0;
+					mods_menu_item.onclick = function (){choose_mod(mods_menu_item)};
 					document.getElementById("mods-menu").insertBefore(mods_menu_item, document.getElementById("mods-menu").children[0]);
 					choose_mod(document.getElementById("mods-menu").children[0]);
 				};
@@ -310,7 +380,24 @@
 				{
 					namespace: ["命名空间", "text?[a-z0-9_]+", "方块的命名空间，不需要再写模组名"],
 					model: ["模型", "text?[a-z0-9_]+\\.[a-z0-9_]+", "方块的模型的 id"],
-					textures: ["贴图", "text+?[a-z0-9_]+\\/image\\/[a-zA-Z0-9_]+\\.(png|jpg|gif)", "数量应该与模型面数一致，并按顺序一一对应，图片均存储在“模组命名空间/image/”中"]
+					textures: ["贴图", "text+?[a-z0-9_]+\\/image\\/[a-zA-Z0-9_]+\\.(png|jpg|gif)", "数量应该与模型面数一致，并按顺序一一对应，图片均存储在“模组命名空间/image/”中"],
+					item_texture: ["物品贴图", "text-?[a-z0-9_]+\\/image\\/[a-zA-Z0-9_]+\\.(png|jpg|gif)", "方块作为物品形式的贴图，不填代表按照方块生成贴图"],
+					tick_rate: ["自主刻", "text?[1-9][0-9]*|0", "方块自主更新所间隔的游戏刻， 0 代表从不更新"],
+					tags: ["标签", "text+?[a-z0-9_]+(\\.[a-z0-9_]+)*", "方块的标签，可供批量选择方块"],
+					attributes: ["属性", "text:?[a-z0-9_]+(\\.[a-z0-9_]+)*:.+", "方块具有的属性，左边是属性名，右边是值"],
+					gui: ["GUI", "text-?[a-z0-9_]+\\.[a-z0-9_]+", "方块的 GUI ，在使用时打开，如果有使用函数，除非返回 continue ，否则该值无效"],
+					bind_tick: ["自主函数", "text*", "方块每刻都会执行的函数"],
+					bind_plan: ["计划函数", "text*", "方块计划更新到期时执行的函数"],
+					bind_update: ["更新函数", "text*", "方块出现更新的时候执行的函数"],
+					bind_mine: ["挖掘函数", "text*", "方块尝试挖掘的时候执行的函数"],
+					bind_use: ["使用函数", "text*", "方块被使用的时候执行的函数"],
+					bind_break: ["破坏函数", "text*", "方块被破坏的时候执行的函数"],
+					bind_place: ["放置函数", "text*", "方块被放置的时候执行的函数"],
+					bind_near: ["靠近函数", "text*", "方块所在的区块被加载时执行的函数，你不可以停止正常加载流程"],
+					bind_far: ["远离函数", "text*", "方块所在的区块被卸载时执行的函数，你不可以停止正常卸载流程"],
+					bind_generate: ["生成函数", "text*", "方块所在的区块被首次生成时执行的函数，你不可以停止正常生成流程"],
+					bind_enter: ["进入函数", "text*", "打开存档时执行的函数"],
+					bind_leave: ["退出函数", "text*", "存档退出时执行的函数"]
 				};
 				generate_details(options);
 				document.getElementById("element-types-menu").style.display = "none";
@@ -322,6 +409,154 @@
 						return;
 					};
 					mods.push(new File([JSON.stringify(options)], `${chosen_mod}/block/${options.namespace}.json`));
+					choose_mod(document.querySelector("#mods-menu>.chosen"));
+				};
+			};
+
+			function new_item()
+			{
+				let options =
+				{
+					namespace: ["命名空间", "text?[a-z0-9_]+", "物品的命名空间，不需要再写模组名"],
+					tags: ["标签", "text+?[a-z0-9_]+(\\.[a-z0-9_]+)*", "物品的标签，用来批量选择物品"],
+					attributes: ["属性", "text:?[a-z0-9_]+(\\.[a-z0-9_]+)*:.+", "物品的属性，左边是属性名，右边是值"],
+					tick_rate: ["自主刻", "text?[1-9][0-9]*|0", "物品自主更新所间隔的游戏刻， 0 代表从不更新"],
+					gui: ["GUI", "text-?[a-z0-9_]+\\.[a-z0-9_]+", "物品的 GUI ，在使用时打开，如果有使用函数，除非返回 continue ，否则该值无效"],
+					bind_tick: ["自主函数", "text*", "物品每刻都会执行的函数"],
+					bind_plan: ["计划函数", "text*", "物品计划更新到期时执行的函数"],
+					bind_mine: ["挖掘函数", "text*", "使用物品挖掘方块时执行的函数"],
+					bind_use: ["使用函数", "text*", "物品被使用时执行的函数"],
+					bind_break: ["破坏函数", "text*", "用物品破坏方块的时候执行的函数"],
+					bind_pick: ["拾取函数", "text*", "物品被拾取时执行的函数"],
+					bind_throw: ["丢弃函数", "text*", "物品被丢弃时执行的函数"],
+					bind_enter: ["进入函数", "text*", "打开存档时执行的函数"],
+					bind_leave: ["退出函数", "text*", "存档退出时执行的函数"]
+				};
+				generate_details(options);
+				document.getElementById("element-types-menu").style.display = "none";
+				document.getElementById("details-submit").onclick = function ()
+				{
+					let options = save();
+					if (!options)
+					{
+						return;
+					};
+					mods.push(new File([JSON.stringify(options)], `${chosen_mod}/item/${options.namespace}.json`));
+					choose_mod(document.querySelector("#mods-menu>.chosen"));
+				};
+			};
+
+			function new_model()
+			{
+				let options =
+				{
+					namespace: ["命名空间", "text?[a-z0-9_]+", "模型的命名空间，不需要再写模组名"],
+					points: ["顶点", "text+?((-?[1-9][0-9]*|0)(\\.[0-9]*[1-9])?|-0(\\.[0-9]*[1-9]))( ((-?[1-9][0-9]*|0)(\\.[0-9]*[1-9])?|-0(\\.[0-9]*[1-9]))){2}", "顶点的坐标，分为 x y z"],
+					lines: ["棱", "text+?[0-9]+ [0-9]+", "每一条棱的两个端点"],
+					surfaces: ["面", "text+?[0-9]+( [0-9]+){3}", "每个渲染面包含四个顶点，按同方向的顺序排列"],
+					boxes: ["碰撞箱", "text+?[0-9]+( [0-9]+){3}", "碰撞箱，先输入基准点，再输入互相垂直的三个方向的棱的另一个端点"]
+				};
+				generate_details(options);
+				document.getElementById("element-types-menu").style.display = "none";
+				document.getElementById("details-submit").onclick = function ()
+				{
+					let options = save();
+					if (!options)
+					{
+						return;
+					};
+					mods.push(new File([JSON.stringify(options)], `${chosen_mod}/model/${options.namespace}.json`));
+					choose_mod(document.querySelector("#mods-menu>.chosen"));
+				};
+			};
+
+			function new_fluid()
+			{
+				let options =
+				{
+					namespace: ["命名空间", "text?[a-z0-9_]+", "流体的命名空间，不需要再写模组名"],
+					tags: ["标签", "text+?[a-z0-9_]+(\\.[a-z0-9_]+)*", "流体的标签，用来批量选择物品"],
+					attributes: ["属性", "text:?[a-z0-9_]+(\\.[a-z0-9_]+)*:.+", "流体的属性，左边是属性名，右边是值"],
+					tick_rate: ["自主刻", "text?[1-9][0-9]*|0", "流体自主更新所间隔的游戏刻， 0 代表从不更新"],
+					bind_tick: ["自主函数", "text*", "流体每刻都会执行的函数"],
+					bind_plan: ["计划函数", "text*", "流体计划更新到期时执行的函数"],
+					bind_update: ["更新函数", "text*", "流体出现更新的时候执行的函数"],
+					bind_break: ["破坏函数", "text*", "流体被用桶收起的时候执行的函数"],
+					bind_place: ["放置函数", "text*", "流体被用桶放置的时候执行的函数"],
+					bind_near: ["靠近函数", "text*", "流体所在的区块被加载时执行的函数，你不可以停止正常加载流程"],
+					bind_far: ["远离函数", "text*", "流体所在的区块被卸载时执行的函数，你不可以停止正常卸载流程"],
+					bind_generate: ["生成函数", "text*", "流体所在的区块被首次生成时执行的函数，你不可以停止正常生成流程"],
+					bind_enter: ["进入函数", "text*", "打开存档时执行的函数"],
+					bind_leave: ["退出函数", "text*", "存档退出时执行的函数"]
+				};
+				generate_details(options);
+				document.getElementById("element-types-menu").style.display = "none";
+				document.getElementById("details-submit").onclick = function ()
+				{
+					let options = save();
+					if (!options)
+					{
+						return;
+					};
+					mods.push(new File([JSON.stringify(options)], `${chosen_mod}/fluid/${options.namespace}.json`));
+					choose_mod(document.querySelector("#mods-menu>.chosen"));
+				};
+			};
+
+			function new_entity()
+			{
+				let options =
+				{
+					namespace: ["命名空间", "text?[a-z0-9_]+", "实体的命名空间，不需要再写模组名"],
+					tags: ["标签", "text+?[a-z0-9_]+(\\.[a-z0-9_]+)*", "实体的标签，用来批量选择物品"],
+					attributes: ["属性", "text:?[a-z0-9_]+(\\.[a-z0-9_]+)*:.+", "实体的属性，左边是属性名，右边是值"],
+					model: ["模型", "text?[a-z0-9_]+\\.[a-z0-9_]+", "实体的模型的 id"],
+					tick_rate: ["自主刻", "text?[1-9][0-9]*|0", "实体自主更新所间隔的游戏刻， 0 代表从不更新"],
+					wall_throughable: ["能否穿墙", "text?true|false", "实体是否能够穿墙，是为 true ，否为 false"],
+					bind_tick: ["自主函数", "text*", "实体每刻都会执行的函数，寻路机制放在这里"],
+					bind_plan: ["计划函数", "text*", "实体计划更新到期时执行的函数"],
+					bind_update: ["更新函数", "text*", "实体出现更新的时候执行的函数"],
+					bind_break: ["破坏函数", "text*", "实体被用桶收起的时候执行的函数"],
+					bind_place: ["放置函数", "text*", "实体被用桶放置的时候执行的函数"],
+					bind_summon: ["召唤函数", "text*", "实体被召唤时执行的函数"],
+					bind_killed: ["杀死函数", "text*", "实体被杀死时执行的函数"],
+					bind_near: ["靠近函数", "text*", "实体所在的区块被加载时执行的函数，你不可以停止正常加载流程"],
+					bind_far: ["远离函数", "text*", "实体所在的区块被卸载时执行的函数，你不可以停止正常卸载流程"],
+					bind_enter: ["进入函数", "text*", "打开存档时执行的函数"],
+					bind_leave: ["退出函数", "text*", "存档退出时执行的函数"]
+				};
+				generate_details(options);
+				document.getElementById("element-types-menu").style.display = "none";
+				document.getElementById("details-submit").onclick = function ()
+				{
+					let options = save();
+					if (!options)
+					{
+						return;
+					};
+					mods.push(new File([JSON.stringify(options)], `${chosen_mod}/entity/${options.namespace}.json`));
+					choose_mod(document.querySelector("#mods-menu>.chosen"));
+				};
+			};
+
+			function new_function()
+			{
+				let options =
+				{
+					namespace: ["命名空间", "text?[a-z0-9_]+", "模型的命名空间，不需要再写模组名"],
+					content: ["内容", "text*", "函数的内容"],
+					bind: ["事件绑定", "text+?([a-z0-9_]+\\.){2}bind_[a-z0-9_]+","事件绑定虽然在其他元素的编辑模块可以做到，但是这个可以将多份事件绑定在其他元素，以及你无法编辑的其他模组的元素上，并保证不重不漏，你应该填入的是模组名.元素名.bind_函数名，你需要前置或者联动这个模组才能生效"]
+				};
+				generate_details(options);
+				document.getElementById("element-types-menu").style.display = "none";
+				document.getElementById("details-submit").onclick = function ()
+				{
+					let options = save();
+					if (!options)
+					{
+						return;
+					};
+					mods.push(new File([JSON.stringify(options)], `${chosen_mod}/model/${options.namespace}.json`));
 					choose_mod(document.querySelector("#mods-menu>.chosen"));
 				};
 			};
@@ -352,6 +587,7 @@
 					{
 						elements_menu_type.innerText = each_file.name.split("/")[1];
 					};
+					elements_menu_item.tabIndex = 0;
 					elements_menu_item.appendChild(elements_menu_id);
 					elements_menu_item.appendChild(elements_menu_file);
 					elements_menu_item.appendChild(elements_menu_type);
@@ -396,6 +632,21 @@
 						option_type = option_type.slice(0, -1);
 						appendixes += "+";
 					};
+					if (option_type.endsWith("*"))
+					{
+						option_type = option_type.slice(0, -1);
+						appendixes += "*";
+					};
+					if (option_type.endsWith("-"))
+					{
+						option_type = option_type.slice(0, -1);
+						appendixes += "-";
+					};
+					if (option_type.endsWith(":"))
+					{
+						option_type = option_type.slice(0, -1);
+						appendixes += ":";
+					};
 					{
 						let detail_item = document.createElement("div");
 						let detail_label = document.createElement("label");
@@ -421,13 +672,32 @@
 							detail_item.appendChild(detail_input);
 							let detail_add_picture = document.createElement("img");
 							detail_add_picture.src = "../../../../images/Minecraft for C/modedit/add.svg";
-							detail_add_picture.setAttribute("onclick", `blank_add(this, '${option_type}', '${option_re}')`);
+							detail_add_picture.tabIndex = 0;
+							detail_add_picture.onclick = function (){blank_add(detail_add_picture, option_type, option_re)};
 							detail_item.appendChild(detail_add_picture);
+						}
+						else if (appendixes.includes(":"))
+						{
+							detail_input = document.createElement("div");
+							detail_input.classList.add("list");
+							detail_item.appendChild(detail_input);
+							let detail_add_picture = document.createElement("img");
+							detail_add_picture.src = "../../../../images/Minecraft for C/modedit/add.svg";
+							detail_add_picture.tabIndex = 0;
+							detail_add_picture.onclick = function (){blank_add(detail_add_picture, option_type, option_re.split(":"), ":")};
+							detail_item.appendChild(detail_add_picture);
+						}
+						else if (appendixes.includes("*"))
+						{
+							detail_input = document.createElement("textarea");
+							detail_input.tabIndex = -1;
+							detail_input.onkeydown = code;
+							detail_item.appendChild(detail_input);
 						}
 						else
 						{
 							detail_input = document.createElement("input");
-							detail_input.required = true;
+							detail_input.required = !appendixes.includes("-");
 							detail_input.type = option_type;
 							if (option_re)
 							{
@@ -476,29 +746,55 @@
 				return options;
 			};
 
-			function blank_add(element, option_type, option_re)
+			function blank_add(element, option_type, option_re, appendix="+")
 			{
 				// finding the img element, and its previous is div.list and label
-				let node = document.createElement("input");
-				node.type = option_type;
-				node.required = true;
-				if (option_re != "undefined")
+				let node;
+				if (appendix === "+") // list
 				{
-					node.pattern = option_re;
+					node = document.createElement("input");
+					node.type = option_type;
+					node.required = true;
+					if (option_re)
+					{
+						node.pattern = option_re;
+					};
+					node.ondblclick = function(){blank_delete_start(node)};
+				}
+				else // dictionary
+				{
+					node = document.createElement("div");
+					let key_node = document.createElement("input");
+					let label_node = document.createElement("span");
+					let value_node = document.createElement("input");
+					key_node.type = value_node.type = option_type;
+					key_node.required = value_node.required = true;
+					label_node.innerText = ":";
+					if (option_re[0])
+					{
+						key_node.pattern = option_re[0];
+					};
+					if (option_re[1])
+					{
+						value_node.pattern = option_re[1];
+					};
+					node.appendChild(key_node);
+					node.appendChild(label_node);
+					node.appendChild(value_node);
+					key_node.ondblclick = function(){blank_delete_start(key_node, node)};
 				};
-				node.ondblclick = function(){blank_delete_start(node)};
 				element.previousElementSibling.appendChild(node);
 			};
 
-			function blank_delete_start(element)
+			function blank_delete_start(element, target=element)
 			{
-				element.style.backgroundColor = "#FF959C";
-				element.onclick = element.remove;
+				target.style.backgroundColor = "#FF959C";
+				element.onclick = function (){target.remove()};
 				element.oncontextmenu = function ()
 				{
 					element.onclick = null;
-					element.ondblclick = function (){blank_delete_start(element)};
-					element.style.backgroundColor = "";
+					element.ondblclick = function (){blank_delete_start(element, target)};
+					target.style.backgroundColor = "";
 				};
 			};
 
@@ -523,11 +819,11 @@
 		</script>
 	</head>
 	<body>
-		<form action="" style="float: right;">
+		<form action="" style="float: right; position: relative;">
 			<label for="file-upload">
 				<img id="file-picture" src="../../../../images/Minecraft for C/modedit/upload mods.svg" alt="上传完整模组文件夹" title="上传完整模组文件夹"/>
 			</label>
-			<input id="file-upload" type="file" webkitdirectory onchange="file_upload()" style="display: none;"/>
+			<input id="file-upload" type="file" webkitdirectory onchange="file_upload()" style="width: 0px; height: 0px; opacity: 0;;" tabindex="1"/>
 		</form>
 		<h1>
 			Wiki - 模组编辑器
@@ -546,7 +842,7 @@
 						类型
 					</span>
 				</div>
-				<div id="element-create" onclick="new_element()" style="display: none;">
+				<div id="element-create" onclick="new_element()" tabindex="0" style="display: none;">
 					新建……
 				</div>
 			</div>
@@ -554,11 +850,20 @@
 				<button onclick="new_block()">
 					方块
 				</button>
-				<button>
+				<button onclick="new_item()">
 					物品
 				</button>
-				<button>
+				<button onclick="new_model()">
 					模型
+				</button>
+				<button onclick="new_fluid()">
+					流体
+				</button>
+				<button onclick="new_entity()">
+					实体
+				</button>
+				<button onclick="new_function()">
+					函数
 				</button>
 			</div>
 			<form id="details" class="require-file"></form>
