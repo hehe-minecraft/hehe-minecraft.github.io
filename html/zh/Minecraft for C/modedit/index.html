@@ -149,6 +149,10 @@
 				border-radius: 10px;
 				padding: 5px;
 				margin: 5px 0 5px 0;
+			}
+
+			#details:has(:nth-child(6))
+			{
 				columns: 20em 5;
 			}
 
@@ -357,7 +361,7 @@
 					};
 					mods.push(new File([JSON.stringify(options)], `${options.namespace}/general.json`));
 					let mods_menu_item = document.createElement("div");
-					mods_menu_item.innerHTML = options.namespace;
+					mods_menu_item.innerText = options.namespace;
 					mods_menu_item.tabIndex = 0;
 					mods_menu_item.onclick = function (){choose_mod(mods_menu_item)};
 					document.getElementById("mods-menu").insertBefore(mods_menu_item, document.getElementById("mods-menu").children[0]);
@@ -451,7 +455,7 @@
 				let options =
 				{
 					namespace: ["命名空间", "text?[a-z0-9_]+", "模型的命名空间，不需要再写模组名"],
-					points: ["顶点", "text+?((-?[1-9][0-9]*|0)(\\.[0-9]*[1-9])?|-0(\\.[0-9]*[1-9]))( ((-?[1-9][0-9]*|0)(\\.[0-9]*[1-9])?|-0(\\.[0-9]*[1-9]))){2}", "顶点的坐标，分为 x y z"],
+					points: ["顶点", "text+?((-?[1-9][0-9]*|0)(\\.[0-9]*[1-9])?|-0(\\.[0-9]*[1-9]))( ((-?[1-9][0-9]*|0)(\\.[0-9]*[1-9])?|-0(\\.[0-9]*[1-9]))){2}", "顶点的坐标，分为 x y z ，从 0 开始往下依次递增"],
 					lines: ["棱", "text+?[0-9]+ [0-9]+", "每一条棱的两个端点"],
 					surfaces: ["面", "text+?[0-9]+( [0-9]+){3}", "每个渲染面包含四个顶点，按同方向的顺序排列"],
 					boxes: ["碰撞箱", "text+?[0-9]+( [0-9]+){3}", "碰撞箱，先输入基准点，再输入互相垂直的三个方向的棱的另一个端点"]
@@ -544,7 +548,7 @@
 				let options =
 				{
 					namespace: ["命名空间", "text?[a-z0-9_]+", "模型的命名空间，不需要再写模组名"],
-					content: ["内容", "text*", "函数的内容"],
+					content: ["内容", "text*+"],
 					bind: ["事件绑定", "text+?([a-z0-9_]+\\.){2}bind_[a-z0-9_]+","事件绑定虽然在其他元素的编辑模块可以做到，但是这个可以将多份事件绑定在其他元素，以及你无法编辑的其他模组的元素上，并保证不重不漏，你应该填入的是模组名.元素名.bind_函数名，你需要前置或者联动这个模组才能生效"]
 				};
 				generate_details(options);
@@ -556,7 +560,7 @@
 					{
 						return;
 					};
-					mods.push(new File([JSON.stringify(options)], `${chosen_mod}/model/${options.namespace}.json`));
+					mods.push(new File([JSON.stringify(options)], `${chosen_mod}/function/${options.namespace}.json`));
 					choose_mod(document.querySelector("#mods-menu>.chosen"));
 				};
 			};
@@ -665,16 +669,13 @@
 						{
 							detail_label.innerText = option_name;
 						};
-						if (appendixes.includes("+"))
+						if (appendixes.includes("*"))
 						{
-							detail_input = document.createElement("div");
-							detail_input.classList.add("list");
+							detail_input = document.createElement("textarea");
+							detail_input.tabIndex = -1;
+							detail_input.onkeydown = code;
+							detail_input.required = appendixes.includes("+");
 							detail_item.appendChild(detail_input);
-							let detail_add_picture = document.createElement("img");
-							detail_add_picture.src = "../../../../images/Minecraft for C/modedit/add.svg";
-							detail_add_picture.tabIndex = 0;
-							detail_add_picture.onclick = function (){blank_add(detail_add_picture, option_type, option_re)};
-							detail_item.appendChild(detail_add_picture);
 						}
 						else if (appendixes.includes(":"))
 						{
@@ -687,12 +688,16 @@
 							detail_add_picture.onclick = function (){blank_add(detail_add_picture, option_type, option_re.split(":"), ":")};
 							detail_item.appendChild(detail_add_picture);
 						}
-						else if (appendixes.includes("*"))
+						else if (appendixes.includes("+"))
 						{
-							detail_input = document.createElement("textarea");
-							detail_input.tabIndex = -1;
-							detail_input.onkeydown = code;
+							detail_input = document.createElement("div");
+							detail_input.classList.add("list");
 							detail_item.appendChild(detail_input);
+							let detail_add_picture = document.createElement("img");
+							detail_add_picture.src = "../../../../images/Minecraft for C/modedit/add.svg";
+							detail_add_picture.tabIndex = 0;
+							detail_add_picture.onclick = function (){blank_add(detail_add_picture, option_type, option_re)};
+							detail_item.appendChild(detail_add_picture);
 						}
 						else
 						{
