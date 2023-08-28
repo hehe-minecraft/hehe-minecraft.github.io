@@ -181,6 +181,36 @@
 				border-radius: 3px;
 			}
 
+			#preview:empty
+			{
+				display: none;
+			}
+
+			#preview
+			{
+				width: 150px;
+				height: 150px;
+				position: relative;
+				display: inline-block;
+				transform-style: preserve-3d;
+				animation-name: preview_rotate;
+				animation-duration: 5s;
+				animation-iteration-count: infinite;
+			}
+
+			#preview img
+			{
+				position: absolute;
+				image-rendering: pixelated;
+				border: 1px solid black;
+				backface-visibility: hidden;
+			}
+
+			#preview:hover
+			{
+				animation-play-state: paused;
+			}
+
 			button
 			{
 				float: right;
@@ -232,8 +262,35 @@
 				{
 					color: #FFFFFF;
 				}
+
+				#preview img
+				{
+					border: 1px solid white;
+				}
+			}
+
+			@keyframes preview_rotate
+			{
+				0%
+				{
+					transform: none;
+				}
+				33%
+				{
+					transform: rotateX(1turn);
+				}
+				66%
+				{
+					transform: rotateX(1turn) rotateY(1turn);
+				}
+				100%
+				{
+					transform: rotateX(1turn) rotateY(2turn) rotateZ(1turn);
+				}
 			}
 		</style>
+		<script src="../../../../js/file.js"></script>
+		<script src="../../../../js/elements.js"></script>
 		<!-- Packages Required : JSZip -->
 		<script async src="https://cdn.jsdelivr.net/npm/jszip@3.7.1/dist/jszip.min.js"></script>
 		<script>
@@ -295,7 +352,6 @@
 		<script defer>
 			var mods = [];
 			var chosen_mod = "";
-			var file_reader = new FileReader();
 			function file_upload()
 			{
 				let input = document.getElementById("file-upload");
@@ -338,6 +394,7 @@
 				};
 				mods_menu.innerHTML += '<div onclick="new_mod()" tabindex="0">新建……</div>';
 				picture.src = "../../../../images/Minecraft for C/modedit/uploaded mods.svg";
+				picture.alt = "成功上传模组文件夹";
 				picture.title = "成功上传模组文件夹";
 			};
 
@@ -383,7 +440,7 @@
 				let options =
 				{
 					namespace: ["命名空间", "text?[a-z0-9_]+", "方块的命名空间，不需要再写模组名"],
-					model: ["模型", "text?[a-z0-9_]+\\.[a-z0-9_]+", "方块的模型的 id"],
+					name: ["名字", "text?[a-zA-Z0-9_.]+", "方块的译名 id"],
 					textures: ["贴图", "text+?[a-z0-9_]+\\/image\\/[a-zA-Z0-9_]+\\.(png|jpg|gif)", "数量应该与模型面数一致，并按顺序一一对应，图片均存储在“模组命名空间/image/”中"],
 					item_texture: ["物品贴图", "text-?[a-z0-9_]+\\/image\\/[a-zA-Z0-9_]+\\.(png|jpg|gif)", "方块作为物品形式的贴图，不填代表按照方块生成贴图"],
 					tick_rate: ["自主刻", "text?[1-9][0-9]*|0", "方块自主更新所间隔的游戏刻， 0 代表从不更新"],
@@ -422,6 +479,8 @@
 				let options =
 				{
 					namespace: ["命名空间", "text?[a-z0-9_]+", "物品的命名空间，不需要再写模组名"],
+					name: ["名字", "text?[a-zA-Z0-9_.]+", "物品的译名 id"],
+					texture: ["贴图", "text?[a-z0-9_]+\\/image\\/[a-zA-Z0-9_]+\\.(png|jpg|gif)", "物品的贴图"],
 					tags: ["标签", "text+?[a-z0-9_]+(\\.[a-z0-9_]+)*", "物品的标签，用来批量选择物品"],
 					attributes: ["属性", "text:?[a-z0-9_]+(\\.[a-z0-9_]+)*:.+", "物品的属性，左边是属性名，右边是值"],
 					tick_rate: ["自主刻", "text?[1-9][0-9]*|0", "物品自主更新所间隔的游戏刻， 0 代表从不更新"],
@@ -479,6 +538,7 @@
 				let options =
 				{
 					namespace: ["命名空间", "text?[a-z0-9_]+", "流体的命名空间，不需要再写模组名"],
+					name: ["名字", "text?[a-zA-Z0-9_.]+", "流体的译名 id"],
 					tags: ["标签", "text+?[a-z0-9_]+(\\.[a-z0-9_]+)*", "流体的标签，用来批量选择物品"],
 					attributes: ["属性", "text:?[a-z0-9_]+(\\.[a-z0-9_]+)*:.+", "流体的属性，左边是属性名，右边是值"],
 					tick_rate: ["自主刻", "text?[1-9][0-9]*|0", "流体自主更新所间隔的游戏刻， 0 代表从不更新"],
@@ -512,9 +572,11 @@
 				let options =
 				{
 					namespace: ["命名空间", "text?[a-z0-9_]+", "实体的命名空间，不需要再写模组名"],
+					name: ["名字", "text?[a-zA-Z0-9_.]+", "实体的译名 id"],
+					model: ["模型", "text?[a-z0-9_]+\\.[a-z0-9_]+", "实体的模型的 id"],
+					textures: ["贴图", "text+?[a-z0-9_]+\\/image\\/[a-zA-Z0-9_]+\\.(png|jpg|gif)", "数量应该与模型面数一致，并按顺序一一对应，图片均存储在“模组命名空间/image/”中"],
 					tags: ["标签", "text+?[a-z0-9_]+(\\.[a-z0-9_]+)*", "实体的标签，用来批量选择物品"],
 					attributes: ["属性", "text:?[a-z0-9_]+(\\.[a-z0-9_]+)*:.+", "实体的属性，左边是属性名，右边是值"],
-					model: ["模型", "text?[a-z0-9_]+\\.[a-z0-9_]+", "实体的模型的 id"],
 					tick_rate: ["自主刻", "text?[1-9][0-9]*|0", "实体自主更新所间隔的游戏刻， 0 代表从不更新"],
 					wall_throughable: ["能否穿墙", "text?true|false", "实体是否能够穿墙，是为 true ，否为 false"],
 					bind_tick: ["自主函数", "text*", "实体每刻都会执行的函数，寻路机制放在这里"],
@@ -567,12 +629,9 @@
 
 			function choose_mod(element)
 			{
+				// remove_children is from elements.js
 				let elements_menu = document.getElementById("elements-menu");
-				let delete_elements = Array.from(elements_menu.children).slice(1, -1); // skip thead and tfoot
-				for (let each_element of delete_elements)
-				{
-					each_element.remove();
-				};
+				remove_children(elements_menu, 1, -1); // skip thead and tfoot
 				for (each_file of mods)
 				{
 					let file_mod = each_file.name.split("/", 1)[0];
@@ -622,13 +681,15 @@
 
 			function generate_details(options)
 			{
+				// remove_children is from elements.js
 				let details = document.getElementById("details");
-				details.innerHTML = "";
+				remove_children(details);
 				for (let each_option in options)
 				{
 					let option_name = options[each_option][0];
 					let option_type = options[each_option][1].split("?", 1)[0];
 					let option_info = options[each_option][2];
+					let option_bind = options[each_option][3];
 					let option_re = options[each_option][1].slice(options[each_option][1].indexOf("?") + 1);
 					let appendixes = "";
 					if (option_type.endsWith("+"))
@@ -655,6 +716,7 @@
 						let detail_item = document.createElement("div");
 						let detail_label = document.createElement("label");
 						let detail_input;
+						let detail_add_picture;
 						detail_item.appendChild(detail_label);
 						details.appendChild(detail_item);
 						detail_label.dataset.option = each_option;
@@ -675,29 +737,24 @@
 							detail_input.tabIndex = -1;
 							detail_input.onkeydown = code;
 							detail_input.required = appendixes.includes("+");
-							detail_item.appendChild(detail_input);
 						}
 						else if (appendixes.includes(":"))
 						{
 							detail_input = document.createElement("div");
 							detail_input.classList.add("list");
-							detail_item.appendChild(detail_input);
-							let detail_add_picture = document.createElement("img");
+							detail_add_picture = document.createElement("img");
 							detail_add_picture.src = "../../../../images/Minecraft for C/modedit/add.svg";
 							detail_add_picture.tabIndex = 0;
 							detail_add_picture.onclick = function (){blank_add(detail_add_picture, option_type, option_re.split(":"), ":")};
-							detail_item.appendChild(detail_add_picture);
 						}
 						else if (appendixes.includes("+"))
 						{
 							detail_input = document.createElement("div");
 							detail_input.classList.add("list");
-							detail_item.appendChild(detail_input);
-							let detail_add_picture = document.createElement("img");
+							detail_add_picture = document.createElement("img");
 							detail_add_picture.src = "../../../../images/Minecraft for C/modedit/add.svg";
 							detail_add_picture.tabIndex = 0;
 							detail_add_picture.onclick = function (){blank_add(detail_add_picture, option_type, option_re)};
-							detail_item.appendChild(detail_add_picture);
 						}
 						else
 						{
@@ -708,7 +765,15 @@
 							{
 								detail_input.pattern = option_re;
 							};
-							detail_item.appendChild(detail_input);
+						};
+						for (each_event in option_bind)
+						{
+							detail_item.addEventListener(each_event, option_bind[each_event]);
+						};
+						detail_item.appendChild(detail_input);
+						if (appendixes.match("[+:]"))
+						{
+							detail_item.appendChild(detail_add_picture);
 						};
 					};
 				};
@@ -872,6 +937,7 @@
 				</button>
 			</div>
 			<form id="details" class="require-file"></form>
+			<div id="preview"></div>
 			<button id="details-submit">
 				<img src="../../../../images/Minecraft for C/modedit/submit.svg" alt="确认" title="确认"/>
 			</button>
