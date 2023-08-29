@@ -14,6 +14,15 @@ nav>p:not(#return)
 	margin-bottom: 0px;
 }
 
+span.color
+{
+	height: 0.8em;
+	width: 0.8em;
+	border: 1px solid #000000;
+	display: inline-block;
+	vertical-align: middle;
+}
+
 ol.catalogue, ol.catalogue ol
 {
 	list-style: none;
@@ -115,6 +124,11 @@ math:not([inline])
 	display: block math;
 }
 
+main p, main td
+{
+	text-align: justify;
+}
+
 p.definition, p.notice, p.warning
 {
 	padding: 8px;
@@ -198,12 +212,17 @@ a:visited:not(ol.catalogue a)
 	src: url("../fonts/consolas.ttf");
 }
 
-@media(prefers-color-scheme: dark)
+@media (prefers-color-scheme: dark)
 {
 	body
 	{
 		background-color: #111100;
 		color: #FFFFFF;
+	}
+	
+	span.color
+	{
+		border-color: #FFFFFF;
 	}
 
 	p.definition

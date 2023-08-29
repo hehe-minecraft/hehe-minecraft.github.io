@@ -240,6 +240,21 @@
 				margin: 1px 0 1px 0;
 			}
 
+			a
+			{
+				text-decoration: none;
+			}
+
+			a:link:not(ol.catalogue a)
+			{
+				color: #AAA560;
+			}
+
+			a:visited:not(ol.catalogue a)
+			{
+				color: #6060AA;
+			}
+
 			@media(prefers-color-scheme: dark)
 			{
 				#mods-menu>div:not(:last-of-type)
@@ -405,8 +420,8 @@
 					threads: ["线程", "text?[1-9][0-9]?|0", "模组的占用线程数"],
 					namespace: ["命名空间", "text?[a-z0-9_]+", "模组自身的命名空间，会与其他模组冲突"],
 					name: ["名字", "text?[a-zA-Z0-9_.]+", "模组的译名 id"],
-					requirement: ["前置", "text+?[a-z0-9_]+", "模组的前置，需要输入前置模组的命名空间，前置模组可以让联动单向有效"],
-					link: ["联动", "text+?[a-z0-9_]+", "模组的联动，在同时加载两个模组时生效，必须要双向联动才能让联动有效"]
+					dependency: ["前置", "text+?[a-z0-9_]+", "模组的前置，需要输入前置模组的命名空间，前置模组可以让联动单向有效"],
+					collaboration: ["联动", "text+?[a-z0-9_]+", "模组的联动，在同时加载两个模组时生效，必须要双向联动才能让联动有效"]
 				};
 				generate_details(options);
 				document.getElementById("details-submit").onclick = function ()
@@ -539,6 +554,7 @@
 				{
 					namespace: ["命名空间", "text?[a-z0-9_]+", "流体的命名空间，不需要再写模组名"],
 					name: ["名字", "text?[a-zA-Z0-9_.]+", "流体的译名 id"],
+					texture: ["贴图", "text?[a-z0-9_]+\\/image\\/[a-zA-Z0-9_]+\\.(png|jpg|gif)", "流体的贴图"],
 					tags: ["标签", "text+?[a-z0-9_]+(\\.[a-z0-9_]+)*", "流体的标签，用来批量选择物品"],
 					attributes: ["属性", "text:?[a-z0-9_]+(\\.[a-z0-9_]+)*:.+", "流体的属性，左边是属性名，右边是值"],
 					tick_rate: ["自主刻", "text?[1-9][0-9]*|0", "流体自主更新所间隔的游戏刻， 0 代表从不更新"],
@@ -578,12 +594,10 @@
 					tags: ["标签", "text+?[a-z0-9_]+(\\.[a-z0-9_]+)*", "实体的标签，用来批量选择物品"],
 					attributes: ["属性", "text:?[a-z0-9_]+(\\.[a-z0-9_]+)*:.+", "实体的属性，左边是属性名，右边是值"],
 					tick_rate: ["自主刻", "text?[1-9][0-9]*|0", "实体自主更新所间隔的游戏刻， 0 代表从不更新"],
-					wall_throughable: ["能否穿墙", "text?true|false", "实体是否能够穿墙，是为 true ，否为 false"],
+					gui: ["GUI", "text-?[a-z0-9_]+\\.[a-z0-9_]+", "方块的 GUI ，在使用时打开，如果有使用函数，除非返回 continue ，否则该值无效"],
+					wall_pass: ["能否穿墙", "text?true|false", "实体是否能够穿墙，是为 true ，否为 false"],
 					bind_tick: ["自主函数", "text*", "实体每刻都会执行的函数，寻路机制放在这里"],
 					bind_plan: ["计划函数", "text*", "实体计划更新到期时执行的函数"],
-					bind_update: ["更新函数", "text*", "实体出现更新的时候执行的函数"],
-					bind_break: ["破坏函数", "text*", "实体被用桶收起的时候执行的函数"],
-					bind_place: ["放置函数", "text*", "实体被用桶放置的时候执行的函数"],
 					bind_summon: ["召唤函数", "text*", "实体被召唤时执行的函数"],
 					bind_killed: ["杀死函数", "text*", "实体被杀死时执行的函数"],
 					bind_near: ["靠近函数", "text*", "实体所在的区块被加载时执行的函数，你不可以停止正常加载流程"],
@@ -771,7 +785,7 @@
 							detail_item.addEventListener(each_event, option_bind[each_event]);
 						};
 						detail_item.appendChild(detail_input);
-						if (appendixes.match("[+:]"))
+						if (appendixes.match("^[+:]$"))
 						{
 							detail_item.appendChild(detail_add_picture);
 						};
@@ -896,8 +910,19 @@
 			<input id="file-upload" type="file" webkitdirectory onchange="file_upload()" style="width: 0px; height: 0px; opacity: 0;;" tabindex="1"/>
 		</form>
 		<h1>
-			Wiki - 模组编辑器
+			<dfn title="没编辑完别点！返回上一页： Minecraft for C (coder)">
+				<a href="../index.html">
+					Wiki - 模组编辑器
+				</a>
+			</dfn>
 		</h1>
+		<p>
+			在开始之前，建议先看一看
+			<a href="help.html">
+				帮助文档
+			</a>
+			吧，里面有对界面的介绍。
+		</p>
 		<main>
 			<div id="mods-menu" class="require-file menu"></div>
 			<div id="elements-menu" class="require-file menu">
