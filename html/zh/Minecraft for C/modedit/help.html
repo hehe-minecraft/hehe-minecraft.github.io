@@ -8,6 +8,11 @@
 			Wiki - 模组编辑器教程
 		</title>
 		<style>
+			p, td
+			{
+				text-align: justify;
+			}
+
 			img
 			{
 				image-rendering: pixelated;
@@ -72,6 +77,16 @@
 			{
 				padding: 3px;
 				text-align: center;
+			}
+
+			@media (max-width: 600px)
+			{
+				#description--table th:first-child,
+				#description--table td:nth-child(3) code
+				{
+					white-space: initial;
+					overflow-wrap: anywhere;
+				}
 			}
 		</style>
 	</head>
@@ -522,7 +537,7 @@
 						方块是 minecraft 最重要的一类元素，没了方块， minecraft 就缺少了灵魂，你可以这样来创建一个方块。
 					</p>
 					<p>
-						在你创建好自己的模组之后，你就可以点击元素选择区域最底部的“新建”按钮，就可以在下方再弹出一个菜单，选择“方块”，就可以进入创建方块的界面
+						在你创建好自己的模组之后，你就可以点击元素选择区域最底部的“新建”按钮，就可以在下方再弹出一个菜单，选择“方块”，就可以进入创建方块的界面。
 					</p>
 					<p>
 						<a href="#description-namespace">

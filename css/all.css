@@ -11,7 +11,7 @@ nav>p:not(#return)
 	color: #FFFFFF;
 	font-weight: bold;
 	text-align: center;
-	margin-bottom: 0px;
+	margin: 0;
 }
 
 span.color
@@ -31,8 +31,8 @@ ol.catalogue, ol.catalogue ol
 
 ol.catalogue
 {
-	margin-top: 0px;
-	padding: 5px 10px 5px 10px;
+	margin: 0;
+	padding: 5px 10px 10px 10px;
 	background-color: #EEEEEE;
 }
 
@@ -124,11 +124,6 @@ math:not([inline])
 	display: block math;
 }
 
-main p, main td
-{
-	text-align: justify;
-}
-
 p.definition, p.notice, p.warning
 {
 	padding: 8px;
@@ -175,34 +170,43 @@ a:visited:not(ol.catalogue a)
 	color: #6060AA;
 }
 
+@media (min-width: 500px ) and ( max-width: 1000px)
+{
+	nav>ol
+	{
+		columns: 15em 3;
+	}
+}
+
 @media (min-width: 1000px)
 {
-	nav
+	body
 	{
-		width: 28%;
-		height: 100vh;
-		float: left;
-		position: sticky;
-		top: 0px;
+		display: grid;
+		grid-template-columns: 30% 70%;
+		grid-template-areas: 
+		"heading heading"
+		"nav main";
 	}
 
-	ol.catalogue
+	h1 
 	{
-		max-height: calc(100% - 7em);
+		grid-area: heading;
+	}
+
+	nav
+	{
 		overflow-y: auto;
+		grid-area: nav;
+		height: calc(100vh - 30px);
+		position: sticky;
+		top: 15px;
 	}
 
 	main
 	{
-		width: 69%;
-		float: right;
-	}
-
-	body::after
-	{
-		content: '';
-		display: block;
-		clear: both;
+		grid-area: main;
+		margin: 0 0 0 15px;
 	}
 }
 
@@ -247,8 +251,6 @@ a:visited:not(ol.catalogue a)
 
 	ol.catalogue
 	{
-		margin-top: 0px;
-		padding: 5px 10px 5px 10px;
 		background-color: #222222;
 	}
 

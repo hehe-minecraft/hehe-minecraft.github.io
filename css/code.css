@@ -14,6 +14,7 @@
 	margin-bottom: 0;
 	position: relative;
 	border-radius: 10px;
+	text-align: initial;
 }
 
 .input::before
@@ -104,27 +105,25 @@ span.keyword
 
 @media (min-width: 700px)
 {
-	.input, .output
+	div.io
 	{
-		width: 45%;
+		display: grid;
+		grid-template-columns: 50% 50%;
+		align-items: start;
+		grid-template-areas: 
+		"input output";
 	}
 
 	.input
 	{
-		float: left;
+		grid-area: input;
+		margin-right: 5px;
 	}
 
-	
 	.output
 	{
-		float: right;
-	}
-
-	div.io::after
-	{
-		content: '';
-		display: block;
-		clear: both;
+		grid-area: output;
+		margin-left: 5px;
 	}
 }
 
