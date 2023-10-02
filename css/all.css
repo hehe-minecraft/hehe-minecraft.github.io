@@ -114,6 +114,33 @@ details
 	display: inline-block;
 }
 
+pre
+{
+	border-left: 3px solid #EE858C;
+	padding: 5px;
+	background-color: rgba(128, 128, 128, 0.1);
+	font-family: "Cascadia Code", "Consolas", "Courier New", monospace;;
+	font-size: small;
+	tab-size: 4;
+	overflow-x: auto;
+	display: grid;
+	grid-template-columns: auto 1fr;
+}
+
+pre::-webkit-scrollbar
+{
+	display: none;
+}
+
+pre>span.line-number
+{
+	padding-right: 5px;
+	text-align: right;
+	color: #AAAAAA;
+	font-size: x-small;
+	user-select: none;
+}
+
 code
 {
 	font-family: "Cascadia Mono", "Consolas", "Courier New", monospace;
@@ -170,7 +197,12 @@ a:visited:not(ol.catalogue a)
 	color: #6060AA;
 }
 
-@media (min-width: 500px ) and ( max-width: 1000px)
+main>hr
+{
+	margin: 2em 5px 2em 5px;
+}
+
+@media (min-width: 500px) and (max-width: 1000px)
 {
 	nav>ol
 	{

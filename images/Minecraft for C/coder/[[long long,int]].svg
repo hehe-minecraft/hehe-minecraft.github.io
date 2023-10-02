@@ -17,7 +17,7 @@
 		<text y="16.5" x="43">int</text>
 		<text y="26.5" x="43">int</text>
 		<text y="36.5" x="43">int</text>
-		<text y="7" x="10">unordered_queue (reversed)</text>
+		<text y="7" x="10">priority_queue (reversed)</text>
 		<text y="16.5" x="63">queue_item</text>
 		<text y="26.5" x="63">queue_item</text>
 		<text y="36.5" x="63">queue_item</text>
