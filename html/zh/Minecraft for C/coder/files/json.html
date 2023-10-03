@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/all.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/code.css"/>
+		<script src="../../../../../js/code.js" defer async></script>
+		<title>
+			Wiki - json.cpp
+		</title>
+	</head>
+	<body>
+		<h1>
+			Wiki - json.cpp
+		</h1>
+		<nav>
+			<p>
+				方法列表
+			</p>
+			<ol class="catalogue">
+				<li>
+					<a href="#dump">
+						dump
+					</a>
+				</li>
+				<li>
+					<a href="#dump_string">
+						dump_string
+					</a>
+				</li>
+				<li>
+					<a href="#Json">
+						Json
+					</a>
+					<ol>
+						<li>
+							<a href="#Json.operator[]">
+								operator[]
+							</a>
+						</li>
+						<li>
+							<a href="#Json.operator=">
+								operator=
+							</a>
+						</li>
+						<li>
+							<a href="#Json.operator bool">
+								operator bool
+							</a>
+						</li>
+						<li>
+							<a href="#Json.operator int">
+								operator int
+							</a>
+						</li>
+						<li>
+							<a href="#Json.operator double">
+								operator double
+							</a>
+						</li>
+						<li>
+							<a href="#Json.operator std::wstring">
+								operator std::wstring
+							</a>
+						</li>
+						<li>
+							<a href="#Json.operator JsonList">
+								operator JsonList
+							</a>
+						</li>
+						<li>
+							<a href="#Json.operator JsonMap">
+								operator JsonMap
+							</a>
+						</li>
+					</ol>
+				</li>
+				<li>
+					<a href="#JsonList">
+						JsonList
+					</a>
+					<ol>
+						<li>
+							<a href="#JsonList.operator[]">
+								operator[]
+							</a>
+						</li>
+						<li>
+							<a href="#JsonList.operator bool">
+								operator bool
+							</a>
+						</li>
+						<li>
+							<a href="#JsonList.append">
+								append
+							</a>
+						</li>
+						<li>
+							<a href="#JsonList.extend">
+								extend
+							</a>
+						</li>
+						<li>
+							<a href="#JsonList.get">
+								get
+							</a>
+						</li>
+						<li>
+							<a href="#JsonList.insert">
+								insert
+							</a>
+						</li>
+						<li>
+							<a href="#JsonList.length">
+								length
+							</a>
+						</li>
+					</ol>
+				</li>
+				<li>
+					<a href="#JsonMap">
+						JsonMap
+					</a>
+					<ol>
+						<li>
+							<a href="#JsonMap.operator[]">
+								operator[]
+							</a>
+						</li>
+						<li>
+							<a href="#JsonMap.operator bool">
+								operator bool
+							</a>
+						</li>
+						<li>
+							<a href="#JsonMap.append">
+								append
+							</a>
+						</li>
+						<li>
+							<a href="#JsonMap.size">
+								size
+							</a>
+						</li>
+					</ol>
+				</li>
+				<li>
+					<a href="#json_parser">
+						json_parser
+					</a>
+					<ol>
+						<li>
+							<a href="#json_parser-parse">
+								parse
+							</a>
+						</li>
+						<li>
+							<a href="#json_parser-parse_keyword">
+								parse_keyword
+							</a>
+						</li>
+						<li>
+							<a href="#json_parser-parse_list">
+								parse_list
+							</a>
+						</li>
+						<li>
+							<a href="#json_parser-parse_map">
+								parse_map
+							</a>
+						</li>
+						<li>
+							<a href="#json_parser-parse_number">
+								parse_number
+							</a>
+						</li>
+						<li>
+							<a href="#json_parser-parse_string">
+								parse_string
+							</a>
+						</li>
+					</ol>
+				</li>
+				<li>
+					<a href="#parse">
+						parse
+					</a>
+				</li>
+				<li>
+					<a href="#parse_string">
+						parse_string
+					</a>
+				</li>
+			</ol>
+			<p id="return">
+				<a href="../index.html">
+					返回上一页： Minecraft for C (coder)
+				</a>
+			</p>
+		</nav>
+		<main>
+			<section>
+				<h2 id="Json">
+					Json
+				</h2>
+				<p>
+					JSON 存储容器。
+				</p>
+				<p>
+					如果在构造函数中什么都不输入，会生成存储 null 的对象。
+				</p>
+				<div class="io">
+					<div class="input">
+						<p></p>
+						<p>
+							<code>
+								<span class="type">
+									const
+									<a href="#Json">
+										Json&
+									</a>
+								</span>
+								item
+							</code>
+							为你要拷贝的
+							<a href="#Json">
+								Json
+							</a>
+							对象。
+						</p>
+						<p>
+							<code>
+								<span class="type">
+									<a href="#Json">
+										Json&&
+									</a>
+								</span>
+								item
+							</code>
+							为你要转移的
+							<a href="#Json">
+								Json
+							</a>
+							对象。
+						</p>
+						<p>
+							<code>
+								<span class="type">
+									const bool
+								</span>
+								value
+							</code>
+							为应当存储的布尔值。
+						</p>
+						<p>
+							<code>
+								<span class="type">
+									const int
+								</span>
+								value
+							</code>
+							为应当存储的整数值。
+						</p>
+						<p>
+							<code>
+								<span class="type">
+									const double
+								</span>
+								value
+							</code>
+							为应当存储的浮点数值。
+						</p>
+						<p>
+							<code>
+								<span class="type">
+									const std::wstring
+								</span>
+								value
+							</code>
+							为应当存储的字符串。
+						</p>
+						<p>
+							<code>
+								<span class="type">
+									const
+									<a href="#JsonList">
+										JsonList
+									</a>
+								</span>
+								value
+							</code>
+							为应当存储的列表。
+						</p>
+						<p>
+							<code>
+								<span class="type">
+									const
+									<a href="#JsonMap">
+										JsonMap
+									</a>
+								</span>
+								value
+							</code>
+							为应当存储的字典。
+						</p>
+					</div>
+					<p class="output">
+						<code>
+							<span class="keyword">
+								protected:
+							</span>
+						</code>
+						<br>
+						<code>
+							<span class="type">
+								<a href="constants.html#choices-json">
+									choices::json
+								</a>
+							</span>
+							type
+						</code>
+						即存储的类型。
+						<br>
+						<code>
+							<span class="type">
+								void*
+							</span>
+							content
+						</code>
+						即存储的内容指针。
+					</p>
+				</div>
+				<section>
+					<h3 id="Json.operator[]">
+						operator[]
+					</h3>
+					<p>
+						获取字典或列表的内容。
+					</p>
+					<p class="notice">
+						如果存储的是字典需传入字符串，列表需传入自然数，如果输入错误，会抛出
+						<a href="constants.html#errors-JsonTypeError">
+							JsonTypeError
+						</a>
+						错误。
+					</p>
+					<p>
+						你可以输入自然数（从左往右索引）或负数（从右往左索引）。
+					</p>
+					<div class="io">
+						<div class="input">
+							<p>
+								<code>
+									<span class="type">
+										const int
+									</span>
+									index
+								</code>
+								为列表的索引。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const std::wstring&
+									</span>
+									index
+								</code>
+								为字典的索引。
+							</p>
+						</div>
+						<p class="output">
+							<code>
+								<span class="type">
+									<a href="#Json">
+										Json
+									</a>
+								</span>
+							</code>
+							为字典或列表索引处的值。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="Json.operator=">
+						operator=
+					</h3>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									<a href="#Json">
+										Json
+									</a>
+								</span>
+								item
+							</code>
+							为要改成的
+							<a href="#Json">
+								Json
+							</a>
+							对象。
+						</p>
+						<p class="output"></p>
+					</div>
+				</section>
+				<section>
+					<h3 id="Json.operator bool">
+						operator bool
+					</h3>
+					<p>
+						获取存储的布尔值。
+					</p>
+					<p>
+						隐式转换仅支持存储的布尔值。
+						<br/>
+						显示转换包含隐式转换的内容，并将非 0 的小数和整数、非空的字符串、非空列表和非空字典转化为 true ，将为 0 的小数和整数、空字符串、空列表、空字典和 null 转化为 false 。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output">
+							<code>
+								<span class="type">
+									bool
+								</span>
+							</code>
+							为存储的布尔值。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="Json.operator int">
+						operator int
+					</h3>
+					<p>
+						获取存储的整数。
+					</p>
+					<p>
+						隐式转换仅支持存储的整数。
+						<br/>
+						显示转换包含隐式转换的内容，并将布尔值的 true 和 false 转化为 1 和 0 ， null 转化为 0 ，小数和字符串转化为整数。
+					</p>
+					<p class="notice">
+						如果无法转换，会抛出
+						<a href="constants.html#errors-JsonTypeError">
+							JsonTypeError
+						</a>
+						错误。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output">
+							<code>
+								<span class="type">
+									int
+								</span>
+							</code>
+							为存储的整数。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="Json.operator double">
+						operator double
+					</h3>
+					<p>
+						获取存储的小数。
+					</p>
+					<p>
+						隐式转换仅支持存储的小数。
+						<br/>
+						显示转换包含隐式转换的内容，并将布尔值的 true 和 false 转化为 1.0 和 0.0 ， null 转化为 0.0 ，整数和字符串转化为小数。
+					</p>
+					<p class="notice">
+						如果无法转换，会抛出
+						<a href="constants.html#errors-JsonTypeError">
+							JsonTypeError
+						</a>
+						错误。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output">
+							<code>
+								<span class="type">
+									double
+								</span>
+							</code>
+							为存储的小数。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="Json.operator std::wstring">
+						operator std::wstring
+					</h3>
+					<p>
+						获取存储的字符串。
+					</p>
+					<p>
+						隐式转换仅支持存储的字符串。
+						<br/>
+						显示转换包含隐式转换的内容，并将整数、小数、布尔值、 null 都转化为字符串。
+					</p>
+					<p class="notice">
+						如果无法转换，会抛出
+						<a href="constants.html#errors-JsonTypeError">
+							JsonTypeError
+						</a>
+						错误。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output">
+							<code>
+								<span class="type">
+									std::wstring
+								</span>
+							</code>
+							为存储的字符串。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="Json.operator JsonList">
+						operator
+						<a href="#JsonList">
+							JsonList
+						</a>
+					</h3>
+					<p>
+						获取存储的列表。
+					</p>
+					<p>
+						仅支持直接读取。
+					</p>
+					<p class="notice">
+						如果无法转换，会抛出
+						<a href="constants.html#errors-JsonTypeError">
+							JsonTypeError
+						</a>
+						错误。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output">
+							<code>
+								<span class="type">
+									<a href="#JsonList">
+										JsonList
+									</a>
+								</span>
+							</code>
+							为存储的列表。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="Json.operator JsonList">
+						operator
+						<a href="#JsonMap">
+							JsonMap
+						</a>
+					</h3>
+					<p>
+						获取存储的字典。
+					</p>
+					<p>
+						仅支持直接读取。
+					</p>
+					<p class="notice">
+						如果无法转换，会抛出
+						<a href="constants.html#errors-JsonTypeError">
+							JsonTypeError
+						</a>
+						错误。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output">
+							<code>
+								<span class="type">
+									<a href="#JsonMap">
+										JsonMap
+									</a>
+								</span>
+							</code>
+							为存储的字典。
+						</p>
+					</div>
+				</section>
+			</section>
+			<section>
+				<h2 id="JsonList">
+					JsonList
+				</h2>
+				<p>
+					JSON 列表。
+				</p>
+				<div class="io">
+					<div class="input">
+						<p></p>
+						<p>
+							<code>
+								<span class="type">
+									const
+									<a href="#JsonList">
+										JsonList&
+									</a>
+								</span>
+								item
+							</code>
+							为要拷贝的列表。
+						</p>
+					</div>
+					<p class="output">
+						<code>
+							<span class="keyword">
+								protected:
+							</span>
+						</code>
+						<br/>
+						<code>
+							<span class="type">
+								std::vector&lt;
+								<a href="#Json">
+									Json
+								</a>
+								&gt;
+							</span>
+							content
+						</code>
+						为存储的内容。
+					</p>
+				</div>
+				<section>
+					<h3 id="JsonList.operator[]">
+						operator[]
+					</h3>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									const int
+								</span>
+								index
+							</code>
+							为列表的索引。
+						</p>
+						<p class="output">
+							<code>
+								<span class="type">
+									<a href="#Json">
+										Json
+									</a>
+								</span>
+							</code>
+							为列表索引处的值。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="JsonList.operator bool">
+						operator bool
+					</h3>
+					<p>
+						检测列表是否为空。可以隐式转换。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output">
+							<code>
+								<span class="type">
+									bool
+								</span>
+							</code>
+							为列表是否为空。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="JsonList.append">
+						append
+					</h3>
+					<p>
+						向列表最后添加项目。只增加一个项目。
+					</p>
+					<div class="io">
+						<div class="input">
+							<p>
+								<code>
+									<span class="type">
+										const bool
+									</span>
+									item
+								</code>
+								为要添加的布尔值。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const int
+									</span>
+									item
+								</code>
+								为要添加的整数。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const double
+									</span>
+									item
+								</code>
+								为要添加的小数。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const std::wstring&
+									</span>
+									item
+								</code>
+								为要添加的字符串。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const
+										<a href="#JsonList">
+											JsonList&
+										</a>
+									</span>
+									item
+								</code>
+								为要添加的列表。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const
+										<a href="#JsonMap">
+											JsonMap&
+										</a>
+									</span>
+									item
+								</code>
+								为要添加的字典。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const
+										<a href="#Json">
+											Json&
+										</a>
+									</span>
+									item
+								</code>
+								为要添加的
+								<a href="#Json">
+									Json
+								</a>
+								对象。
+							</p>
+						</div>
+						<p class="output"></p>
+					</div>
+				</section>
+				<section>
+					<h3 id="JsonList.extend">
+						extend
+					</h3>
+					<p>
+						扩展列表。可增加多个项目。
+					</p>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									const
+									<a href="#JsonList">
+										JsonList&
+									</a>
+								</span>
+								item
+							</code>
+							为要延伸的列表。
+						</p>
+						<p class="output">
+							<code>
+								<span class="type">
+									unsigned int
+								</span>
+							</code>
+							为列表延伸后的长度。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="JsonList.get">
+						get
+					</h3>
+					<p>
+						与
+						<a href="#JsonList.operator[]">
+							operator[]
+						</a>
+						完全一样。在这里不显示输入输出。
+					</p>
+				</section>
+				<section>
+					<h3 id="JsonList.insert">
+						insert
+					</h3>
+					<p>
+						向列表中间添加项目。只增加一个项目。
+					</p>
+					<p>
+						你可以输入自然数（从左往右索引）或负数（从右往左索引）。
+					</p>
+					<div class="io">
+						<div class="input">
+							<p>
+								<code>
+									<span class="type">
+										const bool
+									</span>
+									item
+								</code>
+								为要插入的布尔值。
+								<br/>
+								<code>
+									<span class="type">
+										const int
+									</span>
+									index
+								</code>
+								为插入的索引。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const int
+									</span>
+									item
+								</code>
+								为要插入的整数。
+								<br/>
+								<code>
+									<span class="type">
+										const int
+									</span>
+									index
+								</code>
+								为插入的索引。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const double
+									</span>
+									item
+								</code>
+								为要插入的小数。
+								<br/>
+								<code>
+									<span class="type">
+										const int
+									</span>
+									index
+								</code>
+								为插入的索引。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const std::wstring&
+									</span>
+									item
+								</code>
+								为要插入的字符串。
+								<br/>
+								<code>
+									<span class="type">
+										const int
+									</span>
+									index
+								</code>
+								为插入的索引。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const
+										<a href="#JsonList">
+											JsonList&
+										</a>
+									</span>
+									item
+								</code>
+								为要插入的列表。
+								<br/>
+								<code>
+									<span class="type">
+										const int
+									</span>
+									index
+								</code>
+								为插入的索引。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const
+										<a href="#JsonMap">
+											JsonMap&
+										</a>
+									</span>
+									item
+								</code>
+								为要插入的字典。
+								<br/>
+								<code>
+									<span class="type">
+										const int
+									</span>
+									index
+								</code>
+								为插入的索引。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const
+										<a href="#Json">
+											Json&
+										</a>
+									</span>
+									item
+								</code>
+								为要插入的
+								<a href="#Json">
+									Json
+								</a>
+								对象。
+								<br/>
+								<code>
+									<span class="type">
+										const int
+									</span>
+									index
+								</code>
+								为插入的索引。
+							</p>
+						</div>
+						<p class="output">
+							<code>
+								<span class="type">
+									unsigned int
+								</span>
+							</code>
+							为列表扩大后的长度。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="JsonList.extend">
+						extend
+					</h3>
+					<p>
+						扩展列表。可增加多个项目。
+					</p>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									const
+									<a href="#JsonList">
+										JsonList&
+									</a>
+								</span>
+								item
+							</code>
+							为要延伸的列表。
+						</p>
+						<p class="output">
+							<code>
+								<span class="type">
+									unsigned int
+								</span>
+							</code>
+							为列表延伸后的长度。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="JsonList.length">
+						length
+					</h3>
+					<p>
+						获取列表的长度。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output">
+							<code>
+								<span class="type">
+									unsigned int
+								</span>
+							</code>
+							为列表的长度。
+						</p>
+					</div>
+				</section>
+			</section>
+			<section>
+				<h2 id="JsonMap">
+					JsonMap
+				</h2>
+				<p>
+					JSON 字典。
+				</p>
+				<div class="io">
+					<div class="input">
+						<p></p>
+						<p>
+							<code>
+								<span class="type">
+									const
+									<a href="#JsonMap">
+										JsonMap&
+									</a>
+								</span>
+								item
+							</code>
+							为要拷贝的字典。
+						</p>
+					</div>
+					<p class="output">
+						<code>
+							<span class="keyword">
+								protected:
+							</span>
+						</code>
+						<br/>
+						<code>
+							<span class="type">
+								std::unordered_map&lt;std::string,
+								<a href="#Json">
+									Json
+								</a>
+								&gt;
+							</span>
+							content
+						</code>
+						为存储的内容。
+					</p>
+				</div>
+				<section>
+					<h3 id="JsonMap.operator[]">
+						operator[]
+					</h3>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									const std::wstring&
+								</span>
+								index
+							</code>
+							为字典的索引。
+						</p>
+						<p class="output">
+							<code>
+								<span class="type">
+									<a href="#Json">
+										Json
+									</a>
+								</span>
+							</code>
+							为字典索引处的值。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="JsonMap.operator bool">
+						operator bool
+					</h3>
+					<p>
+						检测字典是否为空。可以隐式转换。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output">
+							<code>
+								<span class="type">
+									bool
+								</span>
+							</code>
+							为字典是否为空。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="JsonMap.append">
+						append
+					</h3>
+					<p>
+						向字典添加项目或扩展列表。你可以输入键和值增加一个项目，或者输入字典来增加多个项目。
+					</p>
+					<div class="io">
+						<div class="input">
+							<p>
+								<code>
+									<span class="type">
+										const std::wstring&
+									</span>
+									key
+								</code>
+								为添加的键。
+								<br/>
+								<code>
+									<span class="type">
+										const bool
+									</span>
+									value
+								</code>
+								为要添加的布尔值。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const std::wstring&
+									</span>
+									key
+								</code>
+								为添加的键。
+								<br/>
+								<code>
+									<span class="type">
+										const int
+									</span>
+									value
+								</code>
+								为要添加的整数。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const std::wstring&
+									</span>
+									key
+								</code>
+								为添加的键。
+								<br/>
+								<code>
+									<span class="type">
+										const double
+									</span>
+									value
+								</code>
+								为要添加的小数。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const std::wstring&
+									</span>
+									key
+								</code>
+								为添加的键。
+								<br/>
+								<code>
+									<span class="type">
+										const std::wstring&
+									</span>
+									value
+								</code>
+								为要添加的字符串。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const std::wstring&
+									</span>
+									key
+								</code>
+								为添加的键。
+								<br/>
+								<code>
+									<span class="type">
+										const
+										<a href="#JsonList">
+											JsonList&
+										</a>
+									</span>
+									value
+								</code>
+								为要添加的列表。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const std::wstring&
+									</span>
+									key
+								</code>
+								为添加的键。
+								<br/>
+								<code>
+									<span class="type">
+										const
+										<a href="#JsonMap">
+											JsonMap&
+										</a>
+									</span>
+									value
+								</code>
+								为要添加的字典。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const std::wstring&
+									</span>
+									key
+								</code>
+								为添加的键。
+								<br/>
+								<code>
+									<span class="type">
+										const
+										<a href="#Json">
+											Json&
+										</a>
+									</span>
+									value
+								</code>
+								为要添加的
+								<a href="#Json">
+									Json
+								</a>
+								对象。
+							</p>
+							<p>
+								<code>
+									<span class="type">
+										const
+										<a href="#JsonMap">
+											JsonMap&
+										</a>
+									</span>
+									source
+								</code>
+								为要扩展的字典。
+							</p>
+						</div>
+						<div class="output">
+							<p></p>
+							<p></p>
+							<p></p>
+							<p></p>
+							<p></p>
+							<p></p>
+							<p></p>
+							<p>
+								<code>
+									<span class="type">
+										unsigned int
+									</span>
+								</code>
+								为扩展后字典的长度。
+							</p>
+						</div>
+					</div>
+				</section>
+				<section>
+					<h3 id="JsonMap.size">
+						size
+					</h3>
+					<p>
+						获取字典的大小。
+					</p>
+					<div class="io">
+						<p class="input"></p>
+						<p class="output">
+							<code>
+								<span class="type">
+									unsigned int
+								</span>
+							</code>
+							为列表的大小。
+						</p>
+					</div>
+				</section>
+			</section>
+			<section>
+				<h2 id="json_parser">
+					json_parser
+				</h2>
+				<p>
+					内部 JSON 解释器存储位置。不建议调用其中的函数。
+				</p>
+				<p class="notice">
+					可能抛出的错误请参见
+					<a href="#explanation-parse">
+						代码解释 - 读取
+					</a>
+					。
+				</p>
+				<section>
+					<h3 id="json_parser-parse">
+						parse
+					</h3>
+					<p>
+						从字符串的特定索引处开始提取任意 JSON 对象，结束点不一定是字符串最后。
+					</p>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									std::wstring&
+								</span>
+								string
+							</code>
+							为需要读取的字符串。
+							<br/>
+							<code>
+								<span class="type">
+									unsigned int&
+								</span>
+								iter
+							</code>
+							为读取 JSON 的开始索引。这个变量会在函数中更改。
+						</p>
+						<p class="output">
+							<code>
+								<span class="type">
+									<a href="#Json">
+										Json
+									</a>
+								</span>
+							</code>
+							为读取完成的
+							<a href="#Json">
+								Json
+							</a>
+							对象。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="json_parser-parse_keyword">
+						parse_keyword
+					</h3>
+					<p>
+						从字符串的特定索引处开始提取 JSON 关键字（ true 、 false 、 null ），结束点不一定是字符串最后。
+					</p>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									std::wstring&
+								</span>
+								string
+							</code>
+							为需要读取的字符串。
+							<br/>
+							<code>
+								<span class="type">
+									unsigned int&
+								</span>
+								iter
+							</code>
+							为读取 JSON 的开始索引。这个变量会在函数中更改。
+						</p>
+						<p class="output">
+							<code>
+								<span class="type">
+									<a href="#Json">
+										Json
+									</a>
+								</span>
+							</code>
+							为读取完成的
+							<a href="#Json">
+								Json
+							</a>
+							对象。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="json_parser-parse_list">
+						parse_list
+					</h3>
+					<p>
+						从字符串的特定索引处开始提取 JSON 列表，结束点不一定是字符串最后。
+					</p>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									std::wstring&
+								</span>
+								string
+							</code>
+							为需要读取的字符串。
+							<br/>
+							<code>
+								<span class="type">
+									unsigned int&
+								</span>
+								iter
+							</code>
+							为读取 JSON 的开始索引。这个变量会在函数中更改。
+						</p>
+						<p class="output">
+							<code>
+								<span class="type">
+									<a href="#Json">
+										Json
+									</a>
+								</span>
+							</code>
+							为读取完成的
+							<a href="#Json">
+								Json
+							</a>
+							对象。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="json_parser-parse_map">
+						parse_map
+					</h3>
+					<p>
+						从字符串的特定索引处开始提取 JSON 字典，结束点不一定是字符串最后。
+					</p>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									std::wstring&
+								</span>
+								string
+							</code>
+							为需要读取的字符串。
+							<br/>
+							<code>
+								<span class="type">
+									unsigned int&
+								</span>
+								iter
+							</code>
+							为读取 JSON 的开始索引。这个变量会在函数中更改。
+						</p>
+						<p class="output">
+							<code>
+								<span class="type">
+									<a href="#Json">
+										Json
+									</a>
+								</span>
+							</code>
+							为读取完成的
+							<a href="#Json">
+								Json
+							</a>
+							对象。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="json_parser-parse_number">
+						parse_number
+					</h3>
+					<p>
+						从字符串的特定索引处开始提取 JSON 数字（整数和小数），结束点不一定是字符串最后。
+					</p>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									std::wstring&
+								</span>
+								string
+							</code>
+							为需要读取的字符串。
+							<br/>
+							<code>
+								<span class="type">
+									unsigned int&
+								</span>
+								iter
+							</code>
+							为读取 JSON 的开始索引。这个变量会在函数中更改。
+						</p>
+						<p class="output">
+							<code>
+								<span class="type">
+									<a href="#Json">
+										Json
+									</a>
+								</span>
+							</code>
+							为读取完成的
+							<a href="#Json">
+								Json
+							</a>
+							对象。
+						</p>
+					</div>
+				</section>
+				<section>
+					<h3 id="json_parser-parse_string">
+						parse_string
+					</h3>
+					<p>
+						从字符串的特定索引处开始提取 JSON 字符串，结束点不一定是字符串最后。
+					</p>
+					<div class="io">
+						<p class="input">
+							<code>
+								<span class="type">
+									std::wstring&
+								</span>
+								string
+							</code>
+							为需要读取的字符串。
+							<br/>
+							<code>
+								<span class="type">
+									unsigned int&
+								</span>
+								iter
+							</code>
+							为读取 JSON 的开始索引。这个变量会在函数中更改。
+						</p>
+						<p class="output">
+							<code>
+								<span class="type">
+									<a href="#Json">
+										Json
+									</a>
+								</span>
+							</code>
+							为读取完成的
+							<a href="#Json">
+								Json
+							</a>
+							对象。
+						</p>
+					</div>
+				</section>
+			</section>
+			<section>
+				<h2 id="parse">
+					parse
+				</h2>
+				<p>
+					从文件中读取 JSON 。
+				</p>
+				<div class="io">
+					<p class="input">
+						<code>
+							<span class="type">
+								const std::wstring
+							</span>
+							string
+						</code>
+						为 JSON 文件名。
+					</p>
+					<p class="output">
+						<code>
+							<span class="type">
+								<a href="#Json">
+									Json
+								</a>
+							</span>
+						</code>
+						为读取完成的
+						<a href="#Json">
+							Json
+						</a>
+						对象。
+					</p>
+				</div>
+			</section>
+			<section>
+				<h2 id="parse">
+					parse_string
+				</h2>
+				<p>
+					从字符串中读取 JSON 。
+				</p>
+				<div class="io">
+					<p class="input">
+						<code>
+							<span class="type">
+								std::wstring
+							</span>
+							string
+						</code>
+						为读取源字符串。
+					</p>
+					<p class="output">
+						<code>
+							<span class="type">
+								<a href="#Json">
+									Json
+								</a>
+							</span>
+						</code>
+						为读取完成的
+						<a href="#Json">
+							Json
+						</a>
+						对象。
+					</p>
+				</div>
+			</section>
+		</main>
+	</body>
+</html>

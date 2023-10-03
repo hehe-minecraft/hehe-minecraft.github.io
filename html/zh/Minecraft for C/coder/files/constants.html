@@ -33,6 +33,11 @@
 								state
 							</a>
 						</li>
+						<li>
+							<a href="#choices-json">
+								json
+							</a>
+						</li>
 					</ol>
 				</li>
 				<li>
@@ -63,6 +68,46 @@
 							</a>
 						</li>
 						<li>
+							<a href="#errors-FileError">
+								FileError
+							</a>
+						</li>
+						<li>
+							<a href="#errors-FileNotFoundError">
+								FileNotFoundError
+							</a>
+						</li>
+						<li>
+							<a href="#errors-IndexError">
+								IndexError
+							</a>
+						</li>
+						<li>
+							<a href="#errors-JsonBackSlashError">
+								JsonBackSlashError
+							</a>
+						</li>
+						<li>
+							<a href="#errors-JsonEOFError">
+								JsonEOFError
+							</a>
+						</li>
+						<li>
+							<a href="#errors-JsonError">
+								JsonError
+							</a>
+						</li>
+						<li>
+							<a href="#errors-JsonTypeError">
+								JsonTypeError
+							</a>
+						</li>
+						<li>
+							<a href="#errors-JsonSyntaxError">
+								JsonSyntaxError
+							</a>
+						</li>
+						<li>
 							<a href="#errors-MathError">
 								MathError
 							</a>
@@ -73,8 +118,18 @@
 							</a>
 						</li>
 						<li>
+							<a href="#errors-NullPointerError">
+								NullPointerError
+							</a>
+						</li>
+						<li>
 							<a href="#errors-ThreadExistError">
 								ThreadExistError
+							</a>
+						</li>
+						<li>
+							<a href="#errors-UnexpectedControlError">
+								UnexpectedControlError
 							</a>
 						</li>
 						<li>
@@ -211,6 +266,100 @@
 						</tr>
 					</table>
 				</section>
+				<section>
+					<h3 id="choices-json">
+						json
+					</h3>
+					<p>
+						<a href="json.html#Json">
+							Json
+						</a>
+						对象的存储类型。
+					</p>
+					<table>
+						<colgroup>
+							<col class="title"/>
+						</colgroup>
+						<tr>
+							<th>
+								值
+							</th>
+							<th>
+								含义
+							</th>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									json_null
+								</code>
+							</td>
+							<td>
+								null 值。
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									json_bool
+								</code>
+							</td>
+							<td>
+								布尔值。
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									json_int
+								</code>
+							</td>
+							<td>
+								整数值。
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									json_float
+								</code>
+							</td>
+							<td>
+								双精度浮点数值。
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									json_string
+								</code>
+							</td>
+							<td>
+								字符串。
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									json_list
+								</code>
+							</td>
+							<td>
+								列表值。
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<code>
+									json_map
+								</code>
+							</td>
+							<td>
+								字典值。
+							</td>
+						</tr>
+					</table>
+				</section>
 			</section>
 			<section>
 				<h2 id="constants">
@@ -238,35 +387,97 @@
 				<ol class="tree">
 					<li>
 						<code>
-							<a href="errors-BasicError">
+							<a href="#errors-BasicError">
 								BasicError
 							</a>
 						</code>
 						<ol>
 							<li>
 								<code>
-									<a href="errors-ChoiceError">
+									<a href="#errors-ChoiceError">
 										ChoiceError
 									</a>
 								</code>
 							</li>
 							<li>
 								<code>
-									<a href="errors-MathError">
+									<a href="#errors-FileError">
+										FileError
+									</a>
+								</code>
+								<ol>
+									<li>
+										<code>
+											<a href="#errors-FileNotFoundError">
+												FileNotFoundError
+											</a>
+										</code>
+									</li>
+								</ol>
+							</li>
+							<li>
+								<code>
+									<a href="#errors-IndexError">
+										IndexError
+									</a>
+								</code>
+							</li>
+							<li>
+								<code>
+									<a href="#errors-JsonError">
+										JsonError
+									</a>
+								</code>
+								<ol>
+									<li>
+										<code>
+											<a href="#errors-JsonEOFError">
+												JsonEOFError
+											</a>
+										</code>
+									</li>
+									<li>
+										<code>
+											<a href="#errors-JsonSyntaxError">
+												JsonSyntaxError
+											</a>
+										</code>
+										<ol>
+											<li>
+												<code>
+													<a href="#errors-JsonBackSlashError">
+														JsonBackSlashError
+													</a>
+												</code>
+											</li>
+										</ol>
+									</li>
+									<li>
+										<code>
+											<a href="#errors-JsonTypeError">
+												JsonTypeError
+											</a>
+										</code>
+									</li>
+								</ol>
+							</li>
+							<li>
+								<code>
+									<a href="#errors-MathError">
 										MathError
 									</a>
 								</code>
 								<ol>
 									<li>
 										<code>
-											<a href="errors-MatrixDimensionError">
+											<a href="#errors-MatrixDimensionError">
 												MatrixDimensionError
 											</a>
 										</code>
 									</li>
 									<li>
 										<code>
-											<a href="errors-VectorDimensionError">
+											<a href="#errors-VectorDimensionError">
 												VectorDimensionError
 											</a>
 										</code>
@@ -275,8 +486,22 @@
 							</li>
 							<li>
 								<code>
+									<a href="#errors-NullPointerError">
+										NullPointerError
+									</a>
+								</code>
+							</li>
+							<li>
+								<code>
 									<a href="#errors-ThreadExistError">
 										ThreadExistError
+									</a>
+								</code>
+							</li>
+							<li>
+								<code>
+									<a href="#errors-UnexpectedControlError">
+										UnexpectedControlError
 									</a>
 								</code>
 							</li>
@@ -300,6 +525,70 @@
 					</p>
 				</section>
 				<section>
+					<h3 id="errors-FileError">
+						FileError
+					</h3>
+					<p>
+						在出现文件开关或访问错误的时候会抛出这个错误。
+					</p>
+				</section>
+				<section>
+					<h3 id="errors-FileNotFoundError">
+						FileNotFoundError
+					</h3>
+					<p>
+						无法找到文件的时候会抛出这个错误。
+					</p>
+				</section>
+				<section>
+					<h3 id="errors-IndexError">
+						IndexError
+					</h3>
+					<p>
+						在所取的索引位置不在正确范围内时会抛出这个错误。
+					</p>
+				</section>
+				<section>
+					<h3 id="errors-JsonBackSlashError">
+						JsonBackSlashError
+					</h3>
+					<p>
+						在出现 JSON 字符串中包含意外转义字符时会抛出这个错误。
+					</p>
+				</section>
+				<section>
+					<h3 id="errors-JsonEOFError">
+						JsonEOFError
+					</h3>
+					<p>
+						在出现字符串意外终止而 JSON 为解析完成的时候会抛出这个错误。
+					</p>
+				</section>
+				<section>
+					<h3 id="errors-JsonError">
+						JsonError
+					</h3>
+					<p>
+						在出现 JSON 问题的时候会抛出这个错误。
+					</p>
+				</section>
+				<section>
+					<h3 id="errors-JsonTypeError">
+						JsonTypeError
+					</h3>
+					<p>
+						在出现 JSON 类型无法正确转换的时候会抛出这个错误。
+					</p>
+				</section>
+				<section>
+					<h3 id="errors-JsonSyntaxError">
+						JsonSyntaxError
+					</h3>
+					<p>
+						在出现 JSON 无法正确从字符串中解析的时候会抛出这个错误。
+					</p>
+				</section>
+				<section>
 					<h3 id="errors-MathError">
 						MathError
 					</h3>
@@ -316,11 +605,27 @@
 					</p>
 				</section>
 				<section>
+					<h3 id="errors-NullPointerError">
+						NullPointerError
+					</h3>
+					<p>
+						在已知是一个空指针却还要解引用的时候会抛出这个错误。
+					</p>
+				</section>
+				<section>
 					<h3 id="errors-ThreadExistError">
 						ThreadExistError
 					</h3>
 					<p>
 						在线程已存在却还要创造线程时会抛出这个错误。
+					</p>
+				</section>
+				<section>
+					<h3 id="errors-UnexpectedControlError">
+						UnexpectedControlError
+					</h3>
+					<p>
+						代码在进入未定义状态的时候会抛出这个错误。
 					</p>
 				</section>
 				<section>
