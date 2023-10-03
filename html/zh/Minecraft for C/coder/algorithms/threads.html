@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/all.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/display_pages.css"/>
+		<script src="../../../../../js/code.js" defer async></script>
+		<title>
+			Wiki - 线程的运行
+		</title>
+	</head>
+	<body>
+		<h1>
+			Wiki - 线程的运行
+		</h1>
+		<nav>
+			<p>
+				任务种类
+			</p>
+			<ol class="catalogue">
+				<li>
+					<a href="#loop">
+						循环任务
+					</a>
+				</li>
+			</ol>
+			<p id="return">
+				<a href="../index.html">
+					返回上一页： Minecraft for C (coder)
+				</a>
+			</p>
+		</nav>
+		<main>
+			<section>
+				<h2 id="loop">
+					循环任务
+				</h2>
+				<p>
+					我们假设我们通过
+					<a href="../files/threads.html#DistributeThread.repeat_work">
+						DistributeThread.repeat_work
+					</a>
+					方法提交了两个方法，我们通过以下代码创建：
+				</p>
+				<pre>
+					#include &lt;iostream&gt;
+
+					int func1()
+					{
+						cout &lt;&lt; "1";
+					};
+
+					int func2()
+					{
+						cout &lt;&lt; "2";
+					};
+
+					int test()
+					{
+						DistributeThread distributor;
+						distributor.repeat_work("Runner", 100, func1);
+						distributor.repeat_work("Runner", 150, func2);
+						distributor.start();
+					};
+				</pre>
+				<p>
+					很明显，现在 Runner 线程需要每隔 100 毫秒执行一次 func1 ，而每隔 150 毫秒执行一次 func2 ，所以输出应该是这样的：以 12112 （或 12121 ）为一组无限循环。
+				</p>
+				<p class="notice">
+					没有明白为什么是 12112 ？过程是这样的（其中 ms 代表毫秒）：
+					<br/>
+					<code>
+						100ms func1()
+					</code>
+					<br/>
+					<code>
+						150ms func2()
+					</code>
+					<br/>
+					<code>
+						200ms func1()
+					</code>
+					<br/>
+					<code>
+						300ms func1() func2()
+					</code>
+					<br/>
+					后面就一样了，你也可以尝试再列几个。
+				</p>
+				<p>
+					这里 distributor 就是为了在每个时间节点给不同线程发布不同任务（
+					<a href="../files/threads.html#DistributeThread-queue_item">
+						queue_item
+					</a>
+					），来确保线程之间的井然有序。
+				</p>
+				<p>
+					我们先暂停在
+					<code>
+						distributor.start();
+					</code>
+					之前。这时候， distributor 中：
+					<br/>
+					存入了两个计划，所以
+					<a href="../files/threads.html#DistributeThread.plans">
+						plans
+					</a>
+					共有两个项目，键分别是 0 和 1 ，即前两个计划的 id ；
+					<br/>
+					有两个活跃计划，所以
+					<a href="../files/threads.html#DistributeThread.queue">
+						queue
+					</a>
+					也有两个
+					<a href="../files/threads.html#DistributeThread-queue_item">
+						queue_item
+					</a>
+					项目，而每个的第一项（在多少毫秒后运行）存储的分别是 100 和 150 ，第二项（计划所对应的 id ）分别是 0 和 1 ，程序可以通过这个搜索到 plans 中存储的计划内容；
+					<br/>
+					有一个线程，所以
+					<a href="../files/threads.html#DistributeThread.threads">
+						threads
+					</a>
+					和
+					<a href="../files/threads.html#DistributeThread.locks">
+						locks
+					</a>
+					都有一项，分别对应 Runner 这个线程和它的锁。
+					<br/>
+					由于这个分配线程还没有开始，它就没有分配到一个独立的线程，因此
+					<a href="../files/threads.html#DistributeThread.thread">
+						thread
+					</a>
+					为 nullptr ，
+					<a href="../files/threads.html#DistributeThread.game_time">
+						game_time
+					</a>
+					由于没有开始分配，暂时也是 0 。
+				</p>
+				<p class="notice">
+					这里，计划的 id 是从 0 开始依次递增，每多一个计划 id 就加上 1 。
+					<br/>
+					<a href="../files/threads.html#DistributeThread.threads">
+						threads
+					</a>
+					和
+					<a href="../files/threads.html#DistributeThread.thread">
+						thread
+					</a>
+					代表的分别是分配的目标线程和分配器自身线程。
+				</p>
+				<p>
+					我们往下运行一行，开始 distributor 。这时候， distributor 为自己创建了一个线程，因此
+					<a href="../files/threads.html#DistributeThread.thread">
+						thread
+					</a>
+					不再是 nullptr 。
+					<br/>
+					同时， distributor 线程内部开始运行
+					<a href="../files/threads.html#DistributeThread.run">
+						run
+					</a>
+					函数：
+				</p>
+				<pre>
+					void DistributeThread::run()
+					{
+						queue_item function;
+						plan function_plan;
+						while (this-&gt;running)
+						{
+							function = this-&gt;queue.top();
+							if (function.first &gt; this-&gt;game_time)
+							{
+								std::chrono::duration&lt;int, std::milli&gt; wait_time(function.first - this-&gt;game_time);
+								std::this_thread::sleep_for(wait_time);
+								this-&gt;game_time = function.first;
+							};
+							this-&gt;queue.pop();
+							function_plan = this-&gt;plans[function.second];
+							function_plan.thread-&gt;work(function_plan.function);
+							this-&gt;queue.push(queue_item(function.first + function_plan.delay, function.second));
+						};
+					};
+				</pre>
+				<p>
+					我们先定义了两个变量， function 和 function_plan ，这两个变量分别代表马上要运行的第一个
+					<a href="#DistributeThread-queue_item">
+						queue_item
+					</a>
+					计划和第一个
+					<a href="#DistributeThread-plan">
+						plan
+					</a>
+					计划。
+				</p>
+				<p class="notice">
+					需要说明，
+					<a href="#DistributeThread-queue_item">
+						queue_item
+					</a>
+					计划和
+					<a href="#DistributeThread-plan">
+						plan
+					</a>
+					计划并不是一样的，为了优化代码，我们将索引和存储分离，在
+					<a href="#DistributeThread-queue_item">
+						queue_item
+					</a>
+					中存放索引（ 0, 1 ），在
+					<a href="#DistributeThread-plan">
+						plan
+					</a>
+					中存储（ func1, func2 ）。
+				</p>
+				<p>
+					检测
+					<code>
+						this-&gt;running
+					</code>
+					是为了查看这个线程是否被人为结束，这里才开始运行，不会出现这个情况。
+				</p>
+				<p>
+					接着，我们取出了
+					<a href="#DistributeThread.queue">
+						this.queue
+					</a>
+					最前面的一个项目（最近的一个项目），并将其存储在 function 中，在这里，索引应该是 0 ，即 func1 。
+				</p>
+				<p>
+					然后，我们发现 function 所对应的运行时刻并不是现在，而是在 100 毫秒之后，于是程序会自动等待 100 毫秒，然后将
+					<a href="#DistributeThread.queue">
+						this.game_time
+					</a>
+					设置成了 function 的运行时刻。
+				</p>
+				<p>
+					程序运行到了
+					<code>
+						this->queue.pop();
+					</code>
+					，它移除了
+					<a href="#DistributeThread.queue">
+						this.queue
+					</a>
+					最前面的一个项目，因为它马上要被运行了。
+				</p>
+				<p>
+					接下来，我们取出了
+					<a href="#DistributeThread.plans">
+						this.plans
+					</a>
+					对应索引的项目，并将其发放给了对应的线程。
+				</p>
+				<p>
+					最后，我们又将之前去除掉的项目的运行时间加上了它每次的等待时间，并将其加入到
+					<a href="#DistributeThread.queue">
+						this.queue
+					</a>
+					优先队列中。
+				</p>
+				<p>
+					至此，我们就完成了一次函数分发。
+				</p>
+			</section>
+		</main>
+	</body>
+</html>
