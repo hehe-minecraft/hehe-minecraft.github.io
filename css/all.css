@@ -146,7 +146,12 @@ code
 	font-family: "Cascadia Mono", "Consolas", "Courier New", monospace;
 }
 
-math:not([inline])
+:root[data-browser=webkit] math:not([inline])
+{
+	display: block;
+}
+
+:root[data-browser=ms] math:not([inline])
 {
 	display: block math;
 }
