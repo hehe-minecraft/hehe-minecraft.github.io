@@ -205,6 +205,7 @@ a:visited:not(ol.catalogue a)
 main>hr
 {
 	margin: 2em 5px 2em 5px;
+	border: 1px solid #AAAAAA;
 }
 
 @media (min-width: 500px) and (max-width: 1000px)
