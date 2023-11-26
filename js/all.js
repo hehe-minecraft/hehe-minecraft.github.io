@@ -14,7 +14,10 @@ function update_content()
 				console.warn(`XSS attack detected at ${content}`)
 				return;
 			};
-			content = content.replace(/\[(.*?) TO (.*?)\]/g, "<a href=\"$2\">$1</a>");
+			content = content
+				.replace(/\[(.*?) TO (.*?)\]/g, "<a href=\"$2\">$1</a>")
+				.replace(/\[NOUN (.*?) AS (.*?)\]/g, "<dfn title=\"$2\">$1</dfn>")
+				.replace(/\[NOUN (.*?)\]/g, "<dfn>$1</dfn>");
 			this.target.innerHTML = content;
 		};
 	};
@@ -24,12 +27,19 @@ function update_content()
 		{
 			this.target = target;
 			this.sections = new Array(target);
-			this.catalogues = new Array(document.createElement("ol"));
 			this.tree = new Array();
-			this.catalogues[0].classList.add("catalogue");
-			if (nav !== undefined)
+			if (nav.querySelector("ol:empty"))
 			{
-				nav.appendChild(this.catalogues[0]);
+				this.catalogues = new Array(nav.querySelector("ol:empty"));
+			}
+			else
+			{
+				this.catalogues = new Array(document.createElement("ol"));
+				this.catalogues[0].classList.add("catalogue");
+				if (nav !== undefined)
+				{
+					nav.appendChild(this.catalogues[0]);
+				};
 			};
 		};
 		parse(content)
@@ -47,7 +57,7 @@ function update_content()
 			{
 				this.parse_interval();
 			}
-			else if (tabless_content.match(/^- |^ $/))
+			else if (tabless_content.match(/^- |^-$/))
 			{
 				this.parse_tree(content);
 			}
@@ -68,8 +78,8 @@ function update_content()
 			this.pop_section(heading_level);
 			this.pop_catalogue(heading_level);
 			let new_section = this.push_section();
-			new_section.appendChild(new_heading);
 			let new_heading = document.createElement(`h${heading_level + 1 > 6 ? 6 : heading_level + 1}`);
+			new_section.appendChild(new_heading);
 			let line_parser = new InlineParser(new_heading);
 			line_parser.parse(heading_text);
 			let previous_heading_id = this.sections.length > 2 ? this.sections[this.sections.length - 2].firstChild.id + "." : "";
@@ -125,7 +135,7 @@ function update_content()
 			let new_line = document.createElement("li");
 			let line_parser = new InlineParser(new_line);
 			line_parser.parse(` ${line_content}`);
-			this.tree[this.tree.length - 1].appendChild(new_line);
+			this.tree[indents - 1].appendChild(new_line);
 		};
 		parse_paragraph(content)
 		{
