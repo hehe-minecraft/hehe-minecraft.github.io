@@ -28,6 +28,7 @@ function update_content()
 			this.target = target;
 			this.sections = new Array(target);
 			this.tree = new Array();
+			this.id_counter = 0;
 			if (nav.querySelector("ol:empty"))
 			{
 				this.catalogues = new Array(nav.querySelector("ol:empty"));
@@ -68,6 +69,7 @@ function update_content()
 		};
 		parse_heading(content)
 		{
+			this.id_counter ++;
 			let heading_level = content.match(/^#+/)[0].length;
 			let heading_text = content.replace(/^#+/, "");
 			if (heading_level > this.sections.length)
@@ -82,9 +84,7 @@ function update_content()
 			new_section.appendChild(new_heading);
 			let line_parser = new InlineParser(new_heading);
 			line_parser.parse(heading_text);
-			let previous_heading_id = this.sections.length > 2 ? this.sections[this.sections.length - 2].firstChild.id + "." : "";
-			let heading_id = `${previous_heading_id}${new_heading.innerText}`;
-			new_heading.id = heading_id;
+			let heading_id = `#${this.id_counter}`;
 			if (heading_level > this.catalogues.length) // higher level
 			{
 				this.push_catalogue(` ${heading_text}`, heading_id)
@@ -93,7 +93,7 @@ function update_content()
 			{
 				let new_catalogue_item = document.createElement("li");
 				let new_link = document.createElement("a");
-				new_link.href = `#${heading_id}`;
+				new_link.href = heading_id;
 				new_link.innerText = ` ${heading_text}`;
 				new_catalogue_item.appendChild(new_link);
 				this.catalogues[this.catalogues.length - 1].appendChild(new_catalogue_item);
