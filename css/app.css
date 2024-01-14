@@ -37,6 +37,21 @@ dfn:hover
 	border-bottom: dotted 2px #AAAAAA;
 }
 
+a
+{
+	text-decoration: none;
+}
+
+a:link:not(ol.catalogue a)
+{
+	color: #AAA560;
+}
+
+a:visited:not(ol.catalogue a)
+{
+	color: #6060AA;
+}
+
 button
 {
 	cursor: pointer;

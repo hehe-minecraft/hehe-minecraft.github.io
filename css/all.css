@@ -208,6 +208,31 @@ main>hr
 	border: 1px solid #AAAAAA;
 }
 
+data-source
+{
+	display: none;
+}
+
+main figure
+{
+	float: right;
+	display: grid;
+	padding: 5px;
+	margin: 5px;
+	border: 1px solid #888888;
+}
+
+main figure svg
+{
+	margin: 5px auto 5px auto;
+}
+
+main figure figcaption
+{
+	margin-top: 5px;
+	font-size: x-small;
+}
+
 @media (min-width: 500px) and (max-width: 1000px)
 {
 	nav>ol

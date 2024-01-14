@@ -9,16 +9,33 @@ function update_content()
 		parse(content)
 		{
 			this.target.innerHTML = "";
-			if (content.match(/<(.+?)>/))
-			{
-				console.warn(`XSS attack detected at ${content}`)
-				return;
-			};
 			content = content
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/\[(.*?) TO BLANK (.*?)\]/g, "<a href=\"$2\" target=\"_blank\">$1</a>")
 				.replace(/\[(.*?) TO (.*?)\]/g, "<a href=\"$2\">$1</a>")
 				.replace(/\[NOUN (.*?) AS (.*?)\]/g, "<dfn title=\"$2\">$1</dfn>")
-				.replace(/\[NOUN (.*?)\]/g, "<dfn>$1</dfn>");
+				.replace(/\[NOUN (.*?)\]/g, "<dfn>$1</dfn>")
+				.replace(/\[VAR_TYPE (.*?)\]/g, "<span class=\"type\">$1</span>")
+				.replace(/\[CODE (.*?)\]/g, "<code>$1</code>");
 			this.target.innerHTML = content;
+		};
+		parse_io_list(content)
+		{
+			let content_variables = content.match(/\[VAR (.+?)\]/g)
+			if (!content_variables)
+			{
+				this.parse(content);
+				return;
+			};
+			for (let each_variable of content_variables)
+			{
+				content = content.replace(
+					each_variable,
+					each_variable.replace(/^\[VAR (.+) (.*?)\]$/, "[CODE [VAR_TYPE $1] $2]")
+				);
+			};
+			this.parse(content);
 		};
 	};
 	class BlockParser
@@ -28,6 +45,7 @@ function update_content()
 			this.target = target;
 			this.sections = new Array(target);
 			this.tree = new Array();
+			this.list = undefined;
 			this.id_counter = 0;
 			if (nav.querySelector("ol:empty"))
 			{
@@ -58,9 +76,21 @@ function update_content()
 			{
 				this.parse_interval();
 			}
+			else if (this.list && tabless_content.match(/^- /))
+			{
+				this.parse_list(tabless_content);
+			}
 			else if (tabless_content.match(/^- |^-$/))
 			{
 				this.parse_tree(content);
+			}
+			else if (tabless_content.match(/^LIST .+/))
+			{
+				this.parse_list_begin_end(tabless_content);
+			}
+			else if (tabless_content.match(/^FIGURE .+/))
+			{
+				this.parse_figure(tabless_content);
 			}
 			else
 			{
@@ -104,6 +134,21 @@ function update_content()
 			this.pop_section(1);
 			this.sections[this.sections.length - 1].appendChild(document.createElement("hr"));
 		};
+		parse_list(content)
+		{
+			content = content.match(/^- (.*)/)[1];
+			let new_list_item = document.createElement("p");
+			let line_parser = new InlineParser(new_list_item);
+			if (this.list.classList.contains("input") || this.list.classList.contains("output"))
+			{
+				line_parser.parse_io_list(content);
+			}
+			else
+			{
+				line_parser.parse(content);
+			}
+			this.list.appendChild(new_list_item);
+		};
 		parse_tree(content)
 		{
 			if (content == "-")
@@ -136,6 +181,47 @@ function update_content()
 			let line_parser = new InlineParser(new_line);
 			line_parser.parse(` ${line_content}`);
 			this.tree[indents - 1].appendChild(new_line);
+		};
+		parse_list_begin_end(content)
+		{
+			let list_type = content.match(/^LIST (.+)/)[1];
+			switch (list_type)
+			{
+				case "input":
+					let new_io_container = document.createElement("div");
+					this.sections[this.sections.length - 1].appendChild(new_io_container);
+					new_io_container.classList.add("io");
+					this.list = document.createElement("div");
+					new_io_container.appendChild(this.list);
+					this.list.classList.add("input");
+					break;
+				case "output":
+					let current_io_container = this.sections[this.sections.length - 1].lastChild;
+					if (!(current_io_container.firstChild instanceof HTMLDivElement && current_io_container.firstChild.classList.contains("input")))
+					{
+						console.warn("Output must follows an input");
+						break;
+					};
+					this.list = document.createElement("div");
+					current_io_container.appendChild(this.list);
+					this.list.classList.add("output");
+					break;
+				case "end":
+					this.list = undefined;
+			};
+		};
+		parse_figure(content)
+		{
+			let figure_id = content.match(/^FIGURE (.+)/)[1];
+			let origin_figure = document.getElementById(figure_id);
+			if (!origin_figure)
+			{
+				console.warn(`Could not find figure ${figure_id}`);
+				return;
+			};
+			let new_figure = origin_figure.cloneNode(true);
+			new_figure.id = "";
+			this.sections[this.sections.length - 1].appendChild(new_figure);
 		};
 		parse_paragraph(content)
 		{
@@ -210,6 +296,10 @@ function update_content()
 		{
 			nav.removeChild(nav.lastChild);
 		};
+	};
+	for (let source_element of document.getElementsByTagName("data-source"))
+	{
+		source_element.remove();
 	};
 };
 
