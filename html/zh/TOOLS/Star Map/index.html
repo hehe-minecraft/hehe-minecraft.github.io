@@ -662,6 +662,13 @@
 				{
 					if (this.content.elements.delete(element))
 					{
+						for (const each_link of this.content.links)
+						{
+							if (each_link.from === element || each_link.to === element)
+							{
+								this.content.links.delete(each_link);
+							};
+						};
 						new Log("删除成功", "", "success");
 					}
 					else
