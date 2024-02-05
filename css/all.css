@@ -231,6 +231,7 @@ main figure figcaption
 {
 	margin-top: 5px;
 	font-size: x-small;
+	text-align: center;
 }
 
 @media (min-width: 500px) and (max-width: 1000px)

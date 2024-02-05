@@ -61,20 +61,32 @@ class DataBase extends AsyncObject
 		});
 	};
 
-	write_to_data(area, key, content)
+	async write_to_data(area, key, content)
 	{
+		if (!this.database)
+		{
+			await this.actions.open;
+		};
 		let transaction = this.database.transaction(area, "readwrite");
 		transaction.objectStore(area).put({key: key, content: content});
 	};
 
-	delete_data(area, key)
+	async delete_data(area, key)
 	{
+		if (!this.database)
+		{
+			await this.actions.open;
+		};
 		let transaction = this.database.transaction(area, "readwrite");
 		transaction.objectStore(area).delete(key);
 	};
 
-	get_data(area, key)
+	async get_data(area, key)
 	{
+		if (!this.database)
+		{
+			await this.actions.open;
+		};
 		let transaction = this.database.transaction(area, "readonly");
 		let request = transaction.objectStore(area).get(key);
 		return new Promise(function (resolve, reject) {
@@ -87,8 +99,12 @@ class DataBase extends AsyncObject
 		});
 	};
 
-	get_keys(area)
+	async get_keys(area)
 	{
+		if (!this.database)
+		{
+			await this.actions.open;
+		};
 		let transaction = this.database.transaction(area, "readonly");
 		let request = transaction.objectStore(area).getAllKeys();
 		return new Promise(function (resolve, reject) {

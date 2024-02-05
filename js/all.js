@@ -1,10 +1,77 @@
 function update_content()
 {
+	/*
+	--- Language Explanation ---
+	In this language, symbols are mainly capital letters.
+	1.	Blocks
+		a.	Normal Text
+			We use a single line to create a text (exactly <p>).
+			We can add some symbols before it, like "NOTE", "WARN", "DEF" (for definition).
+			e.g. NOTE This is a note
+			     ^^^^ ^^^^^^^^^^^^^^
+			    symbol  expression
+		b.	Headings
+			We use "#" to define headings. The more "#", the smaller heading.
+			The smallest heading is <h6>.
+			e.g. "#" refers to <h2>, "#####" and "######" refer to <h6>.
+		c.	List
+			We can't define an unordered list
+			i.	Ordered List
+				We use "-" to define an ordered list.
+				Adding space before the "-" makes the entry smaller.
+				e.g.
+				- Caption 1
+				  - SubCaption
+				- Caption 2
+				will produce
+				1. Caption 1
+				   1. Subcaption
+				2. Caption 2
+			ii.	Input / Output List
+				We use "LIST input" or "LIST output" declared before a list to make it an input / output list.
+				We shouldn't add space before these list entries.
+				Sometimes we need to make this special list stop make the following lists returned to ordered lists, then we'll need "LIST end".
+				e.g.
+				LIST input
+				- Input 1
+				- Input 2
+				LIST end
+				- Normal list
+		d.	Interval
+			We sometimes need some intervals between two <h2>, so here comes the interval.
+			We can use "===" to create an interval.
+			The heading which follows an interval should be an <h2>, since intervals only appear there.
+			e.g.
+			#Heading 1
+			===
+			#Heading 2
+		e.	Figure
+			We can use "FIGURE id" to insert a figure.
+			The source <figure> with the id should be also in the file.
+			Figures are numbered automatically.
+			See "3. Environment".
+	2.	Inlines
+		Inline symbols are surrounded by "[]".
+		a.	Link
+			We can use [name TO target] to create a link.
+			Add " BLANK" after "TO" to make the link "_blank".
+			e.g. Go to [Github TO BLANK github.com]
+		b.	Term
+			We can use [NOUN term] to create a term.
+			The [NOUN term AS description] is more commonly used.
+		c.	Code
+			We can use [CODE code] to create a piece of code.
+	3.	Environment
+		You should define all your environment settings in a variable called "parse_environment".
+		If you are using figures in your codes, you should define the attribute "figure" (string), with the number placeholder as "$".
+	*/
 	class InlineParser
 	{
-		constructor(target)
+		constructor(target, block_parser)
 		{
 			this.target = target;
+			this.figures = block_parser.figures;
+			this.environment = block_parser.environment;
 		};
 		parse(content)
 		{
@@ -18,6 +85,21 @@ function update_content()
 				.replace(/\[NOUN (.*?)\]/g, "<dfn>$1</dfn>")
 				.replace(/\[VAR_TYPE (.*?)\]/g, "<span class=\"type\">$1</span>")
 				.replace(/\[CODE (.*?)\]/g, "<code>$1</code>");
+			const inline_parser = this;
+			content = content.replace(/\[FIGURE (.+?)\]/g, function(match) {
+				for (let each_figure of inline_parser.figures)
+				{
+					if (each_figure.id === match.match(/\[FIGURE (.+?)\]/)[1])
+					{
+						if (!inline_parser.environment.figure)
+						{
+							console.warn("The figure environment isn't defined.")
+						};
+						return inline_parser.environment.figure.replace("$", inline_parser.figures.indexOf(each_figure) + 1);
+					};
+				};
+				return match;
+			})
 			this.target.innerHTML = content;
 		};
 		parse_io_list(content)
@@ -43,10 +125,12 @@ function update_content()
 		constructor(target, nav = undefined)
 		{
 			this.target = target;
-			this.sections = new Array(target);
-			this.tree = new Array();
-			this.list = undefined;
-			this.id_counter = 0;
+			this.section_stack = new Array(target);
+			this.tree_stack = new Array();
+			this.list_target = undefined;
+			this.figures = new Array();
+			this.environment = typeof parse_environment === "object" ? parse_environment : {}; // Defined in the html file.
+			this.heading_id_counter = 0;
 			if (nav.querySelector("ol:empty"))
 			{
 				this.catalogues = new Array(nav.querySelector("ol:empty"));
@@ -76,7 +160,7 @@ function update_content()
 			{
 				this.parse_interval();
 			}
-			else if (this.list && tabless_content.match(/^- /))
+			else if (this.list_target && tabless_content.match(/^- /))
 			{
 				this.parse_list(tabless_content);
 			}
@@ -99,22 +183,22 @@ function update_content()
 		};
 		parse_heading(content)
 		{
-			this.id_counter ++;
+			this.heading_id_counter++;
 			let heading_level = content.match(/^#+/)[0].length;
 			let heading_text = content.replace(/^#+/, "");
-			if (heading_level > this.sections.length)
+			if (heading_level > this.section_stack.length)
 			{
 				console.warn(`Heading level too high.\n at "${content}"`)
-				heading_level = this.sections.length;
+				heading_level = this.section_stack.length;
 			};
 			this.pop_section(heading_level);
 			this.pop_catalogue(heading_level);
 			let new_section = this.push_section();
 			let new_heading = document.createElement(`h${heading_level + 1 > 6 ? 6 : heading_level + 1}`);
 			new_section.appendChild(new_heading);
-			let line_parser = new InlineParser(new_heading);
+			let line_parser = new InlineParser(new_heading, this);
 			line_parser.parse(heading_text);
-			let heading_id = `#${this.id_counter}`;
+			let heading_id = `#${this.heading_id_counter}`;
 			if (heading_level > this.catalogues.length) // higher level
 			{
 				this.push_catalogue(` ${heading_text}`, heading_id)
@@ -132,14 +216,14 @@ function update_content()
 		parse_interval()
 		{
 			this.pop_section(1);
-			this.sections[this.sections.length - 1].appendChild(document.createElement("hr"));
+			this.section_stack[this.section_stack.length - 1].appendChild(document.createElement("hr"));
 		};
 		parse_list(content)
 		{
 			content = content.match(/^- (.*)/)[1];
 			let new_list_item = document.createElement("p");
-			let line_parser = new InlineParser(new_list_item);
-			if (this.list.classList.contains("input") || this.list.classList.contains("output"))
+			let line_parser = new InlineParser(new_list_item, this);
+			if (this.list_target.classList.contains("input") || this.list_target.classList.contains("output"))
 			{
 				line_parser.parse_io_list(content);
 			}
@@ -147,40 +231,40 @@ function update_content()
 			{
 				line_parser.parse(content);
 			}
-			this.list.appendChild(new_list_item);
+			this.list_target.appendChild(new_list_item);
 		};
 		parse_tree(content)
 		{
 			if (content == "-")
 			{
-				this.tree.length = 0;
+				this.tree_stack.length = 0;
 				return;
 			};
 			let indents = content.match(/^( *)/)[0].length + 1;
 			let line_content = content.replace(/^ *- /, "");
-			if (indents > this.tree.length + 1)
+			if (indents > this.tree_stack.length + 1)
 			{
 				console.warn(`Tree level too high.\n at "${content}"`)
-				indents = this.tree.length + 1;
+				indents = this.tree_stack.length + 1;
 			};
-			if (indents == this.tree.length + 1)
+			if (indents == this.tree_stack.length + 1)
 			{
 				let sub_tree = document.createElement("ol");
-				if (this.tree.length == 0)
+				if (this.tree_stack.length == 0)
 				{
 					sub_tree.classList.add("tree");
-					this.sections[this.sections.length - 1].appendChild(sub_tree);
+					this.section_stack[this.section_stack.length - 1].appendChild(sub_tree);
 				}
 				else
 				{
-					this.tree[this.tree.length - 1].lastChild.appendChild(sub_tree);
+					this.tree_stack[this.tree_stack.length - 1].lastChild.appendChild(sub_tree);
 				};
-				this.tree.push(sub_tree);
+				this.tree_stack.push(sub_tree);
 			};
 			let new_line = document.createElement("li");
-			let line_parser = new InlineParser(new_line);
+			let line_parser = new InlineParser(new_line, this);
 			line_parser.parse(` ${line_content}`);
-			this.tree[indents - 1].appendChild(new_line);
+			this.tree_stack[indents - 1].appendChild(new_line);
 		};
 		parse_list_begin_end(content)
 		{
@@ -189,25 +273,25 @@ function update_content()
 			{
 				case "input":
 					let new_io_container = document.createElement("div");
-					this.sections[this.sections.length - 1].appendChild(new_io_container);
+					this.section_stack[this.section_stack.length - 1].appendChild(new_io_container);
 					new_io_container.classList.add("io");
-					this.list = document.createElement("div");
-					new_io_container.appendChild(this.list);
-					this.list.classList.add("input");
+					this.list_target = document.createElement("div");
+					new_io_container.appendChild(this.list_target);
+					this.list_target.classList.add("input");
 					break;
 				case "output":
-					let current_io_container = this.sections[this.sections.length - 1].lastChild;
+					let current_io_container = this.section_stack[this.section_stack.length - 1].lastChild;
 					if (!(current_io_container.firstChild instanceof HTMLDivElement && current_io_container.firstChild.classList.contains("input")))
 					{
 						console.warn("Output must follows an input");
 						break;
 					};
-					this.list = document.createElement("div");
-					current_io_container.appendChild(this.list);
-					this.list.classList.add("output");
+					this.list_target = document.createElement("div");
+					current_io_container.appendChild(this.list_target);
+					this.list_target.classList.add("output");
 					break;
 				case "end":
-					this.list = undefined;
+					this.list_target = undefined;
 			};
 		};
 		parse_figure(content)
@@ -219,16 +303,26 @@ function update_content()
 				console.warn(`Could not find figure ${figure_id}`);
 				return;
 			};
+			if (!this.figures.includes(origin_figure))
+			{
+				this.figures.push(origin_figure);
+			};
+			let figure_number = this.figures.indexOf(origin_figure) + 1;
 			let new_figure = origin_figure.cloneNode(true);
-			new_figure.id = "";
-			this.sections[this.sections.length - 1].appendChild(new_figure);
+			new_figure.removeAttribute("id");
+			let figure_caption = new_figure.querySelector("figcaption");
+			if (figure_caption && this.environment.figure)
+			{
+				figure_caption.textContent = this.environment.figure.replace("$", figure_number) + figure_caption.innerText;
+			};
+			this.section_stack[this.section_stack.length - 1].appendChild(new_figure);
 		};
 		parse_paragraph(content)
 		{
 			let new_paragraph = document.createElement("p");
-			let line_parser = new InlineParser(new_paragraph);
+			let line_parser = new InlineParser(new_paragraph, this);
 			line_parser.parse(content.replace(/^(NOTE|WARN|DEF) /, ""));
-			this.sections[this.sections.length - 1].appendChild(new_paragraph);
+			this.section_stack[this.section_stack.length - 1].appendChild(new_paragraph);
 			if (content.startsWith("NOTE"))
 			{
 				new_paragraph.classList.add("notice");
@@ -245,20 +339,19 @@ function update_content()
 		push_section()
 		{
 			let new_section = document.createElement("section");
-			this.sections[this.sections.length - 1].appendChild(new_section);
-			this.sections.push(new_section);
+			this.section_stack[this.section_stack.length - 1].appendChild(new_section);
+			this.section_stack.push(new_section);
 			return new_section;
 		};
-		push_catalogue(content = undefined, href = undefined)
+		push_catalogue(content = undefined, target = undefined)
 		{
 			let new_catalogue = document.createElement("ol");
 			this.catalogues[this.catalogues.length - 1].lastChild.appendChild(new_catalogue);
 			this.catalogues.push(new_catalogue);
-			if (content && href)
+			if (content && target)
 			{
 				let new_catalogue_item = document.createElement("li");
 				let new_link = document.createElement("a");
-				new_link.href = href;
 				new_link.innerText = content;
 				new_catalogue_item.appendChild(new_link);
 				new_catalogue.appendChild(new_catalogue_item);
@@ -267,13 +360,20 @@ function update_content()
 		};
 		pop_section(level)
 		{
-			this.sections = this.sections.slice(0, level);
-			return this.sections[level];
+			this.section_stack = this.section_stack.slice(0, level);
+			return this.section_stack[level];
 		};
 		pop_catalogue(level)
 		{
 			this.catalogues = this.catalogues.slice(0, level);
 			return this.catalogues[level];
+		};
+		finish_up()
+		{
+			if (!this.catalogues[0].innerHTML)
+			{
+				this.catalogues[0].remove();
+			};
 		};
 	};
 	let targets = document.getElementsByTagName("main");
@@ -292,10 +392,7 @@ function update_content()
 			parser.parse(each_line.replace(/^\t+/, ""));
 		};
 		delete target.dataset.type;
-		if (!nav.lastChild.innerHTML)
-		{
-			nav.removeChild(nav.lastChild);
-		};
+		parser.finish_up();
 	};
 	for (let source_element of document.getElementsByTagName("data-source"))
 	{
