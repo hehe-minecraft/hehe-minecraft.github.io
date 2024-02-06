@@ -95,7 +95,7 @@ function update_content()
 						{
 							console.warn("The figure environment isn't defined.")
 						};
-						return inline_parser.environment.figure.replace("$", inline_parser.figures.indexOf(each_figure) + 1);
+						return inline_parser.environment.figure.replace(/\$/g, inline_parser.figures.indexOf(each_figure) + 1);
 					};
 				};
 				return match;
@@ -313,7 +313,7 @@ function update_content()
 			let figure_caption = new_figure.querySelector("figcaption");
 			if (figure_caption && this.environment.figure)
 			{
-				figure_caption.textContent = this.environment.figure.replace("$", figure_number) + figure_caption.innerText;
+				figure_caption.textContent = this.environment.figure.replace(/\$/g, figure_number) + figure_caption.innerText;
 			};
 			this.section_stack[this.section_stack.length - 1].appendChild(new_figure);
 		};
