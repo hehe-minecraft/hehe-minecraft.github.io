@@ -134,7 +134,6 @@
 			{
 				grid-area: details;
 				background-color: #888888;
-				border-radius: 0 20px 20px 0;
 				padding: 10px;
 				transition: all ease-in-out 0.5s;
 			}
@@ -520,7 +519,7 @@
 						context.arc(0, 0, 30, 0, 2 * Math.PI)
 						context.fill();
 					};
-					// Part 4 - Display the links and detect the link hovered.
+					// Part 4 - Display the links.
 					let hovering;
 					const transform_matrix = this.transform_matrix; // Prevent the property from getting called over and over again.
 					for (const each_link of this.content.links)
@@ -592,7 +591,7 @@
 								context.lineTo(current_position_x + color_interval * horizontal_ratio, current_position_y - 2 * edge_midpoint_relative_y);
 								context.lineTo(current_position_x - edge_midpoint_relative_x + edge_midpoint_relative_y, current_position_y - edge_midpoint_relative_y - edge_midpoint_relative_x)
 								context.lineTo(current_position_x + edge_midpoint_relative_x + edge_midpoint_relative_y, current_position_y + edge_midpoint_relative_y - edge_midpoint_relative_x);
-								context.fill()
+								context.fill();
 							};
 						}
 						else
@@ -606,10 +605,6 @@
 								context.moveTo(each_link.from.x + current_length * horizontal_ratio, each_link.from.y + current_length * vertical_ratio);
 								context.lineTo(each_link.from.x + (current_length + color_interval) * horizontal_ratio, each_link.from.y + (current_length + color_interval) * vertical_ratio);
 								context.stroke();
-								if (hover_place && context.isPointInPath(hover_place.x, hover_place.y))
-								{
-									hovering = new StarMapInterface(each_link, storage.Link);
-								};
 							};
 						};
 					};
