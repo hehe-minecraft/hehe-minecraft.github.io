@@ -121,7 +121,6 @@
 					"canvas details";
 				grid-template-columns: 1fr auto;
 				background-color: #000000;
-				border-radius: 20px;
 			}
 
 			main>canvas
@@ -567,8 +566,8 @@
 						if (each_link.style.onesided && !doublesides)
 						{
 							// "relative" means the relative position to the center of the node.
-							const edge_midpoint_relative_x = - each_link.style.width / 2 * horizontal_ratio;
-							const edge_midpoint_relative_y = - each_link.style.width / 2 * vertical_ratio;
+							const edge_midpoint_relative_x = - color_interval / 2 * horizontal_ratio;
+							const edge_midpoint_relative_y = - color_interval / 2 * vertical_ratio;
 							context.fillStyle = each_link.style.forecolor;
 							for (let current_length = 0; current_length < link_length; current_length += color_interval)
 							{
@@ -579,7 +578,7 @@
 								context.moveTo(current_position_x, current_position_y);
 								context.lineTo(current_position_x + edge_midpoint_relative_x - edge_midpoint_relative_y, current_position_y + edge_midpoint_relative_y + edge_midpoint_relative_x);
 								context.lineTo(current_position_x - edge_midpoint_relative_x - edge_midpoint_relative_y, current_position_y - edge_midpoint_relative_y + edge_midpoint_relative_x)
-								context.lineTo(current_position_x - 2 * edge_midpoint_relative_x, current_position_y - 2 * edge_midpoint_relative_y);
+								context.lineTo(current_position_x + color_interval * horizontal_ratio, current_position_y - 2 * edge_midpoint_relative_y);
 								context.lineTo(current_position_x - edge_midpoint_relative_x + edge_midpoint_relative_y, current_position_y - edge_midpoint_relative_y - edge_midpoint_relative_x)
 								context.lineTo(current_position_x + edge_midpoint_relative_x + edge_midpoint_relative_y, current_position_y + edge_midpoint_relative_y - edge_midpoint_relative_x);
 								context.fill()

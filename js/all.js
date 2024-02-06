@@ -195,6 +195,7 @@ function update_content()
 			this.pop_catalogue(heading_level);
 			let new_section = this.push_section();
 			let new_heading = document.createElement(`h${heading_level + 1 > 6 ? 6 : heading_level + 1}`);
+			new_heading.id = this.heading_id_counter;
 			new_section.appendChild(new_heading);
 			let line_parser = new InlineParser(new_heading, this);
 			line_parser.parse(heading_text);
@@ -353,6 +354,7 @@ function update_content()
 				let new_catalogue_item = document.createElement("li");
 				let new_link = document.createElement("a");
 				new_link.innerText = content;
+				new_link.href = target;
 				new_catalogue_item.appendChild(new_link);
 				new_catalogue.appendChild(new_catalogue_item);
 			};
