@@ -532,7 +532,18 @@
 						{
 							continue;
 						};
-						// Step 2 - Draw the active link.
+						// Step 2 - Optimize when the link is too thin to be displayed.
+						if (each_link.style.width * this.content.zoom <= 1)
+						{
+							context.strokeStyle = each_link.style.forecolor;
+							context.lineWidth = 1;
+							context.beginPath();
+							context.moveTo(each_link.from.x, each_link.from.y);
+							context.lineTo(each_link.to.x, each_link.to.y);
+							context.stroke();
+							continue;
+						};
+						// Step 3 - Draw the active link.
 						if (each_link === this.active_element)
 						{
 							context.strokeStyle = COLOR_ACTIVATE;
@@ -542,7 +553,7 @@
 							context.lineTo(each_link.to.x, each_link.to.y);
 							context.stroke();
 						};
-						// Step 3 - Detect if the link is double sided.
+						// Step 4 - Detect if the link is double sided.
 						let doublesides = !each_link.style.onesided;
 						if (each_link.style.onesided)
 						{
@@ -555,7 +566,7 @@
 								};
 							};
 						};
-						// Step 4 - Draw the link.
+						// Step 5 - Draw the link.
 						const link_horizontal_length = each_link.to.x - each_link.from.x;
 						const link_vertical_length = each_link.to.y - each_link.from.y;
 						const link_length = Math.sqrt(link_horizontal_length ** 2 + link_vertical_length ** 2);
