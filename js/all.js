@@ -1,4 +1,4 @@
-function update_content()
+function update_content(source=undefined)
 {
 	/*
 	--- Language Explanation ---
@@ -131,7 +131,7 @@ function update_content()
 			this.figures = new Array();
 			this.environment = typeof parse_environment === "object" ? parse_environment : {}; // Defined in the html file.
 			this.heading_id_counter = 0;
-			if (nav.querySelector("ol:empty"))
+			if (nav && nav.querySelector("ol:empty"))
 			{
 				this.catalogues = new Array(nav.querySelector("ol:empty"));
 			}
@@ -378,7 +378,7 @@ function update_content()
 			};
 		};
 	};
-	let targets = document.getElementsByTagName("main");
+	let targets = source ? [source] : document.getElementsByTagName("main");
 	let nav = document.getElementsByTagName("nav")[0];
 	for (let target of targets)
 	{

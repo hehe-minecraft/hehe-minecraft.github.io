@@ -5,6 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		<link rel="stylesheet" type="text/css" href="../../../../css/app.css"/>
 		<script src="../../../../js/all.js" defer></script>
+		<script src="../../../../js/css.js" defer></script>
 		<title>
 			Wiki - 星图
 		</title>
@@ -132,10 +133,12 @@
 
 			main>article
 			{
+				box-sizing: border-box;
 				grid-area: details;
 				background-color: #888888;
 				padding: 10px;
 				transition: all ease-in-out 0.5s;
+				overflow-y: scroll;
 			}
 
 			main>article.hide
@@ -144,18 +147,12 @@
 				opacity: 0;
 			}
 
-			main>article>h2
-			{
-				margin: 0.5em;
-				text-align: center;
-			}
-
 			dialog
 			{
 				border-radius: 5px;
 			}
 
-			dialog h2
+			dialog>h2
 			{
 				text-align: center;
 			}
@@ -281,6 +278,24 @@
 				background-color: #CC8888;
 			}
 
+			#content_edit
+			{
+				overflow-y: clip;
+			}
+
+			#content_edit>form
+			{
+				display: grid;
+				grid-template-areas: "edit preview";
+				grid-template-columns: 1fr 1fr;
+			}
+
+			#content_edit article
+			{
+				padding: 5px;
+				overflow-y: auto;
+			}
+
 			@keyframes popout
 			{
 				from
@@ -318,20 +333,25 @@
 			});
 			dom_observer.observe(document, {childList: true, subtree: true});
 
-			document.addEventListener("DOMContentLoaded", async function(){
+			document.addEventListener("DOMContentLoaded", function(){
+				// AnimationHandler is from css.js
 				current_star_map.link(document.getElementById("canvas"), document.getElementById("saves_option"));
 				current_star_map.file_list();
+				const details_area = document.querySelector("main>article")
+				new AnimationHandler(details_area).transition_function = function (){
+					current_star_map.flush();
+				};
+				details_area.style.width = "0px";
 			});
 
-			window.addEventListener("beforeunload", function(event){
+			window.addEventListener("beforeunload", function(event) {
 				if (current_star_map.file)
 				{
 					event.returnValue = "你还有未保存的内容，是否离开？";
 				};
 			});
 
-			window.addEventListener("resize", function(event)
-			{
+			window.addEventListener("resize", function(event) {
 				current_star_map.flush();
 			});
 		</script>
@@ -346,6 +366,7 @@
 			const STROKE_ACTIVATE = 2;
 			const FONT = "Arial";
 			const MOUSE_SENSITIVITY = 0.0001;
+			const DETAILS_WIDTH_RATIO = 0.3;
 			const MIN_ZOOM = 0.01;
 			const KEY_RIGHT = 39; // right (not wasd)
 			const KEY_LEFT = 37; // left
@@ -484,6 +505,23 @@
 				{
 					this.active_element = element;
 					this.flush();
+					const details_area = document.querySelector("main>article");
+					if (element)
+					{
+						details_area.classList.remove("hide");
+						const main = this.canvas.parentElement;
+						details_area.style.height = `${main.clientHeight}px`;
+						details_area.style.width = `${main.clientWidth * DETAILS_WIDTH_RATIO}px`;
+						details_area.dataset.type = "source";
+						details_area.textContent = element.content;
+						update_content(details_area);
+					}
+					else
+					{
+						details_area.classList.add("hide");
+						details_area.innerHTML = "";
+						details_area.style.width = "0";
+					};
 					return element;
 				};
 
@@ -499,9 +537,10 @@
 					};
 					// Part 2 - Apply the transformation.
 					this.canvas.style.display = "none"; // Prevent the canvas being stretched.
-					const style = window.getComputedStyle(this.canvas.parentElement);
-					this.canvas.width = parseInt(style.width) * CANVAS_SCALE;
-					this.canvas.height = parseInt(style.height) * CANVAS_SCALE;
+					const main = this.canvas.parentElement;
+					const details = document.querySelector("main>article");
+					this.canvas.width = (main.clientWidth - details.offsetWidth) * CANVAS_SCALE;
+					this.canvas.height = main.clientHeight * CANVAS_SCALE;
 					this.canvas.style.display = "initial";
 					const context = this.canvas.getContext("2d");
 					context.resetTransform();
@@ -825,6 +864,27 @@
 				right_clicked_element: undefined,
 				left_click_function: undefined, // should return true if success
 
+				mouse_down(event)
+				{
+					if (event.button === 0)
+					{
+						current_star_map.drag_start(event.x, event.y);
+					};
+				},
+
+				mouse_move(event)
+				{
+					current_star_map.drag_move(event.x, event.y)
+				},
+
+				mouse_up(event)
+				{
+					if (event.button === 0)
+					{
+						current_star_map.drag_stop(event.x, event.y);
+					};
+				},
+
 				select_star_map()
 				{
 					const id = document.getElementById("saves_option").value;
@@ -978,6 +1038,28 @@
 						};
 						style_choose_area.insertBefore(each_style_element, style_choose_area.lastElementChild);
 					};
+				},
+
+				modify_content()
+				{
+					const content_edit_screen = document.getElementById("content_edit");
+					content_edit_screen.querySelector("textarea").value = user.right_clicked_element.content.content;
+					user.preview_content();
+					content_edit_screen.showModal();
+				},
+
+				preview_content()
+				{
+					const preview_screen = document.querySelector("#content_edit article");
+					const source = document.querySelector("#content_edit textarea");
+					preview_screen.dataset.type = "source";
+					preview_screen.textContent = source.value;
+					update_content(preview_screen);
+				},
+
+				edit_content()
+				{
+					user.right_clicked_element.content.content = document.querySelector("#content_edit textarea").value;
 				},
 
 				new_node()
@@ -1164,7 +1246,7 @@
 			</p>
 		</form>
 		<main>
-			<canvas id="canvas" onmousedown="current_star_map.drag_start(event.x, event.y)" onmousemove="current_star_map.drag_move(event.x, event.y)" onmouseup="current_star_map.drag_stop(event.x, event.y)" onmousewheel="event.preventDefault(); current_star_map.zoom(event.wheelDelta)" onkeydown="user.key_star_map(event)" oncontextmenu="user.context_menu_star_map(event)" tabindex="0">
+			<canvas id="canvas" onmousedown="user.mouse_down(event)" onmousemove="user.mouse_move(event)" onmouseup="user.mouse_up(event)" onmousewheel="event.preventDefault(); current_star_map.zoom(event.wheelDelta)" onkeydown="user.key_star_map(event)" oncontextmenu="user.context_menu_star_map(event)" tabindex="0">
 				你的浏览器无法正常运行星图软件。
 			</canvas>
 			<article id="article" class="hide"></article>
@@ -1198,6 +1280,16 @@
 			<button onclick="user.modify_node()" title="编辑节点">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
 					<path d="M5,25 l0,-7 l13,-13 l7,7 l-13,13 l-7,0 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
+				</svg>
+			</button>
+			<button onclick="user.modify_content()" title="编辑内容">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<g stroke="#FFFFFF" fill="none" stroke-width="2">
+						<rect x="5" y="5" width="20" height="20"/>
+						<line x1="8" y1="10" x2="14" y2="10"/>
+						<line x1="8" y1="15" x2="20" y2="15"/>
+						<line x1="8" y1="20" x2="17" y2="20"/>
+					</g>
 				</svg>
 			</button>
 			<button onclick="user.new_link()" title="创建链接">
@@ -1326,6 +1418,21 @@
 				<input id="new_link_style-onesided" type="checkbox"/>
 				<button value="submit" onclick="user.new_link_style()">
 					创建
+				</button>
+			</form>
+		</dialog>
+		<dialog id="content_edit">
+			<button value="cancel">
+				<img src="../../../../images/TOOLS/close.svg" alt="关闭"/>
+			</button>
+			<h2>
+				更改内容
+			</h2>
+			<form method="dialog">
+				<textarea oninput="user.preview_content()"></textarea>
+				<article></article>
+				<button value="submit" onclick="user.edit_content()">
+					设置
 				</button>
 			</form>
 		</dialog>
