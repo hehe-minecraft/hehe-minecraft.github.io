@@ -356,10 +356,10 @@
 			const KEY_ZOOM_OUT = 189; // "-"
 			const KEY_CHOOSE = 32; // space
 			const ORIGINAL_CONTENT = {
-				elements: new Set(),
+				nodes: new Set(),
 				links: new Set(),
 				styles: {
-					element: [],
+					node: [],
 					link: []
 				},
 				x: 0,
@@ -608,34 +608,34 @@
 							};
 						};
 					};
-					// Part 5 - Display the elements and detect the element hovered.
-					for (const each_element of this.content.elements)
+					// Part 5 - Display the nodes and detect the node hovered.
+					for (const each_node of this.content.nodes)
 					{
 						// Step 1 - Draw the subject (circle).
-						context.fillStyle = each_element.style.color;
+						context.fillStyle = each_node.style.color;
 						context.beginPath();
-						context.arc(each_element.x, each_element.y, each_element.size, 0, 2 * Math.PI);
+						context.arc(each_node.x, each_node.y, each_node.size, 0, 2 * Math.PI);
 						context.fill();
 						// Step 2 - Draw the active outline.
-						if (each_element === this.active_element)
+						if (each_node === this.active_element)
 						{
 							context.strokeStyle = COLOR_ACTIVATE;
 							context.lineWidth = STROKE_ACTIVATE;
 							context.stroke();
 						};
-						// Step 3 - Detect the hovered element and highlight it when in debug mode.
-						if (hover_place && (hover_place.x - each_element.x) ** 2 + (hover_place.y - each_element.y) ** 2 < each_element.size ** 2)
+						// Step 3 - Detect the hovered node and highlight it when in debug mode.
+						if (hover_place && (hover_place.x - each_node.x) ** 2 + (hover_place.y - each_node.y) ** 2 < each_node.size ** 2)
 						{
-							hovering = new StarMapInterface(each_element, storage.Element);
+							hovering = new StarMapInterface(each_node, storage.Element);
 							if (this.debug)
 							{
 								context.fillStyle = COLOR_DEBUG;
 								context.fill();
 							};
 						};
-						// Step 4 - Display the title of the element.
-						context.font = `${each_element.size}px ${FONT}`;
-						context.fillText(each_element.title, each_element.x, each_element.y + each_element.size * 2);
+						// Step 4 - Display the title of the node.
+						context.font = `${each_node.size}px ${FONT}`;
+						context.fillText(each_node.title, each_node.x, each_node.y + each_node.size * 2);
 					};
 					// Part 6 - Return the coordinate when nothing is hovered.
 					if (hover_place)
@@ -648,9 +648,9 @@
 					};
 				};
 
-				element_create(x, y, size, style, title="", content="")
+				node_create(x, y, size, style, title="", content="")
 				{
-					const element = {
+					const node = {
 						x: x,
 						y: y,
 						size: size,
@@ -658,18 +658,18 @@
 						title: title,
 						content: content
 					};
-					this.content.elements.add(element);
+					this.content.nodes.add(node);
 					this.flush();
-					return element;
+					return node;
 				};
 
-				element_remove(element)
+				node_remove(node)
 				{
-					if (this.content.elements.delete(element))
+					if (this.content.nodes.delete(node))
 					{
 						for (const each_link of this.content.links)
 						{
-							if (each_link.from === element || each_link.to === element)
+							if (each_link.from === node || each_link.to === node)
 							{
 								this.content.links.delete(each_link);
 							};
@@ -683,19 +683,19 @@
 					this.flush();
 				};
 
-				link_create(element1, element2, style, title="", content="")
+				link_create(node1, node2, style, title="", content="")
 				{
 					for (const each_link of this.content.links)
 					{
-						if ((each_link.from == element1 && each_link.to == element2 && each_link.style == style) || (!style.onesided && each_link.from == element2 && each_link.to == element1))
+						if ((each_link.from == node1 && each_link.to == node2 && each_link.style == style) || (!style.onesided && each_link.from == node2 && each_link.to == node1))
 						{
 							new Log("创建失败", "已存在相同的连接", "error");
 							return;
 						};
 					};
 					const link = {
-						from: element1,
-						to: element2,
+						from: node1,
+						to: node2,
 						style: style,
 						title: title,
 						content: content
@@ -705,13 +705,13 @@
 					return link;
 				};
 
-				element_style_create(color, name="Style")
+				node_style_create(color, name="Style")
 				{
 					const style = {
 						color: color,
 						name: name
 					};
-					this.content.styles.element.push(style);
+					this.content.styles.node.push(style);
 					this.flush();
 					return style;
 				};
@@ -906,7 +906,7 @@
 					switch (active_element.type)
 					{
 						case storage.Element:
-							menus.get("element").style.display = "flex";
+							menus.get("node").style.display = "flex";
 							break;
 						case storage.Coordinate:
 							menus.get("background").style.display = "flex";
@@ -939,21 +939,21 @@
 					};
 				},
 
-				element_update_styles()
+				node_update_styles()
 				{
-					const element_edit_screen = document.getElementById("element_edit");
-					const style_choose_area = element_edit_screen.querySelector(".choose_list");
+					const node_edit_screen = document.getElementById("node_edit");
+					const style_choose_area = node_edit_screen.querySelector(".choose_list");
 					while (style_choose_area.childElementCount > 1)
 					{
 						style_choose_area.firstChild.remove();
 					};
-					for (const each_style of current_star_map.content.styles.element)
+					for (const each_style of current_star_map.content.styles.node)
 					{
 						const each_style_element = document.createElement("span");
 						each_style_element.style.backgroundColor = each_style.color;
 						each_style_element.innerText = each_style.name;
 						each_style_element.onclick = function (event){
-							user.select_element_style(each_style);
+							user.select_node_style(each_style);
 						};
 						style_choose_area.insertBefore(each_style_element, style_choose_area.lastElementChild);
 					};
@@ -980,23 +980,23 @@
 					};
 				},
 
-				new_element()
+				new_node()
 				{
-					user.element_update_styles();
-					document.getElementById("element_edit").showModal();
+					user.node_update_styles();
+					document.getElementById("node_edit").showModal();
 				},
 
-				modify_element()
+				modify_node()
 				{
-					user.element_update_styles();
-					document.getElementById("element_edit").showModal();
+					user.node_update_styles();
+					document.getElementById("node_edit").showModal();
 				},
 
-				edit_element(event)
+				edit_node(event)
 				{
-					const chosen_style = document.querySelector("#element_edit .choose_list").value;
-					const element_title = document.getElementById("element_edit-title").value;
-					const element_size = document.getElementById("element_edit-size").value;
+					const chosen_style = document.querySelector("#node_edit .choose_list").value;
+					const node_title = document.getElementById("node_edit-title").value;
+					const node_size = document.getElementById("node_edit-size").value;
 					const current_editing_element = user.right_clicked_element;
 					if (!current_editing_element)
 					{
@@ -1005,20 +1005,20 @@
 					};
 					if (!chosen_style)
 					{
-						document.getElementById("element_edit-title").setCustomValidity("你还没有选择样式");
+						document.getElementById("node_edit-title").setCustomValidity("你还没有选择样式");
 						return;
 					};
 					if (current_editing_element.type === storage.Coordinate)
 					{
-						document.getElementById("element_edit-title").setCustomValidity("");
-						current_star_map.element_create(current_editing_element.content.x, current_editing_element.content.y, element_size, chosen_style, element_title);
+						document.getElementById("node_edit-title").setCustomValidity("");
+						current_star_map.node_create(current_editing_element.content.x, current_editing_element.content.y, node_size, chosen_style, node_title);
 					}
 					else if (current_editing_element.type === storage.Element)
 					{
-						document.getElementById("element_edit-title").setCustomValidity("");
-						current_editing_element.content.size = element_size;
+						document.getElementById("node_edit-title").setCustomValidity("");
+						current_editing_element.content.size = node_size;
 						current_editing_element.content.style = chosen_style;
-						current_editing_element.content.title = element_title;
+						current_editing_element.content.title = node_title;
 						current_star_map.flush();
 					};
 				},
@@ -1053,7 +1053,7 @@
 					};
 				},
 
-				move_element()
+				mode_node()
 				{
 					const element = user.right_clicked_element;
 					user.left_click_function = function (position)
@@ -1069,9 +1069,9 @@
 					};
 				},
 
-				remove_element()
+				remove_node()
 				{
-					current_star_map.element_remove(user.right_clicked_element.content);
+					current_star_map.node_remove(user.right_clicked_element.content);
 				},
 
 				new_link()
@@ -1080,15 +1080,15 @@
 					document.getElementById("link_edit").showModal();
 				},
 
-				select_element_style(style)
+				select_node_style(style)
 				{
 					if (style === "NEW")
 					{
-						document.getElementById("new_element_style").showModal();
+						document.getElementById("new_node_style").showModal();
 					}
 					else
 					{
-						document.querySelector("#element_edit .choose_list").value = style;
+						document.querySelector("#node_edit .choose_list").value = style;
 					};
 				},
 
@@ -1104,12 +1104,12 @@
 					};
 				},
 
-				new_element_style()
+				new_node_style()
 				{
-					const style_name = document.getElementById("new_element_style-name").value;
-					const style_color = document.getElementById("new_element_style-color").value;
-					current_star_map.element_style_create(style_color, style_name);
-					user.element_update_styles();
+					const style_name = document.getElementById("new_node_style-name").value;
+					const style_color = document.getElementById("new_node_style-color").value;
+					current_star_map.node_style_create(style_color, style_name);
+					user.node_update_styles();
 					new Log("节点样式创建成功", `名叫${style_name}`, "success");
 				},
 
@@ -1175,14 +1175,14 @@
 			</button>
 		</menu>
 		<menu data-context_type="background">
-			<button onclick="user.new_element()" title="新建节点">
+			<button onclick="user.new_node()" title="新建节点">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
 					<circle cx="15.5" cy="15.5" r="10" stroke="#FFFFFF" stroke-dasharray="2 1" fill="none"/>
 				</svg>
 			</button>
 		</menu>
-		<menu data-context_type="element">
-			<button onclick="user.remove_element()" title="删除节点">
+		<menu data-context_type="node">
+			<button onclick="user.remove_node()" title="删除节点">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
 					<g stroke="#FFFFFF" stroke-width="3">
 						<line x1="7" y1="7" x2="23" y2="23"/>
@@ -1190,12 +1190,12 @@
 					</g>
 				</svg>
 			</button>
-			<button onclick="user.move_element()" title="移动节点">
+			<button onclick="user.mode_node()" title="移动节点">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
 					<path d="M5,15 l20,0 m0,0 l-8,-8 l8,8 l-8,8" stroke-width="3" stroke="#FFFFFF" fill="none"/>
 				</svg>
 			</button>
-			<button onclick="user.modify_element()" title="编辑节点">
+			<button onclick="user.modify_node()" title="编辑节点">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
 					<path d="M5,25 l0,-7 l13,-13 l7,7 l-13,13 l-7,0 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
 				</svg>
@@ -1227,7 +1227,7 @@
 				</button>
 			</form>
 		</dialog>
-		<dialog id="element_edit">
+		<dialog id="node_edit">
 			<button value="cancel">
 				<img src="../../../../images/TOOLS/close.svg" alt="关闭"/>
 			</button>
@@ -1235,20 +1235,20 @@
 				编辑节点
 			</h2>
 			<div class="choose_list">
-				<span onclick="user.select_element_style('NEW')">
+				<span onclick="user.select_node_style('NEW')">
 					新建
 				</span>
 			</div>
 			<form method="dialog">
-				<label for="element_edit-title">
+				<label for="node_edit-title">
 					标题
 				</label>
-				<input id="element_edit-title" type="text" required/>
-				<label for="element_edit-size">
+				<input id="node_edit-title" type="text" required/>
+				<label for="node_edit-size">
 					大小
 				</label>
-				<input id="element_edit-size" type="number" min="1" value="20" required/>
-				<button value="submit" onclick="user.edit_element(event)">
+				<input id="node_edit-size" type="number" min="1" value="20" required/>
+				<button value="submit" onclick="user.edit_node(event)">
 					确认
 				</button>
 			</form>
@@ -1275,7 +1275,7 @@
 				</button>
 			</form>
 		</dialog>
-		<dialog id="new_element_style">
+		<dialog id="new_node_style">
 			<button value="cancel">
 				<img src="../../../../images/TOOLS/close.svg" alt="关闭"/>
 			</button>
@@ -1283,15 +1283,15 @@
 				新建节点样式
 			</h2>
 			<form method="dialog">
-				<label for="new_element_style-name">
+				<label for="new_node_style-name">
 					名字
 				</label>
-				<input id="new_element_style-name" type="text" required/>
-				<label for="new_element_style-color">
+				<input id="new_node_style-name" type="text" required/>
+				<label for="new_node_style-color">
 					背景颜色
 				</label>
-				<input id="new_element_style-color" type="color" required/>
-				<button value="submit" onclick="user.new_element_style()">
+				<input id="new_node_style-color" type="color" required/>
+				<button value="submit" onclick="user.new_node_style()">
 					创建
 				</button>
 			</form>
