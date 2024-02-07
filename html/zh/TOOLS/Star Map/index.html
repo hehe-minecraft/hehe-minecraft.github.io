@@ -278,11 +278,6 @@
 				background-color: #CC8888;
 			}
 
-			#content_edit
-			{
-				overflow-y: clip;
-			}
-
 			#content_edit>form
 			{
 				display: grid;
@@ -506,7 +501,7 @@
 					this.active_element = element;
 					this.flush();
 					const details_area = document.querySelector("main>article");
-					if (element)
+					if (element && element.content)
 					{
 						details_area.classList.remove("hide");
 						const main = this.canvas.parentElement;
