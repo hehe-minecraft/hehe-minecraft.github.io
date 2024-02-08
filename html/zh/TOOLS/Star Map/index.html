@@ -6,6 +6,7 @@
 		<link rel="stylesheet" type="text/css" href="../../../../css/app.css"/>
 		<script src="../../../../js/all.js" defer></script>
 		<script src="../../../../js/css.js" defer></script>
+		<script src="../../../../js/math.js" defer></script>
 		<title>
 			Wiki - 星图
 		</title>
@@ -85,7 +86,7 @@
 				height: 0;
 			}
 
-			body>menu>*
+			body>menu svg, body>menu img
 			{
 				margin-right: 0.5em;
 				background-color: #8888CC;
@@ -520,6 +521,7 @@
 					return element;
 				};
 
+				// Vector is from math.js
 				flush(hover_place=undefined)
 				{
 					// This function is so complex that comments will help you better understand.
@@ -553,7 +555,7 @@
 						context.arc(0, 0, 30, 0, 2 * Math.PI)
 						context.fill();
 					};
-					// Part 4 - Display the links.
+					// Part 4 - Display the links and detect which link is hovered.
 					let hovering;
 					const transform_matrix = this.transform_matrix; // Prevent the property from getting called over and over again.
 					for (const each_link of this.content.links)
@@ -565,16 +567,48 @@
 						{
 							continue;
 						};
-						// Step 2 - Optimize when the link is too thin to be displayed.
-						if (each_link.style.width * this.content.zoom <= 1)
+						// Step 2 - Detect the hovered link.
+						// We have some special names to refer to the positions.
+						// A,B: the start and end of the link.
+						// C: the mouse position.
+						// D: the perpendicular foot of the line AC on the line AB.
+						// We need to find the point D.
+						if (hover_place)
 						{
-							context.strokeStyle = each_link.style.forecolor;
-							context.lineWidth = 1;
-							context.beginPath();
-							context.moveTo(each_link.from.x, each_link.from.y);
-							context.lineTo(each_link.to.x, each_link.to.y);
-							context.stroke();
-							continue;
+							const A = new Vector([each_link.from.x, each_link.from.y]);
+							const B = new Vector([each_link.to.x, each_link.to.y]);
+							const C = new Vector([hover_place.x, hover_place.y]);
+							const AB = B.minus(A);
+							const AC = C.minus(A);
+							const AC_dot_AB = AC.dot(AB);
+							let mouse_distance;
+							if (AC_dot_AB < 0)
+							{
+								mouse_distance = AC.length;
+							}
+							else if (AC_dot_AB > AB.length ** 2)
+							{
+								mouse_distance = C.minus(A).length;
+							}
+							else
+							{
+								// The distance is |AC·AB| / ||AB||.
+								mouse_distance = Math.abs(AC.cross(AB)) / AB.length;
+							};
+							if (mouse_distance < each_link.style.width)
+							{
+								hovering = new StarMapInterface(each_link, storage.Link);
+								if (this.debug)
+								{
+									context.strokeStyle = COLOR_DEBUG;
+									context.lineWidth = each_link.style.width;
+									context.beginPath();
+									context.moveTo(each_link.from.x, each_link.from.y);
+									context.lineTo(each_link.to.x, each_link.to.y);
+									context.stroke();
+									continue;
+								};
+							};
 						};
 						// Step 3 - Draw the active link.
 						if (each_link === this.active_element)
@@ -585,8 +619,20 @@
 							context.moveTo(each_link.from.x, each_link.from.y);
 							context.lineTo(each_link.to.x, each_link.to.y);
 							context.stroke();
+							continue;
 						};
-						// Step 4 - Detect if the link is double sided.
+						// Step 4 - Optimize when the link is too thin to be displayed.
+						if (each_link.style.width * this.content.zoom <= 1)
+						{
+							context.strokeStyle = each_link.style.forecolor;
+							context.lineWidth = 1;
+							context.beginPath();
+							context.moveTo(each_link.from.x, each_link.from.y);
+							context.lineTo(each_link.to.x, each_link.to.y);
+							context.stroke();
+							continue;
+						};
+						// Step 5 - Detect if the link is double sided.
 						let doublesides = !each_link.style.onesided;
 						if (each_link.style.onesided)
 						{
@@ -599,7 +645,7 @@
 								};
 							};
 						};
-						// Step 5 - Draw the link.
+						// Step 6 - Draw the link.
 						const link_horizontal_length = each_link.to.x - each_link.from.x;
 						const link_vertical_length = each_link.to.y - each_link.from.y;
 						const link_length = Math.sqrt(link_horizontal_length ** 2 + link_vertical_length ** 2);
@@ -642,7 +688,7 @@
 							};
 						};
 					};
-					// Part 5 - Display the nodes and detect the node hovered.
+					// Part 5 - Display the nodes and detect which node is hovered.
 					for (const each_node of this.content.nodes)
 					{
 						// Step 1 - Draw the subject (circle).
@@ -737,6 +783,19 @@
 					this.content.links.add(link);
 					this.flush();
 					return link;
+				};
+
+				link_remove(link)
+				{
+					if (this.content.links.delete(link))
+					{
+						new Log("删除成功", "", "success");
+					}
+					else
+					{
+						new Log("删除失败", "", "error");
+					};
+					this.flush();
 				};
 
 				node_style_create(color, name="Style")
@@ -966,6 +1025,9 @@
 						case storage.Coordinate:
 							menus.get("background").style.display = "flex";
 							break;
+						case storage.Link:
+							menus.get("link").style.display = "flex";
+							break;
 					};
 				},
 
@@ -1085,14 +1147,13 @@
 						document.getElementById("node_edit-title").setCustomValidity("你还没有选择样式");
 						return;
 					};
+					document.getElementById("node_edit-title").setCustomValidity("");
 					if (current_editing_element.type === storage.Coordinate)
 					{
-						document.getElementById("node_edit-title").setCustomValidity("");
 						current_star_map.node_create(current_editing_element.content.x, current_editing_element.content.y, node_size, chosen_style, node_title);
 					}
 					else if (current_editing_element.type === storage.Element)
 					{
-						document.getElementById("node_edit-title").setCustomValidity("");
 						current_editing_element.content.size = node_size;
 						current_editing_element.content.style = chosen_style;
 						current_editing_element.content.title = node_title;
@@ -1115,22 +1176,28 @@
 						document.getElementById("link_edit-title").setCustomValidity("你还没有选择样式");
 						return;
 					};
+					document.getElementById("link_edit-title").setCustomValidity("");
 					if (current_editing_element.type === storage.Element)
 					{
-						document.getElementById("link_edit-title").setCustomValidity("");
 						user.left_click_function = function (element)
 						{
 							if (element.type != storage.Element)
 							{
 								return "你只能在两个节点创建链接";
-							}
+							};
 							current_star_map.link_create(current_editing_element.content, element.content, chosen_style, link_title);
 							return true;
 						};
+					}
+					else if (current_editing_element.type === storage.Link)
+					{
+						current_editing_element.content.style = chosen_style;
+						current_editing_element.content.title = link_title;
+						current_star_map.flush();
 					};
 				},
 
-				mode_node()
+				move_node()
 				{
 					const element = user.right_clicked_element;
 					user.left_click_function = function (position)
@@ -1155,6 +1222,17 @@
 				{
 					this.link_update_styles();
 					document.getElementById("link_edit").showModal();
+				},
+
+				modify_link()
+				{
+					this.link_update_styles();
+					document.getElementById("link_edit").showModal();
+				},
+
+				remove_link()
+				{
+					current_star_map.link_remove(user.right_clicked_element.content);
 				},
 
 				select_node_style(style)
@@ -1267,7 +1345,7 @@
 					</g>
 				</svg>
 			</button>
-			<button onclick="user.mode_node()" title="移动节点">
+			<button onclick="user.move_node()" title="移动节点">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
 					<path d="M5,15 l20,0 m0,0 l-8,-8 l8,8 l-8,8" stroke-width="3" stroke="#FFFFFF" fill="none"/>
 				</svg>
@@ -1294,6 +1372,31 @@
 						<circle cx="20" cy="10" r="4"/>
 					</g>
 					<line x1="10" y1="20" x2="20" y2="10" stroke="#FFFFFF" stroke-width="2"/>
+				</svg>
+			</button>
+		</menu>
+		<menu data-context_type="link">
+			<button onclick="user.remove_link()" title="删除链接">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<g stroke="#FFFFFF" stroke-width="3">
+						<line x1="7" y1="7" x2="23" y2="23"/>
+						<line x1="23" y1="7" x2="7" y2="23"/>
+					</g>
+				</svg>
+			</button>
+			<button onclick="user.modify_link()" title="编辑链接">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<path d="M5,25 l0,-7 l13,-13 l7,7 l-13,13 l-7,0 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
+				</svg>
+			</button>
+			<button onclick="user.modify_content()" title="编辑内容">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<g stroke="#FFFFFF" fill="none" stroke-width="2">
+						<rect x="5" y="5" width="20" height="20"/>
+						<line x1="8" y1="10" x2="14" y2="10"/>
+						<line x1="8" y1="15" x2="20" y2="15"/>
+						<line x1="8" y1="20" x2="17" y2="20"/>
+					</g>
 				</svg>
 			</button>
 		</menu>

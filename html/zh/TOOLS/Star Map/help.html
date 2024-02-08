@@ -73,23 +73,33 @@
 			在点击这个按钮之后，你需要再左键点击背景的任意位置。你不能将节点移动到另一个节点或链接上。
 			##编辑节点
 			NOTE 编辑节点时，你只能编辑标题、大小和样式，而不是位置和内容。
-			FIGURE node_edit_logo
-			对着节点打开编辑菜单，选择如[FIGURE node_edit_logo]的铅笔符号来编辑节点。
+			FIGURE element_edit_logo
+			对着节点打开编辑菜单，选择如[FIGURE element_edit_logo]的铅笔符号来编辑节点。
 			编辑节点的界面与创建节点的界面一致。
 			##删除节点
 			NOTE 删除节点时，会同时删除所有与该节点相关的链接。
-			FIGURE node_delete_logo
-			对着节点打开编辑菜单，选择如[FIGURE node_delete_logo]的叉号来删除节点。
+			FIGURE element_delete_logo
+			对着节点打开编辑菜单，选择如[FIGURE element_delete_logo]的叉号来删除节点。
 			删除节点没有重新确认界面。
 			##创建链接
 			FIGURE link_create_logo
 			对着节点打开编辑菜单，选择如[FIGURE link_create_logo]的线段符号来打开链接编辑界面。
 			在链接编辑界面中，最上端的方块也是样式选择区域，在其下方可以填入链接的标题。样式包含链接粗细。
 			点击样式选择区域最后的“新建”按钮来创建新的样式，它会弹出一个新的界面，其中可以填入样式的名字、主颜色、次颜色和粗细。“单向”若勾选则显示样式会类似于[FIGURE link]上半部分（单向链接）。
+			FIGURE link
 			存在样式时，点击样式选择区域特定的样式来应用它。每个样式会将自己的主颜色显示为字体颜色，将次颜色显示为背景色。
 			创建链接时标题和样式是必填的。如果没有选择样式，点击“确定”时会在“标题”一框中显示提醒：“你还没有选择样式”。
 			双向链接无法在两个连接点内反复创建，将它们交换顺序也不行。
 			NOTE 对于单向链接，可以将初始点和结束点交换位置再次创建，这样其显示方式会类似于[FIGURE link]下半部分（双向链接）。
+			##编辑链接
+			NOTE 编辑链接时，你只能编辑标题和样式，而不是内容。
+			FIGURE element_edit_logo
+			对着链接打开编辑菜单，选择如[FIGURE element_edit_logo]的铅笔符号来编辑链接。
+			编辑链接的界面与创建链接的界面一致。
+			##删除链接
+			FIGURE element_delete_logo
+			对着链接打开编辑菜单，选择如[FIGURE element_delete_logo]的叉号来删除链接。
+			删除链接没有重新确认界面。
 			##编辑内容
 			FIGURE content_edit_logo
 			对着节点或链接打开编辑菜单，选择如[FIGURE content_edit_logo]的文本符号来编辑内容。
@@ -168,15 +178,15 @@
 					移动节点图标
 				</figcaption>
 			</figure>
-			<figure id="node_edit_logo" class="logo">
+			<figure id="element_edit_logo" class="logo">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
 					<path d="M5,25 l0,-7 l13,-13 l7,7 l-13,13 l-7,0 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
 				</svg>
 				<figcaption>
-					编辑节点图标
+					编辑节点及链接图标
 				</figcaption>
 			</figure>
-			<figure id="node_delete_logo" class="logo">
+			<figure id="element_delete_logo" class="logo">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
 					<g stroke="#FFFFFF" stroke-width="3">
 						<line x1="7" y1="7" x2="23" y2="23"/>
@@ -184,7 +194,7 @@
 					</g>
 				</svg>
 				<figcaption>
-					删除节点图标
+					删除节点及链接图标
 				</figcaption>
 			</figure>
 			<figure id="link_create_logo" class="logo">
