@@ -468,13 +468,16 @@
 					{
 						// Actually not a drag anymore, it's a click.
 						const active_element = this.flush(this.transform_into_canvas_space(x, y));
-						if (active_element.type === storage.Coordinate)
+						if (!user.left_click_function)
 						{
-							this.activate(undefined);
-						}
-						else
-						{
-							this.activate(active_element.content);
+							if (active_element.type === storage.Coordinate)
+							{
+								this.activate(undefined);
+							}
+							else
+							{
+								this.activate(active_element.content);
+							};
 						};
 						user.left_click(active_element);
 					}
@@ -734,6 +737,10 @@
 
 				node_create(x, y, size, style, title="", content="")
 				{
+					if (size <= 0)
+					{
+						return;
+					};
 					const node = {
 						x: x,
 						y: y,
@@ -769,6 +776,11 @@
 
 				link_create(node1, node2, style, title="", content="")
 				{
+					if (node1 === node2)
+					{
+						new Log("创建失败", "不能链接自己", "error")
+						return;
+					};
 					for (const each_link of this.content.links)
 					{
 						if ((each_link.from == node1 && each_link.to == node2 && each_link.style == style) || (!style.onesided && each_link.from == node2 && each_link.to == node1))
@@ -815,6 +827,10 @@
 
 				link_style_create(forecolor, backcolor, onesided, width, name="Style")
 				{
+					if (width <= 0)
+					{
+						return;
+					};
 					const style = {
 						forecolor: forecolor,
 						backcolor: backcolor,
@@ -1271,7 +1287,7 @@
 					{
 						if (position.type !== storage.Coordinate)
 						{
-							return "你需要点击一个没有其他节点的位置";
+							return "你需要点击一个没有其他节点和链接的位置";
 						};
 						element.content.x = position.content.x;
 						element.content.y = position.content.y;
@@ -1506,7 +1522,7 @@
 				<label for="node_edit-title">
 					标题
 				</label>
-				<input id="node_edit-title" type="text" required/>
+				<input id="node_edit-title" type="text"/>
 				<label for="node_edit-size">
 					大小
 				</label>
@@ -1549,7 +1565,7 @@
 				<label for="new_node_style-name">
 					名字
 				</label>
-				<input id="new_node_style-name" type="text" required/>
+				<input id="new_node_style-name" type="text" placeholder="Style"/>
 				<label for="new_node_style-color">
 					背景颜色
 				</label>
@@ -1570,7 +1586,7 @@
 				<label for="new_link_style-name">
 					标题
 				</label>
-				<input id="new_link_style-name" type="text" required/>
+				<input id="new_link_style-name" type="text" placeholder="Style"/>
 				<label for="new_link_style-width">
 					宽度
 				</label>
