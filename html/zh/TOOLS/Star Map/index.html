@@ -338,6 +338,7 @@
 					current_star_map.flush();
 				};
 				details_area.style.width = "0px";
+				setInterval(user.tick_auto_typesetting, TICK_LAYOUT)
 			});
 
 			window.addEventListener("beforeunload", function(event) {
@@ -355,6 +356,9 @@
 			// tools_database is from file.js
 			const DATA_NAMESPACE = "Star Map";
 			const LOG_TIMEOUT = 4000; // ms
+			const TICK_LAYOUT = 50; // ms
+			const LAYOUT_INTERVAL = 3;
+			const LAYOUT_NOLINK_RATIO = 0.3;
 			const CANVAS_SCALE = 5;
 			const COLOR_BACKGROUND = "#000000";
 			const COLOR_ACTIVATE = "#FFFFFF"
@@ -917,6 +921,69 @@
 			const user = {
 				right_clicked_element: undefined,
 				left_click_function: undefined, // should return true if success
+				auto_typesetting_on: false,
+
+				switch_auto_typesetting()
+				{
+					user.auto_typesetting_on = !user.auto_typesetting_on;
+					if (user.auto_typesetting_on)
+					{
+						document.getElementById("auto_typesetting").style.backgroundColor = "#66AA66";
+					}
+					else
+					{
+						document.getElementById("auto_typesetting").removeAttribute("style");
+					};
+				},
+
+				tick_auto_typesetting()
+				{
+					if (!user.auto_typesetting_on)
+					{
+						return;
+					};
+					const forces = new Map();
+					for (const each_node1 of current_star_map.content.nodes)
+					{
+						const force = {x: 0, y: 0};
+						for (const each_link of current_star_map.content.links)
+						{
+							if (each_node1 !== each_link.from && each_node1 !== each_link.to)
+							{
+								continue;
+							};
+							const each_node2 = each_link.from === each_node1 ? each_link.to : each_link.from;
+							const distance = Math.sqrt((each_node1.x - each_node2.x) ** 2 + (each_node1.y - each_node2.y) ** 2);
+							const horizontal_ratio = (each_node1.x - each_node2.x) / distance;
+							const vertical_ratio = (each_node1.y - each_node2.y) / distance;
+							const force_factor = LAYOUT_INTERVAL * each_node1.size * each_node2.size;
+							const force_size = Math.log(distance) - force_factor / distance;
+							force.x -= force_size * horizontal_ratio;
+							force.y -= force_size * vertical_ratio;
+						};
+						for (const each_node2 of current_star_map.content.nodes)
+						{
+							if (each_node1 === each_node2)
+							{
+								continue;
+							};
+							const distance = Math.sqrt((each_node1.x - each_node2.x) ** 2 + (each_node1.y - each_node2.y) ** 2);
+							const horizontal_ratio = (each_node1.x - each_node2.x) / distance;
+							const vertical_ratio = (each_node1.y - each_node2.y) / distance;
+							const force_factor = LAYOUT_INTERVAL * each_node1.size * each_node2.size;
+							const force_size = (Math.log(distance) - force_factor / distance) * LAYOUT_NOLINK_RATIO;
+							force.x -= force_size * horizontal_ratio;
+							force.y -= force_size * vertical_ratio;
+						}
+						forces.set(each_node1, force);
+					};
+					for (const each_node of current_star_map.content.nodes)
+					{
+						each_node.x += forces.get(each_node).x;
+						each_node.y += forces.get(each_node).y;
+					}
+					current_star_map.flush();
+				},
 
 				mouse_down(event)
 				{
@@ -1328,11 +1395,17 @@
 			<button onclick="current_star_map.file_save()" title="保存">
 				<img src="../../../../images/TOOLS/download.svg" alt/>
 			</button>
+			<button onclick="user.switch_auto_typesetting()" title="自动排版">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" id="auto_typesetting">
+					<circle cx="15" cy="15" r="5" fill="#FFFFFF"/>
+					<path d="M8,10 l-3,5 l3,5 l-3,-5 m0,0 l20,0 m0,0 l-3,-5 l3,5 l-3,5" stroke-width="2" stroke="#FFFFFF" fill="none"/>
+				</svg>
+			</button>
 		</menu>
 		<menu data-context_type="background">
 			<button onclick="user.new_node()" title="新建节点">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
-					<circle cx="15.5" cy="15.5" r="10" stroke="#FFFFFF" stroke-dasharray="2 1" fill="none"/>
+					<circle cx="15" cy="15" r="10" stroke="#FFFFFF" stroke-dasharray="2 1" fill="none"/>
 				</svg>
 			</button>
 		</menu>

@@ -123,8 +123,13 @@
 			###超链接
 			超链接需要将标题放在方括号中，其后紧跟“ TO ”，再放入超链接的目标。
 			目标需要是一个 HTML 网站。
-			##常见问题
-			###卡在星图里面出不来
+			##自动排版
+			WARN 自动排版对性能要求较大。
+			FIGURE auto_typesetting_logo
+			点击左下角如[FIGURE auto_typesetting_logo]的按钮来打开或关闭自动排版。
+			自动排版时，节点会缓慢移动，直到它们之间有一个合理的距离，但是常常陷入[NOUN 局部最优 AS 可能不是最好，但是下一步向任意一个方向都会变差]的现象中，此时你需要手动调整节点的位置。
+			#常见问题
+			##卡在星图里面出不来
 			假如你通过非星图区域放大了屏幕，又用鼠标滚轮滑进了星图区域，再进行鼠标滚轮就无法逃脱，因为此时系统判定你正在放大或缩小星图，此时就会导致整个屏幕都是星图区域而无法正常执行操作。
 			要解决这个问题，你可以在星图区域上使用键盘的上下左右键或使用 PageDown 和 PageUp 键。
 		</main>
@@ -164,7 +169,7 @@
 			</figure>
 			<figure id="node_create_logo" class="logo">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
-					<circle cx="15.5" cy="15.5" r="10" stroke="#FFFFFF" stroke-dasharray="2 1" fill="none"/>
+					<circle cx="15" cy="15" r="10" stroke="#FFFFFF" stroke-dasharray="2 1" fill="none"/>
 				</svg>
 				<figcaption>
 					创建节点图标
@@ -220,6 +225,15 @@
 				</svg>
 				<figcaption>
 					编辑内容图标
+				</figcaption>
+			</figure>
+			<figure id="auto_typesetting_logo" class="logo">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" id="auto_typesetting">
+					<circle cx="15" cy="15" r="5" fill="#FFFFFF"/>
+					<path d="M8,10 l-3,5 l3,5 l-3,-5 m0,0 l20,0 m0,0 l-3,-5 l3,5 l-3,5" stroke-width="2" stroke="#FFFFFF" fill="none"/>
+				</svg>
+				<figcaption>
+					自动排版图标
 				</figcaption>
 			</figure>
 		</data-source>
