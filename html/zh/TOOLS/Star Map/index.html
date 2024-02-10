@@ -988,6 +988,10 @@
 							const vertical_ratio = (each_node1.y - each_node2.y) / distance;
 							const force_factor = LAYOUT_INTERVAL * each_node1.size * each_node2.size;
 							const force_size = (Math.log(distance) - force_factor / distance) * LAYOUT_NOLINK_RATIO;
+							if (force_size > 0) // Pull together
+							{
+								continue;
+							}
 							force.x -= force_size * horizontal_ratio;
 							force.y -= force_size * vertical_ratio;
 						}
