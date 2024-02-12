@@ -376,6 +376,8 @@
 			const KEY_ZOOM_IN = 187; // "+"
 			const KEY_ZOOM_OUT = 189; // "-"
 			const KEY_CHOOSE = 32; // space
+			const KEY_UNDO = 90; // z
+			const KEY_REDO = 89; // y
 			const ORIGINAL_CONTENT = {
 				nodes: new Set(),
 				links: new Set(),
@@ -397,6 +399,75 @@
 				};
 			};
 
+			class StarMapHistory // Works like a stack
+			{
+				constructor(application)
+				{
+					this.master = application;
+					this.clear();
+				};
+
+				log()
+				{
+					if (this.master.debug)
+					{
+						console.log(`Current snapshots: ${this.current_index + 1}/${this.history.length}`);
+					};
+				};
+
+				snapshot()
+				{
+					if (this.history.length > this.current_index + 1)
+					{
+						this.history.splice(this.current_index + 1);
+					};
+					this.history.push(structuredClone(this.master.content));
+					this.current_index = this.history.length - 1;
+					this.log();
+				};
+
+				undo()
+				{
+					if (!this.history)
+					{
+						return false;
+					};
+					this.current_index --;
+					if (this.current_index < 0)
+					{
+						this.current_index = 0;
+						return false;
+					};
+					this.log();
+					this.master.content = structuredClone(this.history[this.current_index]);
+					this.master.flush();
+				};
+
+				redo()
+				{
+					if (!this.history)
+					{
+						return false;
+					};
+					this.current_index ++;
+					if (this.current_index >= this.history.length)
+					{
+						this.current_index = this.history.length - 1;
+						return false;
+					};
+					this.log();
+					this.master.content = structuredClone(this.history[this.current_index]);
+					this.master.flush();
+				};
+
+				clear()
+				{
+					this.history = new Array();
+					this.current_index = -1;
+					this.log();
+				};
+			};
+
 			class Application
 			{
 				constructor()
@@ -408,6 +479,7 @@
 					this.debug = false;
 					this.active_element = undefined;
 					this.drag_base = {x: undefined, y: undefined};
+					this.history = new StarMapHistory(this);
 				};
 
 				get transform_matrix()
@@ -750,6 +822,7 @@
 						content: content
 					};
 					this.content.nodes.add(node);
+					this.history.snapshot();
 					this.flush();
 					return node;
 				};
@@ -771,6 +844,7 @@
 					{
 						new Log("删除失败", "", "error");
 					};
+					this.history.snapshot();
 					this.flush();
 				};
 
@@ -797,6 +871,7 @@
 						content: content
 					};
 					this.content.links.add(link);
+					this.history.snapshot();
 					this.flush();
 					return link;
 				};
@@ -811,6 +886,7 @@
 					{
 						new Log("删除失败", "", "error");
 					};
+					this.history.snapshot();
 					this.flush();
 				};
 
@@ -821,6 +897,7 @@
 						name: name
 					};
 					this.content.styles.node.push(style);
+					this.history.snapshot();
 					this.flush();
 					return style;
 				};
@@ -839,6 +916,7 @@
 						name: name
 					};
 					this.content.styles.link.push(style);
+					this.history.snapshot();
 					this.flush();
 					return style;
 				}
@@ -870,6 +948,8 @@
 					};
 					document.body.classList.add("editing");
 					this.file = id;
+					this.history.clear();
+					this.history.snapshot();
 					this.flush();
 				};
 
@@ -894,6 +974,8 @@
 					this.file = id;
 					this.file_save(id);
 					this.file_list(id);
+					this.history.clear();
+					this.history.snapshot();
 				};
 
 				async file_save()
@@ -907,6 +989,7 @@
 					document.body.classList.remove("editing");
 					this.content = ORIGINAL_CONTENT;
 					this.file = "";
+					this.history.clear();
 					this.flush();
 				};
 			};
@@ -1085,6 +1168,18 @@
 							event.clientX = canvas_center.x;
 							event.clientY = canvas_center.y;
 							user.context_menu_star_map(event);
+							break;
+						case KEY_UNDO:
+							if (event.ctrlKey)
+							{
+								const undo_result = current_star_map.history.undo();
+							};
+							break;
+						case KEY_REDO:
+							if (event.ctrlKey)
+							{
+								const redo_result = current_star_map.history.redo();
+							};
 							break;
 					};
 				},
