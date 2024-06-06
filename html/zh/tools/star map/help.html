@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="../../../../css/all.css"/>
+		<script src="../../../../js/all.js" defer></script>
+		<title>
+			Wiki - 星图教程
+		</title>
+		<style>
+			figure.logo>svg
+			{
+				background-color: #8888CC;
+			}
+		</style>
+		<script>
+			const parse_environment = {
+				figure: "图 $ "
+			}
+		</script>
+	</head>
+	<body>
+		<h1>
+			Wiki - 星图教程
+		</h1>
+		<nav>
+			<p>
+				内容索引
+			</p>
+			<ol class="catalogue"></ol>
+			<p id="return">
+				<a href="index.html">
+					返回上一页：星图
+				</a>
+			</p>
+		</nav>
+		<main data-type="source">
+			#总体介绍
+			DEF [NOUN 星图]是一个用来将各条信息整合的工具，就像思维导图一样。这里用于特指本工具。
+			WARN 这里存储的星图只能在本网站上打开，你可以下载网站的源代码以将这个工具搬运到你的电脑上。代码在 [GitHub TO BLANK https://github.com/hehe-minecraft/hehe-minecraft.github.io] 开源。
+			NOTE 本产品灵感来源于 [MCMod TO BLANK https://www.mcmod.cn] 的模组星图功能。
+			以下是与本产品类似的思维导图软件，也可以去看看：
+			- [Obsidian TO https://obsidian.md]
+			-
+			#术语定义
+			##节点
+			DEF [NOUN 节点]是星图中的一个基本单元，存储一片信息。
+			FIGURE node
+			节点在显示的时候是一个点（如[FIGURE node]，更准确地说是实心的圆），你可以改变它的颜色、大小、内容。
+			节点并不一定需要链接起来，也可以不添加任何信息，但是这就没有了星图的意义了。
+			##链接
+			DEF [NOUN 链接]是连接两个节点的线段，可以是单向或者双向的，存储两个节点之间的关系。
+			FIGURE link
+			链接在显示的时候是一条线段（如[FIGURE link]），多个链接会共享一种样式，其中包含粗细、方向、颜色。
+			链接是两种颜色相互交替的，双向的链接表现成间隔打点（[FIGURE link]上半部分），而单向的链接表现成交替箭头（[FIGURE link]下半部分）。
+			#使用方法
+			##基本操作
+			点击鼠标左键来选中节点或链接。
+			长按鼠标左键并拖动来移动星图。
+			滚动鼠标滚轮来放大或缩小星图。同时按下 Ctrl 键来使缩放更迅速。
+			点击鼠标右键来打开编辑菜单。
+			##去鼠标操作
+			使用键盘同样可以控制星图，使用[NOUN 空格 AS Space]来代替对屏幕中心点击鼠标左键，使用[NOUN 回车 AS Enter]键来代替对屏幕中心点击鼠标右键，使用上下左右四个按键来移动星图，使用[NOUN 加号 AS =]和[NOUN 减号 AS -]对应的位置（不用按住 Shift ）来放大和缩小星图。
+			WARN 不要同时使用鼠标和键盘进行基本操作，可能有意料之外的错误产生。
+			##创建节点
+			FIGURE node_create_logo
+			对着背景打开编辑菜单，选择如[FIGURE node_create_logo]的圆形符号来打开节点编辑界面。
+			在节点编辑界面中，最上端的方块是样式选择区域，在其下方可以填入节点的标题和大小。样式不包含节点大小。
+			点击样式选择区域最后的“新建”按钮来创建新的样式，它会弹出一个新的界面，其中可以填入样式的名字和颜色。
+			在编辑完成之后，点击对话框右下角的“确定”以确认编辑。
+			存在样式时，点击样式选择区域特定的样式来应用它。每个样式会将自己的颜色显示为背景色。
+			创建节点时标题、大小和样式是必填的。如果没有选择样式，点击“确定”时会在“标题”一框中显示提醒：“你还没有选择样式”。
+			##移动节点
+			FIGURE node_move_logo
+			对着节点打开编辑菜单，选择如[FIGURE node_move_logo]的箭头符号来移动节点。
+			在点击这个按钮之后，你需要再左键点击背景的任意位置。你不能将节点移动到另一个节点或链接上。
+			##编辑节点
+			NOTE 编辑节点时，你只能编辑标题、大小和样式，而不是位置和内容。
+			FIGURE element_edit_logo
+			对着节点打开编辑菜单，选择如[FIGURE element_edit_logo]的铅笔符号来编辑节点。
+			编辑节点的界面与创建节点的界面一致。
+			##删除节点
+			NOTE 删除节点时，会同时删除所有与该节点相关的链接。
+			FIGURE element_delete_logo
+			对着节点打开编辑菜单，选择如[FIGURE element_delete_logo]的叉号来删除节点。
+			删除节点没有重新确认界面。
+			##创建链接
+			FIGURE link_create_logo
+			对着节点打开编辑菜单，选择如[FIGURE link_create_logo]的线段符号来打开链接编辑界面。
+			在链接编辑界面中，最上端的方块也是样式选择区域，在其下方可以填入链接的标题。样式包含链接粗细。
+			点击样式选择区域最后的“新建”按钮来创建新的样式，它会弹出一个新的界面，其中可以填入样式的名字、主颜色、次颜色和粗细。“单向”若勾选则显示样式会类似于[FIGURE link]上半部分（单向链接）。
+			FIGURE link
+			存在样式时，点击样式选择区域特定的样式来应用它。每个样式会将自己的主颜色显示为字体颜色，将次颜色显示为背景色。
+			创建链接时标题和样式是必填的。如果没有选择样式，点击“确定”时会在“标题”一框中显示提醒：“你还没有选择样式”。
+			双向链接无法在两个连接点内反复创建，将它们交换顺序也不行。
+			NOTE 对于单向链接，可以将初始点和结束点交换位置再次创建，这样其显示方式会类似于[FIGURE link]下半部分（双向链接）。
+			##编辑链接
+			NOTE 编辑链接时，你只能编辑标题和样式，而不是内容。
+			FIGURE element_edit_logo
+			对着链接打开编辑菜单，选择如[FIGURE element_edit_logo]的铅笔符号来编辑链接。
+			编辑链接的界面与创建链接的界面一致。
+			##删除链接
+			FIGURE element_delete_logo
+			对着链接打开编辑菜单，选择如[FIGURE element_delete_logo]的叉号来删除链接。
+			删除链接没有重新确认界面。
+			##编辑内容
+			FIGURE content_edit_logo
+			对着节点或链接打开编辑菜单，选择如[FIGURE content_edit_logo]的文本符号来编辑内容。
+			编辑内容的界面左侧是源代码区域，右侧是预览区域，源代码会在右侧实时预览。
+			源代码区域中需要输入本 Wiki 自定义的 Source 代码。
+			NOTE Source 代码对缩进敏感。
+			编辑内容部分并不支持所有 Source 代码，以下将会讲解支持的代码部分。
+			###正文
+			正文没有任何修饰，只需要在一行里面写字就行。
+			###标题
+			标题需要在一列的最前面加上“#”，“#”越多，标题越小，如“#”表示一级标题，“###”表示三级标题。
+			NOTE 标题在进入更高级时不可以跨级创建，例如“###”创建在“#”后面，则“###”会被自动识别为“##”，反过来没有限制。
+			###分割线
+			NOTE 分割线用来分开两个一级标题。
+			要创建一根分割线，请在独立的一行中输入“===”。
+			###列表
+			列表需要在一列前面加上若干空格和“- ”，空格越多，列表等级越高。
+			NOTE “-”后面必须要有空格。
+			NOTE 与标题一样，列表在进入更高级时也不可以跨级创建。
+			要结束一个列表，你需要在独立的一行中输入“-”（没有空格）。
+			###超链接
+			超链接需要将标题放在方括号中，其后紧跟“ TO ”，再放入超链接的目标。
+			目标需要是一个 HTML 网站。
+			##自动排版
+			WARN 自动排版对性能要求较大。
+			FIGURE auto_typesetting_logo
+			点击左下角如[FIGURE auto_typesetting_logo]的按钮来打开或关闭自动排版。
+			自动排版时，节点会缓慢移动，直到它们之间有一个合理的距离，但是常常陷入[NOUN 局部最优 AS 可能不是最好，但是下一步向任意一个方向都会变差]的现象中，此时你需要手动调整节点的位置。
+			#常见问题
+			##卡在星图里面出不来
+			假如你通过非星图区域放大了屏幕，又用鼠标滚轮滑进了星图区域，再进行鼠标滚轮就无法逃脱，因为此时系统判定你正在放大或缩小星图，此时就会导致整个屏幕都是星图区域而无法正常执行操作。
+			要解决这个问题，你可以在星图区域上使用键盘的上下左右键或使用 PageDown 和 PageUp 键。
+		</main>
+		<data-source>
+			<figure id="node">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<circle cx="15" cy="15" r="15" fill="#8888CC"/>
+				</svg>
+				<figcaption>
+					一个节点
+				</figcaption>
+			</figure>
+			<figure id="link">
+				<svg xmlns="http://www.w3.org/2000/svg" width="90" height="70">
+					<g>
+						<line stroke-width="4" stroke="#8888CC" stroke-dasharray="4 4" x1="15" y1="15" x2="75" y2="15"/>
+						<line stroke-width="4" stroke="#6666AA" stroke-dasharray="0 4 4 0" x1="15" y1="15" x2="75" y2="15"/>
+						<g fill="#8888CC">
+							<circle cx="15" cy="15" r="10"/>
+							<circle cx="75" cy="15" r="10"/>
+						</g>
+					</g>
+					<g>
+						<marker id="link_marker" markerwidth="2" markerheight="1" refy="0.5">
+							<path d="M0,0 l1,0 l0.5,0.5 l-0.5,0.5 l-1,0 l0.5,-0.5" fill="#6666AA" stroke="none"/>
+						</marker>
+						<path d="M15,55 l7.5,0 l7.5,0 l7.5,0 l7.5,0 l7.5,0 l7.5,0 l7.5,0 l7.5,0" stroke-width="4" stroke="#8888CC" marker-mid="url(#link_marker)"/>
+						<g fill="#8888CC">
+							<circle cx="15" cy="55" r="10"/>
+							<circle cx="75" cy="55" r="10"/>
+						</g>
+					</g>
+				</svg>
+				<figcaption>
+					连接两个节点的链接
+				</figcaption>
+			</figure>
+			<figure id="node_create_logo" class="logo">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<circle cx="15" cy="15" r="10" stroke="#FFFFFF" stroke-dasharray="2 1" fill="none"/>
+				</svg>
+				<figcaption>
+					创建节点图标
+				</figcaption>
+			</figure>
+			<figure id="node_move_logo" class="logo">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<path d="M5,15 l20,0 m0,0 l-8,-8 l8,8 l-8,8" stroke-width="3" stroke="#FFFFFF" fill="none"/>
+				</svg>
+				<figcaption>
+					移动节点图标
+				</figcaption>
+			</figure>
+			<figure id="element_edit_logo" class="logo">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<path d="M5,25 l0,-7 l13,-13 l7,7 l-13,13 l-7,0 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
+				</svg>
+				<figcaption>
+					编辑节点及链接图标
+				</figcaption>
+			</figure>
+			<figure id="element_delete_logo" class="logo">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<g stroke="#FFFFFF" stroke-width="3">
+						<line x1="7" y1="7" x2="23" y2="23"/>
+						<line x1="23" y1="7" x2="7" y2="23"/>
+					</g>
+				</svg>
+				<figcaption>
+					删除节点及链接图标
+				</figcaption>
+			</figure>
+			<figure id="link_create_logo" class="logo">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<g fill="#FFFFFF">
+						<circle cx="10" cy="20" r="4"/>
+						<circle cx="20" cy="10" r="4"/>
+					</g>
+					<line x1="10" y1="20" x2="20" y2="10" stroke="#FFFFFF" stroke-width="2"/>
+				</svg>
+				<figcaption>
+					创建链接图标
+				</figcaption>
+			</figure>
+			<figure id="content_edit_logo" class="logo">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<g stroke="#FFFFFF" fill="none" stroke-width="2">
+						<rect x="5" y="5" width="20" height="20"/>
+						<line x1="8" y1="10" x2="14" y2="10"/>
+						<line x1="8" y1="15" x2="20" y2="15"/>
+						<line x1="8" y1="20" x2="17" y2="20"/>
+					</g>
+				</svg>
+				<figcaption>
+					编辑内容图标
+				</figcaption>
+			</figure>
+			<figure id="auto_typesetting_logo" class="logo">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" id="auto_typesetting">
+					<circle cx="15" cy="15" r="5" fill="#FFFFFF"/>
+					<path d="M8,10 l-3,5 l3,5 l-3,-5 m0,0 l20,0 m0,0 l-3,-5 l3,5 l-3,5" stroke-width="2" stroke="#FFFFFF" fill="none"/>
+				</svg>
+				<figcaption>
+					自动排版图标
+				</figcaption>
+			</figure>
+		</data-source>
+	</body>
+</html>

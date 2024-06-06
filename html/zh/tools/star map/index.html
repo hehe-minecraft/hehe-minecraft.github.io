@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="../../../../css/app.css"/>
+		<script src="../../../../js/all.js" defer></script>
+		<script src="../../../../js/css.js" defer></script>
+		<script src="../../../../js/math.js" defer></script>
+		<title>
+			Wiki - 星图
+		</title>
+		<style>
+			body
+			{
+				display: grid;
+				min-height: calc(100vh - 2.5em);
+				grid-template-areas: 
+					"heading heading"
+					"help choose"
+					"content content"
+					"menu context_menu";
+				grid-template-rows: auto auto 1fr auto;
+				margin: 1em 1em 0.5em 1em;
+			}
+
+			body>h1
+			{
+				grid-area: heading;
+				margin: 2px 0 0 0;
+				height: 1.5em;
+			}
+
+			body>p
+			{
+				grid-area: help;
+				margin: 0;
+			}
+
+			body>form
+			{
+				grid-area: choose;
+				text-align: right;
+				display: flex;
+				flex-direction: column-reverse;
+			}
+
+			body>form>p
+			{
+				margin: 0;
+			}
+
+			body>menu:first-of-type
+			{
+				grid-area: menu;
+			}
+
+			body>menu:not(:first-of-type)
+			{
+				display: none;
+				margin-left: auto;
+				flex-direction: row-reverse;
+			}
+
+			body>menu#context_menu
+			{
+				grid-area: context_menu;
+				display: flex;
+			}
+
+			body>menu
+			{
+				transition:
+					height 1s ease-in-out,
+					margin 1s ease-in-out,
+					padding 1s ease-in-out;
+				overflow-y: hidden;
+				display: flex;
+				margin-bottom: 0;
+			}
+
+			body:not(.editing) menu
+			{
+				margin: 0;
+				padding: 0;
+				height: 0;
+			}
+
+			body>menu svg, body>menu img
+			{
+				margin-right: 0.5em;
+				background-color: #8888CC;
+				border-radius: 2px;
+			}
+
+			body.editing>menu
+			{
+				height: 2em;
+				padding-left: 5px;
+			}
+
+			body .title
+			{
+				transition:
+					height 1s ease-in-out,
+					margin 1s ease-in-out,
+					padding 1s ease-in-out;
+				overflow-y: hidden;
+			}
+
+			body.editing .title
+			{
+				margin: 0;
+				padding: 0;
+				height: 0;
+			}
+
+			main
+			{
+				grid-area: content;
+				display: grid;
+				grid-template-areas: 
+					"canvas details";
+				grid-template-columns: 1fr auto;
+				background-color: #000000;
+			}
+
+			main>canvas
+			{
+				grid-area: canvas;
+				width: 100%;
+				height: 100%;
+			}
+
+			main>article
+			{
+				box-sizing: border-box;
+				grid-area: details;
+				background-color: #888888;
+				padding: 10px;
+				transition: all ease-in-out 0.5s;
+				overflow-y: scroll;
+			}
+
+			main>article.hide
+			{
+				padding: 0px;
+				opacity: 0;
+			}
+
+			dialog
+			{
+				border-radius: 5px;
+			}
+
+			dialog>h2
+			{
+				text-align: center;
+			}
+
+			dialog form
+			{
+				display: grid;
+				grid-template-columns: auto 1fr;
+			}
+
+			dialog form>*
+			{
+				margin: 2px 0 2px 0;
+			}
+
+			dialog form>label
+			{
+				margin-right: 5px;
+			}
+
+			dialog form>input
+			{
+				border-radius: 0;
+			}
+
+			dialog form>input[type="color"]
+			{
+				border-bottom: none;
+				margin: 2px auto 2px auto;
+				padding: 0;
+				height: 100%;
+			}
+
+			dialog>button[value="cancel"]
+			{
+				position: absolute;
+				right: 10px;
+				top: 10px;
+			}
+
+			dialog button[value="submit"]
+			{
+				display: block;
+				margin-left: auto;
+				margin-top: 10px;
+				grid-column-start: 1;
+				grid-column-end: -1;
+			}
+
+			.choose_list
+			{
+				display: flex;
+				flex-wrap: wrap;
+				flex-direction: row;
+				justify-content: center;
+			}
+
+			.choose_list>*
+			{
+				display: block;
+				width: 5em;
+				height: 5em;
+				border-radius: 10px;
+				line-height: 5em;
+				text-align: center;
+				margin: 5px;
+			}
+
+			.choose_list>:last-of-type
+			{
+				background-color: #DDDDFF;
+			}
+
+			#log
+			{
+				position: absolute;
+				top: 10px;
+				right: 5px;
+				max-height: 50%;
+				overflow-y: scroll;
+				display: flex;
+				flex-direction: column;
+			}
+
+			#log::-webkit-scrollbar
+			{
+				display: none;
+			}
+
+			#log>*
+			{
+				margin: 2px;
+				padding: 3px 5px;
+				border-radius: 2px;
+				animation:
+					1.2s ease-in-out 3s popout;
+			}
+
+			#log h2
+			{
+				margin: 0;
+				font-size: larger;
+			}
+			
+			#log p
+			{
+				margin: 0;
+				font-size: smaller;
+			}
+
+			#log>.info
+			{
+				background-color: #8888CC;
+			}
+
+			#log>.success
+			{
+				background-color: #66AA66;
+			}
+
+			#log>.error
+			{
+				background-color: #CC8888;
+			}
+
+			#content_edit>form
+			{
+				display: grid;
+				grid-template-areas: "edit preview";
+				grid-template-columns: 1fr 1fr;
+			}
+
+			#content_edit article
+			{
+				padding: 5px;
+				overflow-y: auto;
+			}
+
+			@keyframes popout
+			{
+				from
+				{
+					opacity: 100%;
+				}
+				to
+				{
+					opacity: 0;
+				}
+			}
+		</style>
+		<script src="../../../../js/file.js"></script>
+		<script src="../../../../js/async.js"></script>
+		<script>
+			const dom_observer = new MutationObserver(function (mutationsList)
+			{
+				for (const each_dialog of document.querySelectorAll("dialog"))
+				{
+					each_dialog.querySelector("button[value=cancel]").onclick = function ()
+					{
+						each_dialog.cancelled = true;
+						each_dialog.close();
+					};
+					each_dialog.onkeydown = function (event)
+					{
+						switch (event.code)
+						{
+							case "Escape":
+								each_dialog.cancelled = true;
+								break;
+						};
+					};
+				};
+			});
+			dom_observer.observe(document, {childList: true, subtree: true});
+
+			document.addEventListener("DOMContentLoaded", function(){
+				// AnimationHandler is from css.js
+				current_star_map.link(document.getElementById("canvas"), document.getElementById("saves_option"));
+				current_star_map.file_list();
+				const details_area = document.querySelector("main>article")
+				new AnimationHandler(details_area).transition_function = function (){
+					current_star_map.flush();
+				};
+				details_area.style.width = "0px";
+				setInterval(user.tick_auto_typesetting, TICK_LAYOUT)
+			});
+
+			window.addEventListener("beforeunload", function(event) {
+				if (current_star_map.file)
+				{
+					event.returnValue = "你还有未保存的内容，是否离开？";
+				};
+			});
+
+			window.addEventListener("resize", function(event) {
+				current_star_map.flush();
+			});
+		</script>
+		<script>
+			// tools_database is from file.js
+			const DATA_NAMESPACE = "Star Map";
+			const LOG_TIMEOUT = 4000; // ms
+			const TICK_LAYOUT = 50; // ms
+			const LAYOUT_INTERVAL = 3;
+			const LAYOUT_NOLINK_RATIO = 0.3;
+			const CANVAS_SCALE = 5;
+			const COLOR_BACKGROUND = "#000000";
+			const COLOR_ACTIVATE = "#FFFFFF"
+			const COLOR_DEBUG = "#FFF5B0";
+			const STROKE_ACTIVATE = 2;
+			const FONT = "Arial";
+			const MOUSE_SENSITIVITY = 0.0001;
+			const DETAILS_WIDTH_RATIO = 0.3;
+			const MIN_ZOOM = 0.01;
+			const KEY_RIGHT = 39; // right (not wasd)
+			const KEY_LEFT = 37; // left
+			const KEY_UP = 38; // up
+			const KEY_DOWN = 40; // down
+			const KEY_RIGHT_CLICK = 13; // enter
+			const KEY_ZOOM_IN = 187; // "+"
+			const KEY_ZOOM_OUT = 189; // "-"
+			const KEY_CHOOSE = 32; // space
+			const KEY_UNDO = 90; // z
+			const KEY_REDO = 89; // y
+			const ORIGINAL_CONTENT = {
+				nodes: new Set(),
+				links: new Set(),
+				styles: {
+					node: [],
+					link: []
+				},
+				x: 0,
+				y: 0,
+				zoom: 1
+			};
+
+			class StarMapInterface
+			{
+				constructor(content, type)
+				{
+					this.content = content;
+					this.type = type;
+				};
+			};
+
+			class StarMapHistory // Works like a stack
+			{
+				constructor(application)
+				{
+					this.master = application;
+					this.clear();
+				};
+
+				log()
+				{
+					if (this.master.debug)
+					{
+						console.log(`Current snapshots: ${this.current_index + 1}/${this.history.length}`);
+					};
+				};
+
+				snapshot()
+				{
+					if (this.history.length > this.current_index + 1)
+					{
+						this.history.splice(this.current_index + 1);
+					};
+					this.history.push(structuredClone(this.master.content));
+					this.current_index = this.history.length - 1;
+					this.log();
+				};
+
+				undo()
+				{
+					if (!this.history)
+					{
+						return false;
+					};
+					this.current_index --;
+					if (this.current_index < 0)
+					{
+						this.current_index = 0;
+						return false;
+					};
+					this.log();
+					this.master.content = structuredClone(this.history[this.current_index]);
+					this.master.flush();
+				};
+
+				redo()
+				{
+					if (!this.history)
+					{
+						return false;
+					};
+					this.current_index ++;
+					if (this.current_index >= this.history.length)
+					{
+						this.current_index = this.history.length - 1;
+						return false;
+					};
+					this.log();
+					this.master.content = structuredClone(this.history[this.current_index]);
+					this.master.flush();
+				};
+
+				clear()
+				{
+					this.history = new Array();
+					this.current_index = -1;
+					this.log();
+				};
+			};
+
+			class Application
+			{
+				constructor()
+				{
+					this.canvas = undefined;
+					this.content = ORIGINAL_CONTENT;
+					this.file = "";
+					this.list = undefined;
+					this.debug = false;
+					this.active_element = undefined;
+					this.drag_base = {x: undefined, y: undefined};
+					this.history = new StarMapHistory(this);
+				};
+
+				get transform_matrix()
+				{
+					const result = new DOMMatrix();
+					result.translateSelf(this.canvas.offsetLeft, this.canvas.offsetTop);
+					result.scaleSelf(1 / CANVAS_SCALE, 1 / CANVAS_SCALE);
+					result.translateSelf(this.content.x, this.content.y);
+					result.translateSelf(this.canvas.width / 2, this.canvas.height / 2);
+					result.scaleSelf(this.content.zoom, this.content.zoom);
+					return result;
+				};
+
+				transform_into_canvas_space(x, y)
+				{
+					return this.transform_matrix.inverse().transformPoint(new DOMPoint(x, y));
+				};
+
+				link(canvas, list)
+				{
+					this.canvas = canvas;
+					this.list = list;
+					this.flush();
+				};
+
+				drag_start(x, y)
+				{
+					this.drag_base.x = x;
+					this.drag_base.y = y;
+				};
+
+				drag_move(x, y)
+				{
+					if (this.drag_base.x === undefined)
+					{
+						if (this.debug)
+						{
+							this.flush(this.transform_into_canvas_space(x, y));
+						};
+						return;
+					};
+					const original_x = this.content.x;
+					const original_y = this.content.y;
+					this.content.x += (x - this.drag_base.x) * CANVAS_SCALE;
+					this.content.y += (y - this.drag_base.y) * CANVAS_SCALE;
+					this.flush();
+					this.content.x = original_x;
+					this.content.y = original_y;
+				};
+
+				drag_stop(x, y)
+				{
+					if (this.drag_base.x === undefined)
+					{
+						return;
+					}
+					else if (this.drag_base.x === x && this.drag_base.y === y)
+					{
+						// Actually not a drag anymore, it's a click.
+						const active_element = this.flush(this.transform_into_canvas_space(x, y));
+						if (!user.left_click_function)
+						{
+							if (active_element.type === storage.Coordinate)
+							{
+								this.activate(undefined);
+							}
+							else
+							{
+								this.activate(active_element.content);
+							};
+						};
+						user.left_click(active_element);
+					}
+					else
+					{
+						this.content.x += (x - this.drag_base.x) * CANVAS_SCALE;
+						this.content.y += (y - this.drag_base.y) * CANVAS_SCALE;
+						this.flush();
+					};
+					this.drag_base = {x: undefined, y: undefined};
+				};
+
+				zoom(delta)
+				{
+					const original_zoom = this.content.zoom;
+					this.content.zoom += delta * this.content.zoom * MOUSE_SENSITIVITY;
+					if (this.content.zoom < MIN_ZOOM)
+					{
+						this.content.zoom = MIN_ZOOM;
+					};
+					const zoom_ratio = this.content.zoom / original_zoom;
+					this.content.x *= zoom_ratio;
+					this.content.y *= zoom_ratio;
+					this.flush();
+				};
+
+				activate(element)
+				{
+					this.active_element = element;
+					this.flush();
+					const details_area = document.querySelector("main>article");
+					if (element && element.content)
+					{
+						details_area.classList.remove("hide");
+						const main = this.canvas.parentElement;
+						details_area.style.height = `${main.clientHeight}px`;
+						details_area.style.width = `${main.clientWidth * DETAILS_WIDTH_RATIO}px`;
+						details_area.dataset.type = "source";
+						details_area.textContent = element.content;
+						update_content(details_area);
+					}
+					else
+					{
+						details_area.classList.add("hide");
+						details_area.innerHTML = "";
+						details_area.style.width = "0";
+					};
+					return element;
+				};
+
+				// Vector is from math.js
+				flush(hover_place=undefined)
+				{
+					// This function is so complex that comments will help you better understand.
+					// The comments are in the order of "Part" > "Step".
+					// When hover_place is given, the function will return a StarMapInterface.
+					// Part 1 - Detect unavailable scenes.
+					if (!this.content)
+					{
+						return;
+					};
+					// Part 2 - Apply the transformation.
+					this.canvas.style.display = "none"; // Prevent the canvas being stretched.
+					const main = this.canvas.parentElement;
+					const details = document.querySelector("main>article");
+					this.canvas.width = (main.clientWidth - details.offsetWidth) * CANVAS_SCALE;
+					this.canvas.height = main.clientHeight * CANVAS_SCALE;
+					this.canvas.style.display = "initial";
+					const context = this.canvas.getContext("2d");
+					context.resetTransform();
+					context.textAlign = "center";
+					context.fillStyle = COLOR_BACKGROUND;
+					context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+					context.translate(this.canvas.width / 2, this.canvas.height / 2);
+					context.translate(this.content.x, this.content.y);
+					context.scale(this.content.zoom, this.content.zoom);
+					// Part 3 - Display the origin in debug mode.
+					if (this.debug)
+					{
+						context.fillStyle = COLOR_DEBUG;
+						context.beginPath();
+						context.arc(0, 0, 30, 0, 2 * Math.PI)
+						context.fill();
+					};
+					// Part 4 - Display the links and detect which link is hovered.
+					let hovering;
+					const transform_matrix = this.transform_matrix; // Prevent the property from getting called over and over again.
+					for (const each_link of this.content.links)
+					{
+						// Step 1 - Optimize when the link is out of the screen, because the expense of displaying a link is so huge.
+						const link_from_transformed = transform_matrix.transformPoint(new DOMPoint(each_link.from.x, each_link.from.y));
+						const link_to_transformed = transform_matrix.transformPoint(new DOMPoint(each_link.to.x, each_link.to.y));
+						if ((link_from_transformed.x < 0 || link_from_transformed.x > this.canvas.width) && (link_from_transformed.y < 0 || link_from_transformed.y > this.canvas.height || link_to_transformed.x < 0 || link_to_transformed.x > this.canvas.width || link_to_transformed.y < 0 || link_to_transformed.y > this.canvas.height))
+						{
+							continue;
+						};
+						// Step 2 - Detect the hovered link.
+						// We have some special names to refer to the positions.
+						// A,B: the start and end of the link.
+						// C: the mouse position.
+						// D: the perpendicular foot of the line AC on the line AB.
+						// We need to find the point D.
+						if (hover_place)
+						{
+							const A = new Vector([each_link.from.x, each_link.from.y]);
+							const B = new Vector([each_link.to.x, each_link.to.y]);
+							const C = new Vector([hover_place.x, hover_place.y]);
+							const AB = B.minus(A);
+							const AC = C.minus(A);
+							const AC_dot_AB = AC.dot(AB);
+							let mouse_distance;
+							if (AC_dot_AB < 0)
+							{
+								mouse_distance = AC.length;
+							}
+							else if (AC_dot_AB > AB.length ** 2)
+							{
+								mouse_distance = C.minus(A).length;
+							}
+							else
+							{
+								// The distance is |AC·AB| / ||AB||.
+								mouse_distance = Math.abs(AC.cross(AB)) / AB.length;
+							};
+							if (mouse_distance < each_link.style.width)
+							{
+								hovering = new StarMapInterface(each_link, storage.Link);
+								if (this.debug)
+								{
+									context.strokeStyle = COLOR_DEBUG;
+									context.lineWidth = each_link.style.width;
+									context.beginPath();
+									context.moveTo(each_link.from.x, each_link.from.y);
+									context.lineTo(each_link.to.x, each_link.to.y);
+									context.stroke();
+									continue;
+								};
+							};
+						};
+						// Step 3 - Draw the active link.
+						if (each_link === this.active_element)
+						{
+							context.strokeStyle = COLOR_ACTIVATE;
+							context.lineWidth = each_link.style.width;
+							context.beginPath();
+							context.moveTo(each_link.from.x, each_link.from.y);
+							context.lineTo(each_link.to.x, each_link.to.y);
+							context.stroke();
+							continue;
+						};
+						// Step 4 - Optimize when the link is too thin to be displayed.
+						if (each_link.style.width * this.content.zoom <= 1)
+						{
+							context.strokeStyle = each_link.style.forecolor;
+							context.lineWidth = 1;
+							context.beginPath();
+							context.moveTo(each_link.from.x, each_link.from.y);
+							context.lineTo(each_link.to.x, each_link.to.y);
+							context.stroke();
+							continue;
+						};
+						// Step 5 - Detect if the link is double sided.
+						let doublesides = !each_link.style.onesided;
+						if (each_link.style.onesided)
+						{
+							for (const each_link2 of this.content.links)
+							{
+								if (each_link2.from == each_link.to && each_link2.to == each_link.from)
+								{
+									doublesides = true;
+									break;
+								};
+							};
+						};
+						// Step 6 - Draw the link.
+						const link_horizontal_length = each_link.to.x - each_link.from.x;
+						const link_vertical_length = each_link.to.y - each_link.from.y;
+						const link_length = Math.sqrt(link_horizontal_length ** 2 + link_vertical_length ** 2);
+						const horizontal_ratio = link_horizontal_length / link_length;
+						const vertical_ratio = link_vertical_length / link_length;
+						const color_interval_count = Math.floor(link_length / each_link.style.width);
+						const color_interval = link_length / color_interval_count;
+						if (each_link.style.onesided && !doublesides)
+						{
+							// "relative" means the relative position to the center of the node.
+							const edge_midpoint_relative_x = - color_interval / 2 * horizontal_ratio;
+							const edge_midpoint_relative_y = - color_interval / 2 * vertical_ratio;
+							context.fillStyle = each_link.style.forecolor;
+							for (let current_length = 0; current_length < link_length; current_length += color_interval)
+							{
+								const current_position_x = each_link.from.x + current_length * horizontal_ratio;
+								const current_position_y = each_link.from.y + current_length * vertical_ratio;
+								context.fillStyle = context.fillStyle === each_link.style.forecolor ? each_link.style.backcolor : each_link.style.forecolor;
+								context.beginPath();
+								context.moveTo(current_position_x, current_position_y);
+								context.lineTo(current_position_x + edge_midpoint_relative_x - edge_midpoint_relative_y, current_position_y + edge_midpoint_relative_y + edge_midpoint_relative_x);
+								context.lineTo(current_position_x - edge_midpoint_relative_x - edge_midpoint_relative_y, current_position_y - edge_midpoint_relative_y + edge_midpoint_relative_x)
+								context.lineTo(current_position_x + color_interval * horizontal_ratio, current_position_y - 2 * edge_midpoint_relative_y);
+								context.lineTo(current_position_x - edge_midpoint_relative_x + edge_midpoint_relative_y, current_position_y - edge_midpoint_relative_y - edge_midpoint_relative_x)
+								context.lineTo(current_position_x + edge_midpoint_relative_x + edge_midpoint_relative_y, current_position_y + edge_midpoint_relative_y - edge_midpoint_relative_x);
+								context.fill();
+							};
+						}
+						else
+						{
+							context.lineWidth = each_link.style.width;
+							context.strokeStyle = each_link.style.forecolor;
+							for (let current_length = 0; current_length < link_length; current_length += color_interval)
+							{
+								context.strokeStyle = context.strokeStyle === each_link.style.forecolor ? each_link.style.backcolor : each_link.style.forecolor;
+								context.beginPath();
+								context.moveTo(each_link.from.x + current_length * horizontal_ratio, each_link.from.y + current_length * vertical_ratio);
+								context.lineTo(each_link.from.x + (current_length + color_interval) * horizontal_ratio, each_link.from.y + (current_length + color_interval) * vertical_ratio);
+								context.stroke();
+							};
+						};
+					};
+					// Part 5 - Display the nodes and detect which node is hovered.
+					for (const each_node of this.content.nodes)
+					{
+						// Step 1 - Draw the subject (circle).
+						context.fillStyle = each_node.style.color;
+						context.beginPath();
+						context.arc(each_node.x, each_node.y, each_node.size, 0, 2 * Math.PI);
+						context.fill();
+						// Step 2 - Draw the active outline.
+						if (each_node === this.active_element)
+						{
+							context.strokeStyle = COLOR_ACTIVATE;
+							context.lineWidth = STROKE_ACTIVATE;
+							context.stroke();
+						};
+						// Step 3 - Detect the hovered node and highlight it when in debug mode.
+						if (hover_place && (hover_place.x - each_node.x) ** 2 + (hover_place.y - each_node.y) ** 2 < each_node.size ** 2)
+						{
+							hovering = new StarMapInterface(each_node, storage.Element);
+							if (this.debug)
+							{
+								context.fillStyle = COLOR_DEBUG;
+								context.fill();
+							};
+						};
+						// Step 4 - Display the title of the node.
+						context.font = `${each_node.size}px ${FONT}`;
+						context.fillText(each_node.title, each_node.x, each_node.y + each_node.size * 2);
+					};
+					// Part 6 - Return the coordinate when nothing is hovered.
+					if (hover_place)
+					{
+						if (!hovering)
+						{
+							hovering = new StarMapInterface(hover_place, storage.Coordinate);
+						};
+						return hovering;
+					};
+				};
+
+				node_create(x, y, size, style, title="", content="")
+				{
+					if (size <= 0)
+					{
+						return;
+					};
+					const node = {
+						x: x,
+						y: y,
+						size: size,
+						style: style,
+						title: title,
+						content: content
+					};
+					this.content.nodes.add(node);
+					this.history.snapshot();
+					this.flush();
+					return node;
+				};
+
+				node_remove(node)
+				{
+					if (this.content.nodes.delete(node))
+					{
+						for (const each_link of this.content.links)
+						{
+							if (each_link.from === node || each_link.to === node)
+							{
+								this.content.links.delete(each_link);
+							};
+						};
+						new Log("删除成功", "", "success");
+					}
+					else
+					{
+						new Log("删除失败", "", "error");
+					};
+					this.history.snapshot();
+					this.flush();
+				};
+
+				link_create(node1, node2, style, title="", content="")
+				{
+					if (node1 === node2)
+					{
+						new Log("创建失败", "不能链接自己", "error")
+						return;
+					};
+					for (const each_link of this.content.links)
+					{
+						if ((each_link.from == node1 && each_link.to == node2 && each_link.style == style) || (!style.onesided && each_link.from == node2 && each_link.to == node1))
+						{
+							new Log("创建失败", "已存在相同的连接", "error");
+							return;
+						};
+					};
+					const link = {
+						from: node1,
+						to: node2,
+						style: style,
+						title: title,
+						content: content
+					};
+					this.content.links.add(link);
+					this.history.snapshot();
+					this.flush();
+					return link;
+				};
+
+				link_remove(link)
+				{
+					if (this.content.links.delete(link))
+					{
+						new Log("删除成功", "", "success");
+					}
+					else
+					{
+						new Log("删除失败", "", "error");
+					};
+					this.history.snapshot();
+					this.flush();
+				};
+
+				node_style_create(color, name="Style")
+				{
+					const style = {
+						color: color,
+						name: name
+					};
+					this.content.styles.node.push(style);
+					this.history.snapshot();
+					this.flush();
+					return style;
+				};
+
+				link_style_create(forecolor, backcolor, onesided, width, name="Style")
+				{
+					if (width <= 0)
+					{
+						return;
+					};
+					const style = {
+						forecolor: forecolor,
+						backcolor: backcolor,
+						onesided: onesided,
+						width: width,
+						name: name
+					};
+					this.content.styles.link.push(style);
+					this.history.snapshot();
+					this.flush();
+					return style;
+				}
+
+				async file_list()
+				{
+					while (this.list.childElementCount > 2)
+					{
+						this.list.children[2].remove();
+					};
+					for (const each_key of await tools_database.get_keys(DATA_NAMESPACE))
+					{
+						const option_element = document.createElement("option")
+						option_element.innerText = option_element.value = each_key;
+						this.list.appendChild(option_element);
+					};
+				};
+
+				async file_open(id)
+				{
+					try
+					{
+						this.content = (await tools_database.get_data(DATA_NAMESPACE, id)).content;
+					}
+					catch (error)
+					{
+						new Log("无法打开星图", `名字为${id}`, "error");
+						return;
+					};
+					document.body.classList.add("editing");
+					this.file = id;
+					this.history.clear();
+					this.history.snapshot();
+					this.flush();
+				};
+
+				async file_create(id)
+				{
+					if ((await tools_database.get_keys(DATA_NAMESPACE)).includes(id))
+					{
+						new Log("星图已存在", `名字为${id}`, "error");
+						return;
+					};
+					if (!id)
+					{
+						return;
+					};
+					if (id === "NOT_SELECTED" || id === "NEW")
+					{
+						new Log("请换个星图名", "星图名与程序关键字重名", "error");
+						return;
+					};
+					this.content = ORIGINAL_CONTENT;
+					document.body.classList.add("editing");
+					this.file = id;
+					this.file_save(id);
+					this.file_list(id);
+					this.history.clear();
+					this.history.snapshot();
+				};
+
+				async file_save()
+				{
+					await tools_database.write_to_data(DATA_NAMESPACE, this.file, this.content);
+					new Log("星图已保存", `名字为${this.file}`, "success");
+				};
+
+				async file_close()
+				{
+					document.body.classList.remove("editing");
+					this.content = ORIGINAL_CONTENT;
+					this.file = "";
+					this.history.clear();
+					this.flush();
+				};
+			};
+
+			class Log
+			{
+				constructor(title, content, type="info")
+				{
+					this.element = document.createElement("div");
+					document.getElementById("log").appendChild(this.element);
+					this.element.classList.add(type);
+					const title_element = document.createElement("h2");
+					title_element.innerText = title;
+					const content_element = document.createElement("p");
+					content_element.innerText = content;
+					this.element.appendChild(title_element);
+					this.element.appendChild(content_element);
+					const log_element = this.element;
+					setTimeout(function(){log_element.remove()}, LOG_TIMEOUT);
+				};
+				
+				remove()
+				{
+					this.element.remove();
+				};
+			};
+
+			const user = {
+				right_clicked_element: undefined,
+				left_click_function: undefined, // should return true if success
+				auto_typesetting_on: false,
+
+				switch_auto_typesetting()
+				{
+					user.auto_typesetting_on = !user.auto_typesetting_on;
+					if (user.auto_typesetting_on)
+					{
+						document.getElementById("auto_typesetting").style.backgroundColor = "#66AA66";
+					}
+					else
+					{
+						document.getElementById("auto_typesetting").removeAttribute("style");
+					};
+				},
+
+				tick_auto_typesetting()
+				{
+					if (!user.auto_typesetting_on)
+					{
+						return;
+					};
+					const forces = new Map();
+					for (const each_node1 of current_star_map.content.nodes)
+					{
+						const force = {x: 0, y: 0};
+						for (const each_link of current_star_map.content.links)
+						{
+							if (each_node1 !== each_link.from && each_node1 !== each_link.to)
+							{
+								continue;
+							};
+							const each_node2 = each_link.from === each_node1 ? each_link.to : each_link.from;
+							const distance = Math.sqrt((each_node1.x - each_node2.x) ** 2 + (each_node1.y - each_node2.y) ** 2);
+							const horizontal_ratio = (each_node1.x - each_node2.x) / distance;
+							const vertical_ratio = (each_node1.y - each_node2.y) / distance;
+							const force_factor = LAYOUT_INTERVAL * each_node1.size * each_node2.size;
+							const force_size = Math.log(distance) - force_factor / distance;
+							force.x -= force_size * horizontal_ratio;
+							force.y -= force_size * vertical_ratio;
+						};
+						for (const each_node2 of current_star_map.content.nodes)
+						{
+							if (each_node1 === each_node2)
+							{
+								continue;
+							};
+							const distance = Math.sqrt((each_node1.x - each_node2.x) ** 2 + (each_node1.y - each_node2.y) ** 2);
+							const horizontal_ratio = (each_node1.x - each_node2.x) / distance;
+							const vertical_ratio = (each_node1.y - each_node2.y) / distance;
+							const force_factor = LAYOUT_INTERVAL * each_node1.size * each_node2.size;
+							const force_size = (Math.log(distance) - force_factor / distance) * LAYOUT_NOLINK_RATIO;
+							if (force_size > 0) // Pull together
+							{
+								continue;
+							}
+							force.x -= force_size * horizontal_ratio;
+							force.y -= force_size * vertical_ratio;
+						}
+						forces.set(each_node1, force);
+					};
+					for (const each_node of current_star_map.content.nodes)
+					{
+						each_node.x += forces.get(each_node).x;
+						each_node.y += forces.get(each_node).y;
+					}
+					current_star_map.flush();
+				},
+
+				mouse_down(event)
+				{
+					if (event.button === 0)
+					{
+						current_star_map.drag_start(event.x, event.y);
+					};
+				},
+
+				mouse_move(event)
+				{
+					current_star_map.drag_move(event.x, event.y)
+				},
+
+				mouse_up(event)
+				{
+					if (event.button === 0)
+					{
+						current_star_map.drag_stop(event.x, event.y);
+					};
+				},
+
+				select_star_map()
+				{
+					const id = document.getElementById("saves_option").value;
+					switch (id)
+					{
+						case "NEW":
+							document.getElementById("new_star_map").showModal();
+							document.getElementById("saves_option").value = "NOT_SELECTED";
+							break;
+						case "NOT_SELECTED":
+							current_star_map.file_close();
+							break;
+						default:
+							current_star_map.file_open(id);
+					};
+				},
+
+				new_star_map()
+				{
+					const id = document.getElementById("new_star_map-name").value;
+					current_star_map.file_create(id);
+				},
+
+				key_star_map(event)
+				{
+					const canvas_center = {x: current_star_map.canvas.offsetLeft + current_star_map.canvas.offsetWidth / 2, y: current_star_map.canvas.offsetTop + current_star_map.canvas.offsetHeight / 2}
+					switch (event.keyCode)
+					{
+						case KEY_UP:
+							current_star_map.drag_start(0, 0);
+							current_star_map.drag_stop(0, 10);
+							break;
+						case KEY_DOWN:
+							current_star_map.drag_start(0, 0);
+							current_star_map.drag_stop(0, -10);
+							break;
+						case KEY_RIGHT:
+							current_star_map.drag_start(0, 0);
+							current_star_map.drag_stop(-10, 0);
+							break;
+						case KEY_LEFT:
+							current_star_map.drag_start(0, 0);
+							current_star_map.drag_stop(10, 0);
+							break;
+						case KEY_ZOOM_IN:
+							current_star_map.zoom(100);
+							break;
+						case KEY_ZOOM_OUT:
+							current_star_map.zoom(-100);
+							break;
+						case KEY_CHOOSE:
+							// Simulate a click
+							current_star_map.drag_start(canvas_center.x, canvas_center.y);
+							current_star_map.drag_stop(canvas_center.x, canvas_center.y);
+							break;
+						case KEY_RIGHT_CLICK:
+							event.clientX = canvas_center.x;
+							event.clientY = canvas_center.y;
+							user.context_menu_star_map(event);
+							break;
+						case KEY_UNDO:
+							if (event.ctrlKey)
+							{
+								const undo_result = current_star_map.history.undo();
+							};
+							break;
+						case KEY_REDO:
+							if (event.ctrlKey)
+							{
+								const redo_result = current_star_map.history.redo();
+							};
+							break;
+					};
+				},
+
+				context_menu_star_map(event)
+				{
+					event.preventDefault();
+					const menus = new Map();
+					for (const each_menu of document.querySelectorAll("menu"))
+					{
+						if (!each_menu.dataset.context_type)
+						{
+							continue;
+						};
+						menus.set(each_menu.dataset.context_type, each_menu);
+						each_menu.removeAttribute("style");
+					};
+					const active_element = current_star_map.flush(current_star_map.transform_into_canvas_space(event.clientX, event.clientY));
+					user.right_clicked_element = active_element;
+					switch (active_element.type)
+					{
+						case storage.Element:
+							menus.get("node").style.display = "flex";
+							break;
+						case storage.Coordinate:
+							menus.get("background").style.display = "flex";
+							break;
+						case storage.Link:
+							menus.get("link").style.display = "flex";
+							break;
+					};
+				},
+
+				left_click(element)
+				{
+					if (this.left_click_function)
+					{
+						const left_click_success = this.left_click_function(element)
+						if (left_click_success === true)
+						{
+							this.left_click_function = undefined;
+						}
+						else
+						{
+							new Log("操作失败", left_click_success, "error");
+							return;
+						};
+					};
+					for (const each_menu of document.querySelectorAll("menu"))
+					{
+						if (!each_menu.dataset.context_type)
+						{
+							continue;
+						};
+						each_menu.removeAttribute("style");
+					};
+				},
+
+				node_update_styles()
+				{
+					const node_edit_screen = document.getElementById("node_edit");
+					const style_choose_area = node_edit_screen.querySelector(".choose_list");
+					while (style_choose_area.childElementCount > 1)
+					{
+						style_choose_area.firstChild.remove();
+					};
+					for (const each_style of current_star_map.content.styles.node)
+					{
+						const each_style_element = document.createElement("span");
+						each_style_element.style.backgroundColor = each_style.color;
+						each_style_element.innerText = each_style.name;
+						each_style_element.onclick = function (event){
+							user.select_node_style(each_style);
+						};
+						style_choose_area.insertBefore(each_style_element, style_choose_area.lastElementChild);
+					};
+				},
+
+				link_update_styles()
+				{
+					const link_edit_screen = document.getElementById("link_edit");
+					const style_choose_area = link_edit_screen.querySelector(".choose_list");
+					while (style_choose_area.childElementCount > 1)
+					{
+						style_choose_area.firstChild.remove();
+					};
+					for (const each_style of current_star_map.content.styles.link)
+					{
+						const each_style_element = document.createElement("span");
+						each_style_element.style.backgroundColor = each_style.backcolor;
+						each_style_element.style.color = each_style.forecolor;
+						each_style_element.innerText = each_style.name;
+						each_style_element.onclick = function (event){
+							user.select_link_style(each_style);
+						};
+						style_choose_area.insertBefore(each_style_element, style_choose_area.lastElementChild);
+					};
+				},
+
+				modify_content()
+				{
+					const content_edit_screen = document.getElementById("content_edit");
+					content_edit_screen.querySelector("textarea").value = user.right_clicked_element.content.content;
+					user.preview_content();
+					content_edit_screen.showModal();
+				},
+
+				preview_content()
+				{
+					const preview_screen = document.querySelector("#content_edit article");
+					const source = document.querySelector("#content_edit textarea");
+					preview_screen.dataset.type = "source";
+					preview_screen.textContent = source.value;
+					update_content(preview_screen);
+				},
+
+				edit_content()
+				{
+					user.right_clicked_element.content.content = document.querySelector("#content_edit textarea").value;
+				},
+
+				new_node()
+				{
+					user.node_update_styles();
+					document.getElementById("node_edit").showModal();
+				},
+
+				modify_node()
+				{
+					user.node_update_styles();
+					document.getElementById("node_edit").showModal();
+				},
+
+				edit_node(event)
+				{
+					const chosen_style = document.querySelector("#node_edit .choose_list").value;
+					const node_title = document.getElementById("node_edit-title").value;
+					const node_size = document.getElementById("node_edit-size").value;
+					const current_editing_element = user.right_clicked_element;
+					if (!current_editing_element)
+					{
+						new Log("没有选中任何东西", "你必须选中一个东西才能编辑或创建", "error");
+						return;
+					};
+					if (!chosen_style)
+					{
+						document.getElementById("node_edit-title").setCustomValidity("你还没有选择样式");
+						return;
+					};
+					document.getElementById("node_edit-title").setCustomValidity("");
+					if (current_editing_element.type === storage.Coordinate)
+					{
+						current_star_map.node_create(current_editing_element.content.x, current_editing_element.content.y, node_size, chosen_style, node_title);
+					}
+					else if (current_editing_element.type === storage.Element)
+					{
+						current_editing_element.content.size = node_size;
+						current_editing_element.content.style = chosen_style;
+						current_editing_element.content.title = node_title;
+						current_star_map.flush();
+					};
+				},
+
+				edit_link()
+				{
+					const chosen_style = document.querySelector("#link_edit .choose_list").value;
+					const link_title = document.getElementById("link_edit-title").value;
+					const current_editing_element = user.right_clicked_element;
+					if (!current_editing_element)
+					{
+						new Log("没有选中任何东西", "你必须选中一个东西才能编辑或创建", "error");
+						return;
+					};
+					if (!chosen_style)
+					{
+						document.getElementById("link_edit-title").setCustomValidity("你还没有选择样式");
+						return;
+					};
+					document.getElementById("link_edit-title").setCustomValidity("");
+					if (current_editing_element.type === storage.Element)
+					{
+						user.left_click_function = function (element)
+						{
+							if (element.type != storage.Element)
+							{
+								return "你只能在两个节点创建链接";
+							};
+							current_star_map.link_create(current_editing_element.content, element.content, chosen_style, link_title);
+							return true;
+						};
+					}
+					else if (current_editing_element.type === storage.Link)
+					{
+						current_editing_element.content.style = chosen_style;
+						current_editing_element.content.title = link_title;
+						current_star_map.flush();
+					};
+				},
+
+				move_node()
+				{
+					const element = user.right_clicked_element;
+					user.left_click_function = function (position)
+					{
+						if (position.type !== storage.Coordinate)
+						{
+							return "你需要点击一个没有其他节点和链接的位置";
+						};
+						element.content.x = position.content.x;
+						element.content.y = position.content.y;
+						current_star_map.flush();
+						return true;
+					};
+				},
+
+				remove_node()
+				{
+					current_star_map.node_remove(user.right_clicked_element.content);
+				},
+
+				new_link()
+				{
+					this.link_update_styles();
+					document.getElementById("link_edit").showModal();
+				},
+
+				modify_link()
+				{
+					this.link_update_styles();
+					document.getElementById("link_edit").showModal();
+				},
+
+				remove_link()
+				{
+					current_star_map.link_remove(user.right_clicked_element.content);
+				},
+
+				select_node_style(style)
+				{
+					if (style === "NEW")
+					{
+						document.getElementById("new_node_style").showModal();
+					}
+					else
+					{
+						document.querySelector("#node_edit .choose_list").value = style;
+					};
+				},
+
+				select_link_style(style)
+				{
+					if (style === "NEW")
+					{
+						document.getElementById("new_link_style").showModal();
+					}
+					else
+					{
+						document.querySelector("#link_edit .choose_list").value = style;
+					};
+				},
+
+				new_node_style()
+				{
+					const style_name = document.getElementById("new_node_style-name").value;
+					const style_color = document.getElementById("new_node_style-color").value;
+					current_star_map.node_style_create(style_color, style_name);
+					user.node_update_styles();
+					new Log("节点样式创建成功", `名叫${style_name}`, "success");
+				},
+
+				new_link_style()
+				{
+					const style_name = document.getElementById("new_link_style-name").value;
+					const style_forecolor = document.getElementById("new_link_style-forecolor").value;
+					const style_backcolor = document.getElementById("new_link_style-backcolor").value;
+					const style_onesided = document.getElementById("new_link_style-onesided").checked;
+					const style_width = document.getElementById("new_link_style-width").value;
+					current_star_map.link_style_create(style_forecolor, style_backcolor, style_onesided, style_width, style_name);
+					user.link_update_styles();
+					new Log("链接样式创建成功", `名叫${style_name}`, "success");
+				}
+			};
+
+			const storage = {
+				Link: class {},
+				Element: class {},
+				Coordinate: class {}
+			};
+
+			const current_star_map = new Application();
+		</script>
+	</head>
+	<body>
+		<h1 class="title">
+			<dfn title="没编辑完别点！返回上一页：主页">
+				<a href="../../index.html">
+					Wiki - 星图
+				</a>
+			</dfn>
+		</h1>
+		<p>
+			<a href="help.html">
+				帮助文档
+			</a>
+		</p>
+		<form>
+			<p>
+				<label for="saves_option">
+					选择星图
+				</label>
+				<select name="selection" id="saves_option" title="选择" onchange="user.select_star_map()">
+					<option value="NOT_SELECTED" selected>
+						未选择
+					</option>
+					<option value="NEW">
+						新建
+					</option>
+				</select>
+			</p>
+		</form>
+		<main>
+			<canvas id="canvas" onmousedown="user.mouse_down(event)" onmousemove="user.mouse_move(event)" onmouseup="user.mouse_up(event)" onmousewheel="event.preventDefault(); current_star_map.zoom(event.wheelDelta)" onkeydown="user.key_star_map(event)" oncontextmenu="user.context_menu_star_map(event)" tabindex="0">
+				你的浏览器无法正常运行星图软件。
+			</canvas>
+			<article id="article" class="hide"></article>
+		</main>
+		<menu>
+			<button onclick="current_star_map.file_save()" title="保存">
+				<img src="../../../../images/tools/star map/save.svg" alt/>
+			</button>
+			<button onclick="user.switch_auto_typesetting()" title="自动排版">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" id="auto_typesetting">
+					<circle cx="15" cy="15" r="5" fill="#FFFFFF"/>
+					<path d="M8,10 l-3,5 l3,5 l-3,-5 m0,0 l20,0 m0,0 l-3,-5 l3,5 l-3,5" stroke-width="2" stroke="#FFFFFF" fill="none"/>
+				</svg>
+			</button>
+		</menu>
+		<menu data-context_type="background">
+			<button onclick="user.new_node()" title="新建节点">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<circle cx="15" cy="15" r="10" stroke="#FFFFFF" stroke-dasharray="2 1" fill="none"/>
+				</svg>
+			</button>
+		</menu>
+		<menu data-context_type="node">
+			<button onclick="user.remove_node()" title="删除节点">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<g stroke="#FFFFFF" stroke-width="3">
+						<line x1="7" y1="7" x2="23" y2="23"/>
+						<line x1="23" y1="7" x2="7" y2="23"/>
+					</g>
+				</svg>
+			</button>
+			<button onclick="user.move_node()" title="移动节点">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<path d="M5,15 l20,0 m0,0 l-8,-8 l8,8 l-8,8" stroke-width="3" stroke="#FFFFFF" fill="none"/>
+				</svg>
+			</button>
+			<button onclick="user.modify_node()" title="编辑节点">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<path d="M5,25 l0,-7 l13,-13 l7,7 l-13,13 l-7,0 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
+				</svg>
+			</button>
+			<button onclick="user.modify_content()" title="编辑内容">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<g stroke="#FFFFFF" fill="none" stroke-width="2">
+						<rect x="5" y="5" width="20" height="20"/>
+						<line x1="8" y1="10" x2="14" y2="10"/>
+						<line x1="8" y1="15" x2="20" y2="15"/>
+						<line x1="8" y1="20" x2="17" y2="20"/>
+					</g>
+				</svg>
+			</button>
+			<button onclick="user.new_link()" title="创建链接">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<g fill="#FFFFFF">
+						<circle cx="10" cy="20" r="4"/>
+						<circle cx="20" cy="10" r="4"/>
+					</g>
+					<line x1="10" y1="20" x2="20" y2="10" stroke="#FFFFFF" stroke-width="2"/>
+				</svg>
+			</button>
+		</menu>
+		<menu data-context_type="link">
+			<button onclick="user.remove_link()" title="删除链接">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<g stroke="#FFFFFF" stroke-width="3">
+						<line x1="7" y1="7" x2="23" y2="23"/>
+						<line x1="23" y1="7" x2="7" y2="23"/>
+					</g>
+				</svg>
+			</button>
+			<button onclick="user.modify_link()" title="编辑链接">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<path d="M5,25 l0,-7 l13,-13 l7,7 l-13,13 l-7,0 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
+				</svg>
+			</button>
+			<button onclick="user.modify_content()" title="编辑内容">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<g stroke="#FFFFFF" fill="none" stroke-width="2">
+						<rect x="5" y="5" width="20" height="20"/>
+						<line x1="8" y1="10" x2="14" y2="10"/>
+						<line x1="8" y1="15" x2="20" y2="15"/>
+						<line x1="8" y1="20" x2="17" y2="20"/>
+					</g>
+				</svg>
+			</button>
+		</menu>
+		<dialog id="new_star_map">
+			<button value="cancel">
+				<img src="../../../../images/tools/star map/close.svg" alt="关闭"/>
+			</button>
+			<h2>
+				创建新的星图
+			</h2>
+			<form method="dialog">
+				<label for="new_star_map-name">
+					星图名字
+				</label>
+				<input id="new_star_map-name" type="text" required/>
+				<button value="submit" onclick="user.new_star_map()">
+					创建
+				</button>
+			</form>
+		</dialog>
+		<dialog id="node_edit">
+			<button value="cancel">
+				<img src="../../../../images/tools/star map/close.svg" alt="关闭"/>
+			</button>
+			<h2>
+				编辑节点
+			</h2>
+			<div class="choose_list">
+				<span onclick="user.select_node_style('NEW')">
+					新建
+				</span>
+			</div>
+			<form method="dialog">
+				<label for="node_edit-title">
+					标题
+				</label>
+				<input id="node_edit-title" type="text"/>
+				<label for="node_edit-size">
+					大小
+				</label>
+				<input id="node_edit-size" type="number" min="1" value="20" required/>
+				<button value="submit" onclick="user.edit_node(event)">
+					确认
+				</button>
+			</form>
+		</dialog>
+		<dialog id="link_edit">
+			<button value="cancel">
+				<img src="../../../../images/tools/star map/close.svg" alt="关闭"/>
+			</button>
+			<h2>
+				编辑链接
+			</h2>
+			<div class="choose_list">
+				<span onclick="user.select_link_style('NEW')">
+					新建
+				</span>
+			</div>
+			<form method="dialog">
+				<label for="link_edit-title">
+					标题
+				</label>
+				<input id="link_edit-title" type="text"/>
+				<button value="submit" onclick="user.edit_link(event)">
+					确认
+				</button>
+			</form>
+		</dialog>
+		<dialog id="new_node_style">
+			<button value="cancel">
+				<img src="../../../../images/tools/star map/close.svg" alt="关闭"/>
+			</button>
+			<h2>
+				新建节点样式
+			</h2>
+			<form method="dialog">
+				<label for="new_node_style-name">
+					名字
+				</label>
+				<input id="new_node_style-name" type="text" placeholder="Style"/>
+				<label for="new_node_style-color">
+					背景颜色
+				</label>
+				<input id="new_node_style-color" type="color" required/>
+				<button value="submit" onclick="user.new_node_style()">
+					创建
+				</button>
+			</form>
+		</dialog>
+		<dialog id="new_link_style">
+			<button value="cancel">
+				<img src="../../../../images/tools/star map/close.svg" alt="关闭"/>
+			</button>
+			<h2>
+				新建链接样式
+			</h2>
+			<form method="dialog">
+				<label for="new_link_style-name">
+					标题
+				</label>
+				<input id="new_link_style-name" type="text" placeholder="Style"/>
+				<label for="new_link_style-width">
+					宽度
+				</label>
+				<input id="new_link_style-width" type="number" min="1" value="5" required/>
+				<label for="new_link_style-forecolor">
+					主颜色
+				</label>
+				<input id="new_link_style-forecolor" type="color" required/>
+				<label for="new_link_style-backcolor">
+					次颜色
+				</label>
+				<input id="new_link_style-backcolor" type="color" required/>
+				<label for="new_link_style-onesided">
+					单向
+				</label>
+				<input id="new_link_style-onesided" type="checkbox"/>
+				<button value="submit" onclick="user.new_link_style()">
+					创建
+				</button>
+			</form>
+		</dialog>
+		<dialog id="content_edit">
+			<button value="cancel">
+				<img src="../../../../images/tools/star map/close.svg" alt="关闭"/>
+			</button>
+			<h2>
+				更改内容
+			</h2>
+			<form method="dialog">
+				<textarea oninput="user.preview_content()"></textarea>
+				<article></article>
+				<button value="submit" onclick="user.edit_content()">
+					设置
+				</button>
+			</form>
+		</dialog>
+		<aside id="log"></aside>
+	</body>
+</html>
