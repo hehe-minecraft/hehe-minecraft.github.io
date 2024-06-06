@@ -1,0 +1,7 @@
+# All the text files are ended up with CRLF.
+*.css eol=crlf
+*.html eol=crlf
+*.gitattributes eol=crlf
+*.js eol=crlf
+*.ttf filter=lfs diff=lfs merge=lfs -text
+*.svg eol=crlf
