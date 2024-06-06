@@ -1,0 +1,336 @@
+body
+{
+	background-color: #FFFFEE;
+	margin: 0px 15px 20px 15px;
+}
+
+nav>p:not(#return)
+{
+	padding: 5px;
+	background-color: #888888;
+	color: #FFFFFF;
+	font-weight: bold;
+	text-align: center;
+	margin: 0;
+}
+
+span.color
+{
+	height: 0.8em;
+	width: 0.8em;
+	border: 1px solid #000000;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+ol.catalogue, ol.catalogue ol
+{
+	list-style: none;
+	counter-reset: catalogue;
+}
+
+ol.catalogue
+{
+	margin: 0;
+	padding: 5px 10px 10px 10px;
+	background-color: #EEEEEE;
+}
+
+ol.catalogue ol
+{
+	padding-left: 0px;
+}
+
+ol.catalogue>li::before, ol.catalogue ol>li::before
+{
+	counter-increment: catalogue;
+	content: counters(catalogue, ".") ".";
+	font-family: "Cascadia Mono", "Consolas", "Courier New", monospace;
+	font-size: small;
+	color: #AAAAAA;
+}
+
+ol.catalogue a
+{
+	color: #000000;
+}
+
+ol.tree, ol.tree ol
+{
+	list-style: none;
+	counter-reset: tree;
+}
+
+ol.tree
+{
+	margin-top: 0px;
+	padding: 5px 10px 5px 10px;
+}
+
+ol.tree ol
+{
+	padding-left: 0px;
+}
+
+ol.tree>li::before, ol.tree ol>li::before
+{
+	counter-increment: tree;
+	content: counters(tree, ".") ".";
+	font-family: "Cascadia Mono", "Consolas", "Courier New", monospace;
+	font-size: small;
+	color: #AAAAAA;
+}
+
+table
+{
+	width: 100%;
+	border-collapse: collapse;
+}
+
+table col.title
+{
+	width: 25%;
+}
+
+table td, table th
+{
+	padding: 3px 8px 3px 8px;
+	border: 1.2px solid #EE858C;
+}
+
+table th
+{
+	font-weight: normal;
+	background-color: #FFD5D9;
+}
+
+table td
+{
+	background-color: #FFF8CC;
+}
+
+details
+{
+	display: inline-block;
+}
+
+pre
+{
+	border-left: 3px solid #EE858C;
+	padding: 5px;
+	background-color: rgba(128, 128, 128, 0.1);
+	font-family: "Cascadia Code", "Consolas", "Courier New", monospace;;
+	font-size: small;
+	tab-size: 4;
+	overflow-x: auto;
+	display: grid;
+	grid-template-columns: auto 1fr;
+}
+
+pre::-webkit-scrollbar
+{
+	display: none;
+}
+
+pre>span.line-number
+{
+	padding-right: 5px;
+	text-align: right;
+	color: #AAAAAA;
+	font-size: x-small;
+	user-select: none;
+}
+
+code
+{
+	font-family: "Cascadia Mono", "Consolas", "Courier New", monospace;
+}
+
+:root[data-browser=webkit] math:not([inline])
+{
+	display: block;
+}
+
+:root[data-browser=ms] math:not([inline])
+{
+	display: block math;
+}
+
+p.definition, p.notice, p.warning
+{
+	padding: 8px;
+}
+
+p.definition
+{
+	background-color: #EEEEEE;
+}
+
+p.notice
+{
+	background-color: #DDEEFF;
+}
+
+p.warning
+{
+	background: #FFF5B0;
+}
+
+p#return
+{
+	text-align: center;
+}
+
+dfn
+{
+	font-style: normal;
+	border-bottom: 2px dotted #AAAAAA;
+}
+
+a
+{
+	text-decoration: none;
+}
+
+a:link:not(ol.catalogue a)
+{
+	color: #AAA560;
+}
+
+a:visited:not(ol.catalogue a)
+{
+	color: #6060AA;
+}
+
+main>hr
+{
+	margin: 2em 5px 2em 5px;
+	border: 1px solid #AAAAAA;
+}
+
+data-source
+{
+	display: none;
+}
+
+main figure
+{
+	float: right;
+	display: grid;
+	padding: 5px;
+	margin: 5px;
+	border: 1px solid #888888;
+}
+
+main figure svg
+{
+	margin: 5px auto 5px auto;
+}
+
+main figure figcaption
+{
+	margin-top: 5px;
+	font-size: x-small;
+	text-align: center;
+}
+
+@media (min-width: 500px) and (max-width: 1000px)
+{
+	nav>ol
+	{
+		columns: 15em 3;
+	}
+}
+
+@media (min-width: 1000px)
+{
+	body
+	{
+		display: grid;
+		grid-template-columns: 30% 70%;
+		grid-template-areas: 
+		"heading heading"
+		"nav main";
+	}
+
+	h1 
+	{
+		grid-area: heading;
+	}
+
+	nav
+	{
+		overflow-y: auto;
+		grid-area: nav;
+		height: calc(100vh - 30px);
+		position: sticky;
+		top: 15px;
+	}
+
+	main
+	{
+		grid-area: main;
+		margin: 0 0 0 15px;
+	}
+}
+
+@font-face
+{
+	font-family: "Consolas";
+	src: url("../fonts/consolas.ttf");
+}
+
+@media (prefers-color-scheme: dark)
+{
+	body
+	{
+		background-color: #111100;
+		color: #FFFFFF;
+	}
+	
+	span.color
+	{
+		border-color: #FFFFFF;
+	}
+
+	p.definition
+	{
+		background-color: #444444;
+	}
+	
+	p.notice
+	{
+		background-color: #112233;
+	}
+	
+	p.warning
+	{
+		background: #444500;
+	}
+
+	nav>p:not(#return)
+	{
+		background-color: #666666;
+	}
+
+	ol.catalogue
+	{
+		background-color: #222222;
+	}
+
+	ol.catalogue a
+	{
+		color: #FFFFFF;
+	}
+
+	table th
+	{
+		font-weight: normal;
+		background-color: #4F2529;
+	}
+
+	table td
+	{
+		background-color: #2A2942;
+	}
+}
