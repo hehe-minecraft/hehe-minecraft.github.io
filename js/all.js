@@ -79,12 +79,12 @@ function update_content(source=undefined)
 			content = content
 				.replace(/</g, "&lt;")
 				.replace(/>/g, "&gt;")
+				.replace(/\[CODE (.*?)\]/g, "<code>$1</code>")
 				.replace(/\[(.*?) TO BLANK (.*?)\]/g, "<a href=\"$2\" target=\"_blank\">$1</a>")
 				.replace(/\[(.*?) TO (.*?)\]/g, "<a href=\"$2\">$1</a>")
 				.replace(/\[NOUN (.*?) AS (.*?)\]/g, "<dfn title=\"$2\">$1</dfn>")
 				.replace(/\[NOUN (.*?)\]/g, "<dfn>$1</dfn>")
-				.replace(/\[VAR_TYPE (.*?)\]/g, "<span class=\"type\">$1</span>")
-				.replace(/\[CODE (.*?)\]/g, "<code>$1</code>");
+				.replace(/\[VAR_TYPE (.*?)\]/g, "<span class=\"type\">$1</span>");
 			const inline_parser = this;
 			content = content.replace(/\[FIGURE (.+?)\]/g, function(match) {
 				for (let each_figure of inline_parser.figures)
