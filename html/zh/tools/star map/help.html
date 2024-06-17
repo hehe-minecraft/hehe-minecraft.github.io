@@ -4,7 +4,7 @@
 		<meta charset="utf-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		<link rel="stylesheet" type="text/css" href="../../../../css/all.css"/>
-		<script src="../../../../js/all.js" defer></script>
+		<script src="../../../../ts/all.js" type="module"></script>
 		<title>
 			hehe-minecraft - 星图教程
 		</title>
@@ -14,10 +14,9 @@
 				background-color: #8888CC;
 			}
 		</style>
-		<script>
-			const parse_environment = {
-				figure: "图 $ "
-			}
+		<script type="module">
+			import {parse_source} from "../../../../ts/all.js"
+			parse_source.environment.figure = "图 $ "
 		</script>
 	</head>
 	<body>
@@ -38,11 +37,10 @@
 		<main data-type="source">
 			#总体介绍
 			DEF [NOUN 星图]是一个用来将各条信息整合的工具，就像思维导图一样。这里用于特指本工具。
-			WARN 这里存储的星图只能在本网站上打开，你可以下载网站的源代码以将这个工具搬运到你的电脑上。代码在 [GitHub TO BLANK https://github.com/hehe-minecraft/hehe-minecraft.github.io] 开源。
+			WARN 这里存储的星图只能在本网站上打开，你可以下载网站的源代码以将这个工具搬运到你的电脑上，但是原先在网站上的内容并不会同步到电脑上。代码在 [GitHub TO BLANK https://github.com/hehe-minecraft/hehe-minecraft.github.io] 开源。
 			NOTE 本产品灵感来源于 [MCMod TO BLANK https://www.mcmod.cn] 的模组星图功能。
 			以下是与本产品类似的思维导图软件，也可以去看看：
 			- [Obsidian TO https://obsidian.md]
-			-
 			#术语定义
 			##节点
 			DEF [NOUN 节点]是星图中的一个基本单元，存储一片信息。
@@ -123,7 +121,7 @@
 			列表需要在一列前面加上若干空格和“[CODE - ]”，空格越多，列表等级越高。
 			NOTE “[CODE -]”后面必须要有空格。
 			NOTE 与标题一样，列表在进入更高级时也不可以跨级创建。
-			要结束一个列表，你需要在独立的一行中输入“[CODE -]”（没有空格）。
+			列表会自动结束。
 			###超链接
 			超链接需要将标题放在方括号中，其后紧跟“[CODE  TO ]”，再放入超链接的目标。
 			目标需要是一个 HTML 网站。
@@ -232,7 +230,7 @@
 				</figcaption>
 			</figure>
 			<figure id="auto_typesetting_logo" class="logo">
-				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" id="auto_typesetting">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
 					<circle cx="15" cy="15" r="5" fill="#FFFFFF"/>
 					<path d="M8,10 l-3,5 l3,5 l-3,-5 m0,0 l20,0 m0,0 l-3,-5 l3,5 l-3,5" stroke-width="2" stroke="#FFFFFF" fill="none"/>
 				</svg>

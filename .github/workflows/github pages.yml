@@ -19,7 +19,7 @@ jobs:
       - name: Compile TypeScript
         run: |
           npm install -g typescript
-          echo "{\"compilerOptions\":{\"noImplicitAny\":true},\"include\":[\"**/*.ts\"]}" > tsconfig.json
+          echo "{\"compilerOptions\":{\"target\":\"ES6\"},\"include\":[\"**/*.ts\"]}" > tsconfig.json
           tsc
       - name: Initialize GitHub Pages
         uses: actions/configure-pages@v4

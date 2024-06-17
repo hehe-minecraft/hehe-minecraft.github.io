@@ -4,9 +4,9 @@
 		<meta charset="utf-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		<link rel="stylesheet" type="text/css" href="../../../../css/app.css"/>
-		<script src="../../../../js/all.js" defer></script>
-		<script src="../../../../js/css.js" defer></script>
-		<script src="../../../../js/math.js" defer></script>
+		<script src="../../../../ts/all.js" type="module"></script>
+		<script src="../../../../ts/css.js" type="module"></script>
+		<script src="../../../../ts/math.js" type="module"></script>
 		<title>
 			hehe-minecraft - 星图
 		</title>
@@ -304,9 +304,13 @@
 				}
 			}
 		</style>
-		<script src="../../../../js/file.js"></script>
-		<script src="../../../../js/async.js"></script>
-		<script>
+		<script src="../../../../ts/file.js" type="module"></script>
+		<script src="../../../../ts/async.js" type="module"></script>
+		<script type="module">
+			import { parse_source } from "../../../../ts/all.js"
+			import { AnimationHandler } from "../../../../ts/css.js"
+			import { tools_database } from "../../../../ts/file.js"
+			import { Vector } from "../../../../ts/math.js"
 			const dom_observer = new MutationObserver(function (mutationsList)
 			{
 				for (const each_dialog of document.querySelectorAll("dialog"))
@@ -330,7 +334,6 @@
 			dom_observer.observe(document, {childList: true, subtree: true});
 
 			document.addEventListener("DOMContentLoaded", function(){
-				// AnimationHandler is from css.js
 				current_star_map.link(document.getElementById("canvas"), document.getElementById("saves_option"));
 				current_star_map.file_list();
 				const details_area = document.querySelector("main>article")
@@ -351,9 +354,7 @@
 			window.addEventListener("resize", function(event) {
 				current_star_map.flush();
 			});
-		</script>
-		<script>
-			// tools_database is from file.js
+
 			const DATA_NAMESPACE = "Star Map";
 			const LOG_TIMEOUT = 4000; // ms
 			const TICK_LAYOUT = 50; // ms
@@ -587,9 +588,10 @@
 						const main = this.canvas.parentElement;
 						details_area.style.height = `${main.clientHeight}px`;
 						details_area.style.width = `${main.clientWidth * DETAILS_WIDTH_RATIO}px`;
-						details_area.dataset.type = "source";
-						details_area.textContent = element.content;
-						update_content(details_area);
+						const parser = new parse_source.Parser();
+						parser.source = element.content;
+						parser.target = details_area;
+						parser.parse();
 					}
 					else
 					{
@@ -600,7 +602,6 @@
 					return element;
 				};
 
-				// Vector is from math.js
 				flush(hover_place=undefined)
 				{
 					// This function is so complex that comments will help you better understand.
@@ -1017,7 +1018,7 @@
 				};
 			};
 
-			const user = {
+			window.user = {
 				right_clicked_element: undefined,
 				left_click_function: undefined, // should return true if success
 				auto_typesetting_on: false,
@@ -1291,9 +1292,10 @@
 				{
 					const preview_screen = document.querySelector("#content_edit article");
 					const source = document.querySelector("#content_edit textarea");
-					preview_screen.dataset.type = "source";
-					preview_screen.textContent = source.value;
-					update_content(preview_screen);
+					const parser = new parse_source.Parser();
+					parser.source = source.value;
+					parser.target = preview_screen;
+					parser.parse();
 				},
 
 				edit_content()
@@ -1463,13 +1465,13 @@
 				}
 			};
 
-			const storage = {
+			window.storage = {
 				Link: class {},
 				Element: class {},
 				Coordinate: class {}
 			};
 
-			const current_star_map = new Application();
+			window.current_star_map = new Application();
 		</script>
 	</head>
 	<body>
