@@ -1426,6 +1426,54 @@
 					current_star_map.link_style_create(style_forecolor, style_backcolor, style_onesided, style_width, style_name);
 					user.link_update_styles();
 					new Log("链接样式创建成功", `名叫${style_name}`, "success");
+				},
+
+				search_window()
+				{
+					document.getElementById("search_window").showModal();
+				},
+
+				search()
+				{
+					const search_title = document.getElementById("search_window-title").value;
+					const search_content = document.getElementById("search_window-content").value;
+					const is_regex = document.getElementById("search_window-regex").checked;
+					const search_type = document.querySelector("dialog#search_window input[name='search_window-type']:checked").value;
+					const title_regex = is_regex ? search_title : new RegExp(search_title);
+					const content_regex = is_regex ? search_content : new RegExp(search_content);
+					let elements;
+					let element_index = -1;
+					switch (search_type)
+					{
+						case "link":
+							elements = Array.from(current_star_map.content.links);
+							break;
+						case "node":
+							elements = Array.from(current_star_map.content.nodes);
+							break;
+					}
+					// Skip the searched elements first.
+					for (; current_star_map.active_element && elements[element_index] !== current_star_map.active_element && element_index < elements.length; element_index ++);
+					for (const each_element of elements.slice(element_index + 1))
+					{
+						if (each_element.title.match(title_regex) !== null && each_element.content.match(content_regex) !== null)
+						{
+							current_star_map.activate(each_element);
+							switch (search_type)
+							{
+								case "link":
+									current_star_map.content.x = -(each_element.from.x + each_element.to.x) / 2 * current_star_map.content.zoom;
+									current_star_map.content.y = -(each_element.from.y + each_element.to.y) / 2 * current_star_map.content.zoom;
+									break;
+								case "node":
+									current_star_map.content.x = -each_element.x * current_star_map.content.zoom;
+									current_star_map.content.y = -each_element.y * current_star_map.content.zoom;
+									break;
+							}
+							current_star_map.flush();
+							break;
+						}
+					}
 				}
 			}
 
@@ -1488,15 +1536,16 @@
 			document.getElementById("saves_option").onchange = () => {user.select_star_map()};
 			document.getElementById("button_save").onclick = () => {current_star_map.file_save()};
 			document.getElementById("button_typesetting").onclick = () => {user.switch_auto_typesetting()};
+			document.getElementById("button_search_window").onclick = () => {user.search_window()};
 			document.getElementById("button_new_node").onclick = () => {user.new_node()};
 			document.getElementById("button_remove_node").onclick = () => {user.remove_node()};
 			document.getElementById("button_move_node").onclick = () => {user.move_node()};
 			document.getElementById("button_modify_node").onclick = () => {user.modify_node()};
-			document.getElementById("button_modify_content").onclick = () => {user.modify_content()};
+			document.getElementById("button_node_modify_content").onclick = () => {user.modify_content()};
 			document.getElementById("button_new_link").onclick = () => {user.new_link()};
 			document.getElementById("button_remove_link").onclick = () => {user.remove_link()};
 			document.getElementById("button_modify_link").onclick = () => {user.modify_link()};
-			document.getElementById("button_modify_content").onclick = () => {user.modify_content()};
+			document.getElementById("button_link_modify_content").onclick = () => {user.modify_content()};
 			document.getElementById("button_new_star_map").onclick = () => {user.new_star_map()};
 			document.getElementById("button_add_node_style").onclick = () => {user.select_node_style("NEW")};
 			document.getElementById("button_edit_node").onclick = (event) => {user.edit_node(event)};
@@ -1505,6 +1554,7 @@
 			document.getElementById("button_new_node_style").onclick = () => {user.new_node_style()};
 			document.getElementById("button_new_link_style").onclick = () => {user.new_link_style()};
 			document.getElementById("button_edit_content").onclick = () => {user.edit_content()};
+			document.getElementById("button_search").onclick = () => {user.search()};
 			document.getElementById("input_content").oninput = () => {user.preview_content()};
 		</script>
 	</head>
@@ -1552,6 +1602,14 @@
 					<path d="M8,10 l-3,5 l3,5 l-3,-5 m0,0 l20,0 m0,0 l-3,-5 l3,5 l-3,5" stroke-width="2" stroke="#FFFFFF" fill="none"/>
 				</svg>
 			</button>
+			<button id="button_search_window" title="搜索">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+					<g stroke="#FFFFFF" stroke-width="2">
+						<circle cx="18" cy="12" r="5.5" fill="none"/>
+						<line x1="7" y1="23" x2="14" y2="16"/>
+					</g>
+				</svg>
+			</button>
 		</menu>
 		<menu data-context_type="background">
 			<button id="button_new_node" title="新建节点">
@@ -1579,7 +1637,7 @@
 					<path d="M5,25 l0,-7 l13,-13 l7,7 l-13,13 l-7,0 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
 				</svg>
 			</button>
-			<button id="button_modify_content" title="编辑内容">
+			<button id="button_node_modify_content" title="编辑内容">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
 					<g stroke="#FFFFFF" fill="none" stroke-width="2">
 						<rect x="5" y="5" width="20" height="20"/>
@@ -1613,7 +1671,7 @@
 					<path d="M5,25 l0,-7 l13,-13 l7,7 l-13,13 l-7,0 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
 				</svg>
 			</button>
-			<button id="button_modify_content" title="编辑内容">
+			<button id="button_link_modify_content" title="编辑内容">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
 					<g stroke="#FFFFFF" fill="none" stroke-width="2">
 						<rect x="5" y="5" width="20" height="20"/>
@@ -1755,6 +1813,39 @@
 				<article></article>
 				<button value="submit" id="button_edit_content">
 					设置
+				</button>
+			</form>
+		</dialog>
+		<dialog id="search_window">
+			<button value="cancel">
+				<img src="../../../../images/tools/star map/close.svg" alt="关闭"/>
+			</button>
+			<h2>
+				搜索全图内容
+			</h2>
+			<form method="dialog">
+				<label for="search_window-title">
+					标题内容包含
+				</label>
+				<input type="text" id="search_window-title"/>
+				<label for="search_window-content">
+					正文内容包含
+				</label>
+				<input type="text" id="search_window-content"/>
+				<label for="search_window-regex">
+					使用正则表达式
+				</label>
+				<input type="checkbox" id="search_window-regex"/>
+				<label for="search_window-node">
+					搜索节点
+				</label>
+				<input type="radio" id="search_window-node" name="search_window-type" value="node" checked/>
+				<label for="search_window-link">
+					搜索链接
+				</label>
+				<input type="radio" id="search_window-link" name="search_window-type" value="link"/>
+				<button value="submit" id="button_search">
+					搜索
 				</button>
 			</form>
 		</dialog>
