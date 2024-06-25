@@ -80,6 +80,8 @@ export namespace parse_source
 			The [NOUN term AS description] is more commonly used.
 		c.	Code
 			We can use [CODE code] to create a piece of code.
+		d.	Keyboard Input
+			We can use [KEY key] to create a keyboard input.
 	3.	Environment
 		You should define all your environment settings in a variable called "parse_source.environment".
 		a.	If you are using figures in2 your codes, you should define the attribute "figure" (string), with the number placeholder as "$".
@@ -289,6 +291,7 @@ export namespace parse_source
 				.replace(/\[NOUN (.*?) AS (.*?)\]/g, "<dfn title=\"$2\">$1</dfn>")
 				.replace(/\[NOUN (.*?)\]/g, "<dfn>$1</dfn>")
 				.replace(/\[VAR_TYPE (.*?)\]/g, "<span class=\"type\">$1</span>")
+				.replace(/\[KEY (.*?)\]/g, "<kbd>$1</kbd>")
 				.replace(/\[FIGURE (.+?)\]/g, function (match: string): string {
 					for (const each_figure of current_parser.figures)
 					{

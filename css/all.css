@@ -146,6 +146,14 @@ code
 	font-family: "Cascadia Mono", "Consolas", "Courier New", monospace;
 }
 
+kbd
+{
+	border: 2px solid #AAAAAA;
+	border-radius: 4px;
+	padding: 1px 4px;
+	margin: 0px 2px;
+}
+
 :root[data-browser=webkit] math:not([inline])
 {
 	display: block;

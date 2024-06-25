@@ -1187,14 +1187,14 @@
 				{
 					if (this.left_click_function)
 					{
-						const left_click_success = this.left_click_function(element)
-						if (left_click_success === true)
+						const left_click_reply = this.left_click_function(element)
+						if (left_click_reply === true)
 						{
 							this.left_click_function = undefined;
 						}
 						else
 						{
-							new Log("操作失败", left_click_success, "error");
+							new Log("操作失败", left_click_reply, "error");
 							return;
 						}
 					}
@@ -1270,6 +1270,7 @@
 				edit_content()
 				{
 					user.right_clicked_element.content.content = document.querySelector("#content_edit textarea").value;
+					current_star_map.history.snapshot();
 				},
 
 				new_node()
@@ -1311,6 +1312,7 @@
 						current_editing_element.content.style = chosen_style;
 						current_editing_element.content.title = node_title;
 						current_star_map.flush();
+						current_star_map.history.snapshot();
 					}
 				},
 
@@ -1347,6 +1349,7 @@
 						current_editing_element.content.style = chosen_style;
 						current_editing_element.content.title = link_title;
 						current_star_map.flush();
+						current_star_map.history.snapshot();
 					}
 				},
 
@@ -1362,6 +1365,7 @@
 						element.content.x = position.content.x;
 						element.content.y = position.content.y;
 						current_star_map.flush();
+						current_star_map.history.snapshot();
 						return true;
 					}
 				},
