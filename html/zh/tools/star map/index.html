@@ -322,6 +322,7 @@
 			const LAYOUT_INTERVAL = 3;
 			const LAYOUT_NOLINK_RATIO = 0.3;
 			const CANVAS_SCALE = 5;
+			const THIN_LINK_WIDTH = CANVAS_SCALE;
 			const COLOR_BACKGROUND = "#000000";
 			const COLOR_ACTIVATE = "#FFFFFF"
 			const COLOR_DEBUG = "#FFF5B0";
@@ -670,10 +671,10 @@
 							continue;
 						}
 						// Step 4 - Optimize when the link is too thin to be displayed.
-						if (each_link.style.width * this.content.zoom <= 1)
+						if (each_link.style.width * this.content.zoom <= THIN_LINK_WIDTH)
 						{
 							context.strokeStyle = each_link.style.forecolor;
-							context.lineWidth = 1;
+							context.lineWidth = each_link.style.width;
 							context.beginPath();
 							context.moveTo(each_link.from.x, each_link.from.y);
 							context.lineTo(each_link.to.x, each_link.to.y);
