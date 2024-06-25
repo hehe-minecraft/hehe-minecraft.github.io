@@ -117,7 +117,7 @@ export namespace parse_source
 		public parse()
 		{
 			// Part 1 - Detect errors
-			if (this.source === "" || this.target === undefined)
+			if (this.target === undefined)
 				return false;
 			// Part 2 - Divide chunks
 			const chunks: Chunk[] = Parser.get_chunks(this.source);
