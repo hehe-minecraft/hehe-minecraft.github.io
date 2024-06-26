@@ -323,6 +323,7 @@
 			const LAYOUT_NOLINK_RATIO = 0.3;
 			const CANVAS_SCALE = 5;
 			const THIN_LINK_WIDTH = CANVAS_SCALE;
+			const SMALL_NODE_SIZE = CANVAS_SCALE * 3;
 			const COLOR_BACKGROUND = "#000000";
 			const COLOR_ACTIVATE = "#FFFFFF"
 			const COLOR_DEBUG = "#FFF5B0";
@@ -763,8 +764,11 @@
 							}
 						}
 						// Step 4 - Display the title of the node.
-						context.font = `${each_node.size}px ${FONT}`;
-						context.fillText(each_node.title, each_node.x, each_node.y + each_node.size * 2);
+						if (each_node.size * this.content.zoom >= SMALL_NODE_SIZE)
+						{
+							context.font = `${each_node.size}px ${FONT}`;
+							context.fillText(each_node.title, each_node.x, each_node.y + each_node.size * 2);
+						}
 					}
 					// Part 6 - Return the coordinate when nothing is hovered.
 					if (hover_place)
