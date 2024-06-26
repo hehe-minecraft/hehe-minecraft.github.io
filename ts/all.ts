@@ -312,7 +312,7 @@ export namespace parse_source
 window.addEventListener("DOMContentLoaded", () => {
 	const main_element = document.querySelector("main");
 	const nav_element = document.querySelector("body>nav>ol.catalogue");
-	if (main_element === null || nav_element === null)
+	if (main_element === null || nav_element === null || main_element.dataset.type !== "source")
 		return;
 	const parser = new parse_source.Parser();
 	parser.target = main_element;

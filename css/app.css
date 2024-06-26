@@ -10,7 +10,7 @@ div.list
 	flex-direction: column;
 	border: 1px dotted #AAA560;
 	padding: 3px;
-	margin: 2px 2px 2px 0px ;
+	margin: 2px 2px 2px 0px;
 }
 
 label[for]

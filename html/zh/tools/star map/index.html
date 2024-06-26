@@ -918,13 +918,14 @@
 					catch (error)
 					{
 						new Log("无法打开星图", `名字为${id}`, "error");
-						return;
+						return false;
 					}
 					document.body.classList.add("editing");
 					this.file = id;
 					this.history.clear();
 					this.history.snapshot();
 					this.flush();
+					return true;
 				}
 
 				async file_create(id)
@@ -947,7 +948,7 @@
 					document.body.classList.add("editing");
 					this.file = id;
 					this.file_save(id);
-					this.file_list(id);
+					await this.file_list(id);
 					this.history.clear();
 					this.history.snapshot();
 				}
@@ -1096,14 +1097,21 @@
 							current_star_map.file_close();
 							break;
 						default:
-							current_star_map.file_open(id);
+							current_star_map.file_open(id).then((success) => {
+								if (success === false)
+								{
+									document.getElementById("saves_option").value = "NOT_SELECTED";
+								}
+							});
+							break;
 					}
 				},
 
-				new_star_map()
+				async new_star_map()
 				{
 					const id = document.getElementById("new_star_map-name").value;
-					current_star_map.file_create(id);
+					await current_star_map.file_create(id);
+					document.getElementById("saves_option").value = id;
 				},
 
 				key_star_map(event)
@@ -1589,7 +1597,7 @@
 				<label for="saves_option">
 					选择星图
 				</label>
-				<select name="selection" id="saves_option" title="选择" onchange="user.select_star_map()">
+				<select name="selection" id="saves_option" title="选择">
 					<option value="NOT_SELECTED" selected>
 						未选择
 					</option>
