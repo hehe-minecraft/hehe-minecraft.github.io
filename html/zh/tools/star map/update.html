@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="../../../../css/all.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../css/app.css"/>
+		<script src="../../../../ts/all.js" type="module" defer></script>
+		<title>
+			hehe-minecraft - 星图更新
+		</title>
+		<script type="module">
+			import { tools_database } from "../../../../ts/file.js"
+
+			const DATA_NAMESPACE = "Star Map";
+			const CURRENT_VERSION = 1;
+			
+			const upgrade_steps = {
+				0: function (content) {
+					content.links = Array.from(content.links);
+					content.nodes = Array.from(content.nodes);
+					for (const each_node of content.nodes)
+					{
+						each_node.size = Number(each_node.size);
+					}
+					for (const each_link_style of content.styles.link)
+					{
+						each_link_style.width = Number(each_link_style.width);
+					}
+				}
+			}
+
+			const downgrade_steps = {
+				1: function (content) {
+					content.links = new Set(content.links);
+					content.nodes = new Set(content.nodes);
+				}
+			}
+
+			async function update_file(id, target_version)
+			{
+				let content;
+				try
+				{
+					content = (await tools_database.get_data(DATA_NAMESPACE, id)).content;
+				}
+				catch (error)
+				{
+					return;
+				}
+				if (content.version === undefined)
+					content.version = 0;
+				while (content.version < target_version)
+				{
+					upgrade_steps[content.version](content);
+					content.version ++;
+				}
+				while (content.version > target_version)
+				{
+					downgrade_steps[content.version](content);
+					content.version --;
+				}
+				await tools_database.write_to_data(DATA_NAMESPACE, id, content);
+			}
+
+			function start_update()
+			{
+				const chosen_file_name = document.getElementById("update_name").value;
+				const target_version = document.getElementById("update_version").value;
+				if (chosen_file_name === "NOT_SELECTED")
+				{
+					for (const each_file_element of Array.from(document.getElementById("update_name").children).slice(1))
+					{
+						update_file(each_file_element.value, target_version);
+					}
+				}
+				else
+				{
+					update_file(chosen_file_name, target_version);
+				}
+			}
+
+			window.addEventListener("DOMContentLoaded", async function () {
+				// Add files
+				const file_list = document.getElementById("update_name");
+				for (const each_key of await tools_database.get_keys(DATA_NAMESPACE))
+				{
+					const option_element = document.createElement("option")
+					option_element.innerText = option_element.value = each_key;
+					file_list.appendChild(option_element);
+				}
+				// Add versions
+				const version_list = document.getElementById("update_version");
+				for (let each_version = 0; each_version <= CURRENT_VERSION; each_version ++)
+				{
+					const version_element = document.createElement("option");
+					version_element.innerText = each_version;
+					version_element.value = each_version;
+					if (each_version === CURRENT_VERSION)
+					{
+						version_element.innerText += "（最新）";
+						version_element.selected = true;
+					}
+					version_list.appendChild(version_element);
+				}
+			});
+
+			document.getElementById("update_button").onclick = () => {start_update()};
+		</script>
+	</head>
+	<body>
+		<h1>
+			hehe-minecraft - 星图更新
+		</h1>
+		<nav>
+			<p>
+				内容索引
+			</p>
+			<ol class="catalogue">
+				<li>
+					<a href="#description">
+						简介
+					</a>
+				</li>
+				<li>
+					<a href="#versions">
+						历史版本
+					</a>
+					<ol>
+						<li>
+							<a href="#version-0">
+								0
+							</a>
+						</li>
+						<li>
+							<a href="#version-1">
+								1
+							</a>
+						</li>
+					</ol>
+				</li>
+			</ol>
+			<p id="return">
+				<a href="index.html">
+					返回到：星图
+				</a>
+			</p>
+		</nav>
+		<main>
+			<section id="description">
+				<h2>
+					简介
+				</h2>
+				<p>
+					在这里可以升级或降级你的星图版本。
+				</p>
+				<p class="warning">
+					升级或降级星图版本操作不可逆，降级后的星图可能出现部分特性消失的问题。
+				</p>
+				<p>
+					将星图
+					<select id="update_name" title="星图名">
+						<option value="NOT_SELECTED">
+							全部
+						</option>
+					</select>
+					更新到
+					<select id="update_version" title="版本号"></select>
+					版本
+					<button id="update_button">
+						<svg width="15" height="15">
+							<path d="M 2 8 l 4 4 l 8 -8" stroke="#8888CC" stroke-width="2" fill="none"/>
+						</svg>
+					</button>
+				</p>
+			</section>
+			<section id="versions">
+				<h2>
+					历史版本
+				</h2>
+				<p>
+					这里使用基于 Typescript Interface 的扩展语法进行标注。
+				</p>
+				<p>
+					下表列出了版本星图结构的变量含义：
+				</p>
+				<table>
+					<tr>
+						<th>
+							变量
+						</th>
+						<th>
+							含义
+						</th>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								File
+							</code>
+						</td>
+						<td>
+							整个星图文件
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								Node
+							</code>
+						</td>
+						<td>
+							节点
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								Link
+							</code>
+						</td>
+						<td>
+							链接
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								NodeStyle
+							</code>
+						</td>
+						<td>
+							节点样式
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								LinkStyle
+							</code>
+						</td>
+						<td>
+							链接样式
+						</td>
+					</tr>
+				</table>
+				<section id="version-0">
+					<h3>
+						0
+					</h3>
+					<p>
+						此版本中星图结构如下：
+					</p>
+					<pre>
+						interface File
+						{
+							links: Set&lt;Link&gt;,
+							nodes: Set&lt;Node&gt;,
+							styles:
+							{
+								node: Array&lt;NodeStyle&gt;,
+								link: Array&lt;LinkStyle&gt;,
+							}
+							readonly version?: number = 0;
+							x: number = 0,
+							y: number = 0,
+							zoom: number = 1
+						}
+						interface Node
+						{
+							content: string = "",
+							size: number | string,
+							style: NodeStyle,
+							title: string = "",
+							x: number = 0,
+							y: number = 0
+						}
+						interface Link
+						{
+							content: string = "",
+							from: Node,
+							style: LinkStyle,
+							title: string = "",
+							to: Node
+						}
+						interface NodeStyle
+						{
+							color: string, // #000000 ~ #FFFFFF
+							name: string = "Style"
+						}
+						interface LinkStyle
+						{
+							backcolor: string, // #000000 ~ #FFFFFF
+							forecolor: string, // #000000 ~ #FFFFFF
+							name: string = "Style",
+							onesided: boolean = false, // 控制链接是否有方向
+							width: number | string
+						}
+					</pre>
+				</section>
+				<section id="version-1">
+					<h3>
+						1
+					</h3>
+					<p>
+						此版本中星图结构如下：
+					</p>
+					<pre>
+						interface File
+						{
+							links: Array&lt;Link&gt;,
+							nodes: Array&lt;Node&gt;,
+							styles:
+							{
+								node: Array&lt;NodeStyle&gt;,
+								link: Array&lt;LinkStyle&gt;,
+							}
+							readonly version: number = 1;
+							x: number = 0,
+							y: number = 0,
+							zoom: number = 1
+						}
+						interface Node
+						{
+							content: string = "",
+							size: number,
+							style: NodeStyle,
+							title: string = "",
+							x: number = 0,
+							y: number = 0
+						}
+						interface Link
+						{
+							content: string = "",
+							from: Node,
+							style: LinkStyle,
+							title: string = "",
+							to: Node
+						}
+						interface NodeStyle
+						{
+							color: string, // #000000 ~ #FFFFFF
+							name: string = "Style"
+						}
+						interface LinkStyle
+						{
+							backcolor: string, // #000000 ~ #FFFFFF
+							forecolor: string, // #000000 ~ #FFFFFF
+							name: string = "Style",
+							onesided: boolean = false, // 控制链接是否有方向
+							width: number
+						}
+					</pre>
+					<p>
+						将星图存储节点与链接的位置由集合改为列表。
+						<br/>
+						修复了节点与链接大小与宽度可以不为数字导致的问题。
+					</p>
+				</section>
+			</section>
+		</main>
+	</body>
+</html>

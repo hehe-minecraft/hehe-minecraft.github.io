@@ -18,12 +18,13 @@ label[for]
 	cursor: pointer;
 }
 
-input
+input, select
 {
 	border: none;
 	padding: 0 3px 0 3px;
 	border-bottom: 1.5px solid #666666;
 	background-color: inherit;
+	color: inherit;
 	overflow: hidden;
 }
 

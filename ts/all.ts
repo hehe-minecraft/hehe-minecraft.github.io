@@ -307,6 +307,59 @@ export namespace parse_source
 			return elements;
 		}
 	}
+	export function parse_pre()
+	{
+		function add_lines(lines: string[], element: HTMLElement)
+		{
+			for (const each_line_index in lines)
+			{
+				const each_line: string = lines[each_line_index];
+				const line_number: HTMLElement = document.createElement("span");
+				line_number.classList.add("line-number");
+				line_number.innerText = (Number(each_line_index) + 1).toString();
+				const line: HTMLElement = document.createElement("span");
+				line.classList.add("line");
+				line.innerText += each_line;
+				element.appendChild(line_number);
+				element.appendChild(line);
+			}
+		}
+		const elements = document.getElementsByTagName("pre");
+		for (const each_element of elements)
+		{
+			const src: string | null = each_element.getAttribute("src");
+			if (src === null)
+			{
+				const original_text: string = each_element.innerText.replace(/\s*$/, "");
+				const lines: string[] = new Array();
+				const tabs: number = original_text.length - original_text.replace(/^\s*/, "").length;
+				each_element.innerText = "";
+				for (const each_line of original_text.split("\n"))
+				{
+					lines.push(each_line.substring(tabs));
+				}
+				add_lines(lines, each_element);
+			}
+			else
+			{
+				const file_request = new XMLHttpRequest();
+				file_request.open("GET", src, true);
+				file_request.onload = function ()
+				{
+					if (file_request.status === 200)
+					{
+						const lines = file_request.responseText.split("\n");
+						add_lines(lines, each_element);
+					}
+					else
+					{
+						each_element.innerText = "Unable to load file.";
+					}
+				}
+				file_request.send();
+			}
+		}
+	}
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -319,4 +372,6 @@ window.addEventListener("DOMContentLoaded", () => {
 	parser.target_nav = nav_element as HTMLElement;
 	parser.source = main_element.textContent?.replace(/\n\t*/g, "\n") ?? "";
 	parser.parse();
-})
+});
+
+window.addEventListener("DOMContentLoaded", parse_source.parse_pre);

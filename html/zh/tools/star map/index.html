@@ -343,8 +343,9 @@
 			const KEY_UNDO = 90; // z
 			const KEY_REDO = 89; // y
 			const ORIGINAL_CONTENT = {
-				nodes: new Set(),
-				links: new Set(),
+				version: 1,
+				nodes: [],
+				links: [],
 				styles: {
 					node: [],
 					link: []
@@ -795,7 +796,7 @@
 						title: title,
 						content: content
 					};
-					this.content.nodes.add(node);
+					this.content.nodes.push(node);
 					this.history.snapshot();
 					this.flush();
 					return node;
@@ -803,13 +804,15 @@
 
 				node_remove(node)
 				{
-					if (this.content.nodes.delete(node))
+					const node_index = this.content.nodes.indexOf(node)
+					if (node_index !== -1)
 					{
-						for (const each_link of this.content.links)
+						this.content.nodes.splice(node_index, 1);
+						for (const [each_index, each_link] of this.content.links.entries())
 						{
 							if (each_link.from === node || each_link.to === node)
 							{
-								this.content.links.delete(each_link);
+								this.content.links.splice(each_index, 1);
 							}
 						}
 						new Log("删除成功", "", "success");
@@ -844,7 +847,7 @@
 						title: title,
 						content: content
 					};
-					this.content.links.add(link);
+					this.content.links.push(link);
 					this.history.snapshot();
 					this.flush();
 					return link;
@@ -852,13 +855,16 @@
 
 				link_remove(link)
 				{
-					if (this.content.links.delete(link))
+					const link_index = this.content.links.indexOf(link);
+					if (link_index !== -1)
 					{
+						this.content.links.splice(link_index, 1);
 						new Log("删除成功", "", "success");
 					}
 					else
 					{
 						new Log("删除失败", "", "error");
+						return;
 					}
 					this.history.snapshot();
 					this.flush();
@@ -911,15 +917,22 @@
 
 				async file_open(id)
 				{
+					let content;
 					try
 					{
-						this.content = (await tools_database.get_data(DATA_NAMESPACE, id)).content;
+						content = (await tools_database.get_data(DATA_NAMESPACE, id)).content;
 					}
 					catch (error)
 					{
 						new Log("无法打开星图", `名字为${id}`, "error");
 						return false;
 					}
+					if (content.version !== 1)
+					{
+						new Log("无法打开星图", `星图版本不匹配，请查看帮助文档进行升级或降级\n保存时的版本号为 ${content.version !== undefined ? content.version : 0}\n需要的版本号为 ${ORIGINAL_CONTENT.version}`, "error");
+						return false;
+					}
+					this.content = content;
 					document.body.classList.add("editing");
 					this.file = id;
 					this.history.clear();
@@ -1443,7 +1456,7 @@
 					const style_forecolor = document.getElementById("new_link_style-forecolor").value;
 					const style_backcolor = document.getElementById("new_link_style-backcolor").value;
 					const style_onesided = document.getElementById("new_link_style-onesided").checked;
-					const style_width = document.getElementById("new_link_style-width").value;
+					const style_width = Number(document.getElementById("new_link_style-width").value);
 					current_star_map.link_style_create(style_forecolor, style_backcolor, style_onesided, style_width, style_name);
 					user.link_update_styles();
 					new Log("链接样式创建成功", `名叫${style_name}`, "success");
@@ -1597,7 +1610,7 @@
 				<label for="saves_option">
 					选择星图
 				</label>
-				<select name="selection" id="saves_option" title="选择">
+				<select id="saves_option" title="选择">
 					<option value="NOT_SELECTED" selected>
 						未选择
 					</option>
