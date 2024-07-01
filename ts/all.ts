@@ -31,10 +31,36 @@ export namespace parse_source
 			[/^([ \t]*|<!-- .+ -->)$/, chunk_type.Comment],
 			[/./, chunk_type.Paragraph] // Default
 		]);
+		export enum area_type
+		{
+			// All the parameter 0 are contents except FigureReference.
+			Unknown,
+			Content,
+			Link,
+			LinkBlank,
+			// Parameter 1 : Link href (only accept the first value, must be a text)
+			Term,
+			// The same to Link (above).
+			TermMeaning,
+			Code,
+			// Parameter 1 : Term meaning content (only accept the first value, must be a text)
+			KeyboardInput,
+			FigureReference
+			// Parameter 0 : Figure id (only accept the first value, must be a text)
+		}
+		export const area_with_content: Map<area_type, keyof HTMLElementTagNameMap> = new Map([
+			[area_type.Link, "a"],
+			[area_type.LinkBlank, "a"],
+			[area_type.Term, "dfn"],
+			[area_type.TermMeaning, "dfn"],
+			[area_type.Code, "code"],
+			[area_type.KeyboardInput, "kbd"]
+		])
 	}
 	/* --- SOURCE Language Explanation ---
 	In this language, symbols are mainly capital letters.
 	1.	Blocks
+		Each block group is called a "chunk" in the file.
 		a.	Normal Text
 			We use a single line to create a text (exactly <p>).
 			We can add some symbols before it, like "NOTE", "WARN", "DEF" (for definition).
@@ -46,7 +72,7 @@ export namespace parse_source
 			The smallest heading is <h6>.
 			e.g. "#" refers to <h2>, "#####" and "######" refer to <h6>.
 		c.	List
-			We can't define an unordered list
+			We can't define an unordered list.
 			i.	Ordered List
 				We use "-" to define an ordered list.
 				Adding space before the "-" makes the entry smaller.
@@ -69,7 +95,11 @@ export namespace parse_source
 			The source <figure> with the id should be also in the file.
 			Figures are numbered automatically.
 			See "3. Environment".
+		f.	Comment
+			We can use "<!-- comment -->" to create a comment.
+			Empty lines are also regarded as comments.
 	2.	Inlines
+		Each inline group is called a "area" in the file.
 		Inline symbols are surrounded by "[]".
 		a.	Link
 			We can use [name TO target] to create a link.
@@ -82,6 +112,9 @@ export namespace parse_source
 			We can use [CODE code] to create a piece of code.
 		d.	Keyboard Input
 			We can use [KEY key] to create a keyboard input.
+		e.	Figure Reference
+			We can use [FIGURE figure] to refer to a figure.
+			The figure must exist in a block before it.
 	3.	Environment
 		You should define all your environment settings in a variable called "parse_source.environment".
 		a.	If you are using figures in2 your codes, you should define the attribute "figure" (string), with the number placeholder as "$".
@@ -205,10 +238,10 @@ export namespace parse_source
 		}
 		public static attach(target: HTMLElement, elements: Iterable<Node>): void
 		{
-		    for (const each_element of elements)
-		    {
-		        target.appendChild(each_element);
-		    }
+			for (const each_element of elements)
+			{
+				target.appendChild(each_element);
+			}
 		}
 		private parse_chunk(chunk: Chunk): HTMLElement | undefined
 		{
@@ -278,33 +311,119 @@ export namespace parse_source
 					return document.createElement("hr");
 			}
 		}
-		private parse_inline(source: string): Node[]
+		private parse_inline(source: string): Iterable<Node>
 		{
-			const wrapper: HTMLElement = document.createElement("div");
-			const current_parser = this;
-			wrapper.innerHTML = source
-				.replace(/</g, "&lt;")
-				.replace(/>/g, "&gt;")
-				.replace(/\[CODE (.*?)\]/g, "<code>$1</code>")
-				.replace(/\[(.*?) TO BLANK (.*?)\]/g, "<a href=\"$2\" target=\"_blank\">$1</a>")
-				.replace(/\[(.*?) TO (.*?)\]/g, "<a href=\"$2\">$1</a>")
-				.replace(/\[NOUN (.*?) AS (.*?)\]/g, "<dfn title=\"$2\">$1</dfn>")
-				.replace(/\[NOUN (.*?)\]/g, "<dfn>$1</dfn>")
-				.replace(/\[VAR_TYPE (.*?)\]/g, "<span class=\"type\">$1</span>")
-				.replace(/\[KEY (.*?)\]/g, "<kbd>$1</kbd>")
-				.replace(/\[FIGURE (.+?)\]/g, function (match: string): string {
-					for (const each_figure of current_parser.figures)
+			// Part 1 - Divide areas (remove spaces but keep brackets)
+			const areas: string[] = source.match(/(\[|\]|[^[\] ]+)/g) ?? new Array();
+			// Part 2 - Parse areas
+			interface keyword_entry
+			{
+				type: constant.area_type,
+				parameters: Node[][]
+				// The first dimension is the index of the parameter.
+				// The second dimension is the nodes of the parameter.
+			};
+			const default_keyword: keyword_entry = {type: constant.area_type.Content, parameters: [[]]};
+			const keyword_stack: keyword_entry[] = [Object.assign({}, default_keyword)]; // The first entry should never be popped.
+			for (const each_area of areas)
+			{
+				if (each_area === "[")
+				{
+					keyword_stack.push({type: constant.area_type.Unknown, parameters: [[]]});
+				}
+				else if (each_area === "]")
+				{
+					if (keyword_stack.length === 1)
 					{
-						if (each_figure.id === match.match(/\[FIGURE (.+?)\]/)?.[1])
+						keyword_stack[0].parameters[0].push(document.createTextNode("]"));
+					}
+					const current_keyword: keyword_entry = keyword_stack.pop() ?? Object.assign({}, default_keyword); // It should never be the second choice.
+					const last_keyword: keyword_entry = keyword_stack[keyword_stack.length - 1] ?? Object.assign({}, default_keyword);
+					const last_parameter: Node[] = last_keyword.parameters[last_keyword.parameters.length - 1];
+					if (constant.area_with_content.has(current_keyword.type))
+					{
+						const new_node: HTMLElement = document.createElement(constant.area_with_content.get(current_keyword.type) ?? ""); // It should never be the second choice.
+						Parser.attach(new_node, current_keyword.parameters[0]);
+						last_parameter.push(new_node);
+						switch (current_keyword.type)
 						{
-							const figure_number: number = current_parser.figures.indexOf(each_figure) + 1
-							return environment.figure.replace(/\$/g, figure_number.toString());
+							case constant.area_type.LinkBlank:
+								(new_node as HTMLAnchorElement).target = "_blank";
+							case constant.area_type.Link:
+								(new_node as HTMLAnchorElement).href = current_keyword.parameters[1][0]?.textContent ?? "";
+								break;
+							case constant.area_type.TermMeaning:
+								new_node.title = current_keyword.parameters[1][0]?.textContent ?? "";
+								break;
 						}
 					}
-					return match;
-				});
-			const elements: Node[] = Array.from(wrapper.childNodes);
-			return elements;
+					else if (current_keyword.type === constant.area_type.Unknown)
+					{
+						last_parameter.push(document.createTextNode("["));
+						last_parameter.push(...current_keyword.parameters[0]);
+						last_parameter.push(document.createTextNode("]"));
+					}
+					else if (current_keyword.type === constant.area_type.FigureReference)
+					{
+						if (current_keyword.parameters[0][0] === undefined)
+							break;
+						let figure_number: number = 0;
+						for (const [each_figure_number, each_figure] of this.figures.entries())
+						{
+							if (each_figure.id === current_keyword.parameters[0][0].textContent)
+							{
+								figure_number = each_figure_number + 1;
+								break;
+							}
+						}
+						const new_element_figure_reference: Text = document.createTextNode(environment.figure.replace(/\$/g, figure_number.toString()));
+						last_parameter.push(new_element_figure_reference);
+					}
+				}
+				else
+				{
+					const last_keyword: keyword_entry = keyword_stack[keyword_stack.length - 1];
+					if (each_area === "TO")
+					{
+						last_keyword.type = constant.area_type.Link;
+						last_keyword.parameters.push([]);
+					}
+					else if (each_area === "BLANK" && last_keyword.type === constant.area_type.Link)
+					{
+						last_keyword.type = constant.area_type.LinkBlank;
+					}
+					else if (each_area === "NOUN")
+					{
+						last_keyword.type = constant.area_type.Term;
+					}
+					else if (each_area === "AS" && last_keyword.type === constant.area_type.Term)
+					{
+						last_keyword.type = constant.area_type.TermMeaning;
+						last_keyword.parameters.push([]);
+					}
+					else if (each_area === "CODE")
+					{
+						last_keyword.type = constant.area_type.Code;
+					}
+					else if (each_area === "KEY")
+					{
+						last_keyword.type = constant.area_type.KeyboardInput;
+					}
+					else if (each_area === "FIGURE")
+					{
+						last_keyword.type = constant.area_type.FigureReference;
+					}
+					else
+					{
+						const last_parameter: Node[] = last_keyword.parameters[last_keyword.parameters.length - 1];
+						if (last_parameter[last_parameter.length - 1] instanceof Text)
+							last_parameter[last_parameter.length - 1].textContent += " " + each_area;
+						else
+							last_parameter.push(document.createTextNode(each_area));
+					}
+				}
+			}
+			return keyword_stack[0].parameters[0];
 		}
 	}
 	export function parse_pre()
