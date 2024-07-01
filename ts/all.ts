@@ -336,13 +336,14 @@ export namespace parse_source
 					if (keyword_stack.length === 1)
 					{
 						keyword_stack[0].parameters[0].push(document.createTextNode("]"));
+						continue;
 					}
-					const current_keyword: keyword_entry = keyword_stack.pop() ?? Object.assign({}, default_keyword); // It should never be the second choice.
-					const last_keyword: keyword_entry = keyword_stack[keyword_stack.length - 1] ?? Object.assign({}, default_keyword);
+					const current_keyword: keyword_entry = keyword_stack.pop()!;
+					const last_keyword: keyword_entry = keyword_stack[keyword_stack.length - 1]!;
 					const last_parameter: Node[] = last_keyword.parameters[last_keyword.parameters.length - 1];
 					if (constant.area_with_content.has(current_keyword.type))
 					{
-						const new_node: HTMLElement = document.createElement(constant.area_with_content.get(current_keyword.type) ?? ""); // It should never be the second choice.
+						const new_node: HTMLElement = document.createElement(constant.area_with_content.get(current_keyword.type)!);
 						Parser.attach(new_node, current_keyword.parameters[0]);
 						last_parameter.push(new_node);
 						switch (current_keyword.type)
@@ -422,6 +423,14 @@ export namespace parse_source
 							last_parameter.push(document.createTextNode(each_area));
 					}
 				}
+			}
+			while (keyword_stack.length > 1)
+			{
+				const current_keyword: keyword_entry = keyword_stack.pop()!;
+				const last_keyword: keyword_entry = keyword_stack[keyword_stack.length - 1];
+				const last_parameter: Node[] = last_keyword.parameters[last_keyword.parameters.length - 1];
+				last_parameter.push(document.createTextNode("["));
+				last_parameter.push(...current_keyword.parameters[0]);
 			}
 			return keyword_stack[0].parameters[0];
 		}
