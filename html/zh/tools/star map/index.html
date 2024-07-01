@@ -342,8 +342,9 @@
 			const KEY_CHOOSE = 32; // space
 			const KEY_UNDO = 90; // z
 			const KEY_REDO = 89; // y
+			const CURRENT_VERSION = 1;
 			const ORIGINAL_CONTENT = {
-				version: 1,
+				version: CURRENT_VERSION,
 				nodes: [],
 				links: [],
 				styles: {
@@ -599,147 +600,187 @@
 						context.arc(0, 0, 30, 0, 2 * Math.PI)
 						context.fill();
 					}
-					// Part 4 - Display the links and detect which link is hovered.
+					// Part 4 - Group the links.
+					const link_groups = new Map(); // Each link group shares the same endpoints.
+					for (const each_link of this.content.links)
+					{
+						let link_group = undefined;
+						for (const each_link_endpoint_pair of link_groups.keys())
+						{
+							if (each_link_endpoint_pair.has(each_link.from) && each_link_endpoint_pair.has(each_link.to))
+							{
+								link_group = link_groups.get(each_link_endpoint_pair);
+								let doublesided = !each_link.style.onesided;
+								if (doublesided)
+								{
+									link_group.push({onesided: false, content: each_link});
+									break;
+								}
+								for (const each_link2 of link_group)
+								{
+									if (each_link.style === each_link2.content.style)
+									{
+										each_link2.onesided = false;
+										doublesided = true;
+										break;
+									}
+								}
+								if (!doublesided)
+								{
+									link_group.push({onesided: true, content: each_link});
+								}
+								break;
+							}
+						}
+						if (link_group === undefined)
+						{
+							link_group = [{onesided: true, content: each_link}];
+							link_groups.set(new Set([each_link.from, each_link.to]), link_group);
+						}
+					}
+					// Part 5 - Display the links and detect which link is hovered.
 					let hovering;
 					const transform_matrix = new DOMMatrix();
 					transform_matrix.scaleSelf(1 / CANVAS_SCALE, 1 / CANVAS_SCALE);
 					transform_matrix.translateSelf(this.content.x, this.content.y);
 					transform_matrix.translateSelf(this.canvas.width / 2, this.canvas.height / 2);
 					transform_matrix.scaleSelf(this.content.zoom, this.content.zoom);
-					for (const each_link of this.content.links)
+					for (const each_link_group of link_groups.values())
 					{
-						// Step 1 - Optimize when the link is out of the screen, because the expense of displaying a link is so huge.
-						const link_from_transformed = transform_matrix.transformPoint(new DOMPoint(each_link.from.x, each_link.from.y));
-						const link_to_transformed = transform_matrix.transformPoint(new DOMPoint(each_link.to.x, each_link.to.y));
-						if ((link_from_transformed.x < 0 || link_from_transformed.x > this.canvas.width / CANVAS_SCALE
-							|| link_from_transformed.y < 0 || link_from_transformed.y > this.canvas.height / CANVAS_SCALE)
-							&& (link_to_transformed.x < 0 || link_to_transformed.x > this.canvas.width / CANVAS_SCALE
-							|| link_to_transformed.y < 0 || link_to_transformed.y > this.canvas.height / CANVAS_SCALE))
+						let link_group_width = 0;
+						for (const each_link_wrapper of each_link_group.values())
+							link_group_width += each_link_wrapper.content.style.width;
+						let link_offset = (-link_group_width - each_link_group[0].content.style.width) / 2;
+						for (const [each_link_index, each_link_wrapper] of each_link_group.entries())
 						{
-							continue;
-						}
-						// Step 2 - Detect the hovered link.
-						// We have some special names to refer to the positions.
-						// A,B: the start and end of the link.
-						// C: the mouse position.
-						// D: the perpendicular foot of the line AC on the line AB.
-						// We need to find the point D.
-						if (hover_place)
-						{
-							const A = new Vector([each_link.from.x, each_link.from.y]);
-							const B = new Vector([each_link.to.x, each_link.to.y]);
-							const C = new Vector([hover_place.x, hover_place.y]);
-							const AB = B.minus(A);
-							const AC = C.minus(A);
-							const AC_dot_AB = AC.dot(AB);
-							let mouse_distance;
-							if (AC_dot_AB < 0)
+							// Step 1 - Optimize when the link is out of the screen, because the expense of displaying a link is so huge.
+							const each_link = each_link_wrapper.content;
+							const link_from_transformed = transform_matrix.transformPoint(new DOMPoint(each_link.from.x, each_link.from.y));
+							const link_to_transformed = transform_matrix.transformPoint(new DOMPoint(each_link.to.x, each_link.to.y));
+							if ((link_from_transformed.x < 0 || link_from_transformed.x > this.canvas.width / CANVAS_SCALE
+								|| link_from_transformed.y < 0 || link_from_transformed.y > this.canvas.height / CANVAS_SCALE)
+								&& (link_to_transformed.x < 0 || link_to_transformed.x > this.canvas.width / CANVAS_SCALE
+								|| link_to_transformed.y < 0 || link_to_transformed.y > this.canvas.height / CANVAS_SCALE))
 							{
-								mouse_distance = AC.length;
+								continue;
 							}
-							else if (AC_dot_AB > AB.length ** 2)
+							// Step 2 - Detect the hovered link.
+							// We have some special names to refer to the positions.
+							// A,B: the start and end of the link.
+							// C: the mouse position.
+							// D: the perpendicular foot of the line AC on the line AB.
+							// We need to find the point D.
+							link_offset += each_link.style.width;
+							const link_horizontal_length = each_link.to.x - each_link.from.x;
+							const link_vertical_length = each_link.to.y - each_link.from.y;
+							const link_length = Math.sqrt(link_horizontal_length ** 2 + link_vertical_length ** 2);
+							const horizontal_ratio = link_horizontal_length / link_length;
+							const vertical_ratio = link_vertical_length / link_length;
+							const link_offset_x = Math.abs(vertical_ratio) * link_offset;
+							const link_offset_y = Math.abs(horizontal_ratio) * -link_offset;
+							const link_from_x = each_link.from.x + link_offset_x;
+							const link_from_y = each_link.from.y + link_offset_y;
+							const link_to_x = each_link.to.x + link_offset_x;
+							const link_to_y = each_link.to.y + link_offset_y;
+							if (hover_place)
 							{
-								mouse_distance = C.minus(A).length;
+								const A = new Vector([link_from_x, link_from_y]);
+								const B = new Vector([link_to_x, link_to_y]);
+								const C = new Vector([hover_place.x, hover_place.y]);
+								const AB = B.minus(A);
+								const AC = C.minus(A);
+								const AC_dot_AB = AC.dot(AB);
+								let mouse_distance;
+								if (AC_dot_AB < 0)
+								{
+									mouse_distance = AC.length;
+								}
+								else if (AC_dot_AB > AB.length ** 2)
+								{
+									mouse_distance = C.minus(A).length;
+								}
+								else
+								{
+									// The distance is |AC·AB| / ||AB||.
+									mouse_distance = Math.abs(AC.cross(AB)) / AB.length * 2;
+								}
+								if (mouse_distance < each_link.style.width)
+								{
+									hovering = new StarMapInterface(each_link, storage.Link);
+									if (this.debug)
+									{
+										context.strokeStyle = COLOR_DEBUG;
+										context.lineWidth = each_link.style.width;
+										context.beginPath();
+										context.moveTo(link_from_x, link_from_y);
+										context.lineTo(link_to_x, link_to_y);
+										context.stroke();
+										continue;
+									}
+								}
+							}
+							// Step 3 - Draw the active link.
+							if (each_link === this.active_element)
+							{
+								context.strokeStyle = COLOR_ACTIVATE;
+								context.lineWidth = each_link.style.width;
+								context.beginPath();
+								context.moveTo(link_from_x, link_from_y);
+								context.lineTo(link_to_x, link_to_y);
+								context.stroke();
+								continue;
+							}
+							// Step 4 - Optimize when the link is too thin to be displayed.
+							if (each_link.style.width * this.content.zoom <= THIN_LINK_WIDTH)
+							{
+								context.strokeStyle = each_link.style.forecolor;
+								context.lineWidth = each_link.style.width;
+								context.beginPath();
+								context.moveTo(link_from_x, link_from_y);
+								context.lineTo(link_to_x, link_to_y);
+								context.stroke();
+								continue;
+							}
+							// Step 5 - Draw the link.
+							const color_interval_count = Math.floor(link_length / each_link.style.width);
+							const color_interval = link_length / color_interval_count;
+							if (each_link_wrapper.onesided)
+							{
+								// "relative" means the relative position to the center of the node.
+								const edge_midpoint_relative_x = - color_interval / 2 * horizontal_ratio;
+								const edge_midpoint_relative_y = - color_interval / 2 * vertical_ratio;
+								context.fillStyle = each_link.style.forecolor;
+								for (let current_length = 0; current_length < link_length; current_length += color_interval)
+								{
+									const current_position_x = link_from_x + current_length * horizontal_ratio;
+									const current_position_y = link_from_y + current_length * vertical_ratio;
+									context.fillStyle = context.fillStyle === each_link.style.forecolor ? each_link.style.backcolor : each_link.style.forecolor;
+									context.beginPath();
+									context.moveTo(current_position_x, current_position_y);
+									context.lineTo(current_position_x + edge_midpoint_relative_x - edge_midpoint_relative_y, current_position_y + edge_midpoint_relative_y + edge_midpoint_relative_x);
+									context.lineTo(current_position_x - edge_midpoint_relative_x - edge_midpoint_relative_y, current_position_y - edge_midpoint_relative_y + edge_midpoint_relative_x)
+									context.lineTo(current_position_x + color_interval * horizontal_ratio, current_position_y - 2 * edge_midpoint_relative_y);
+									context.lineTo(current_position_x - edge_midpoint_relative_x + edge_midpoint_relative_y, current_position_y - edge_midpoint_relative_y - edge_midpoint_relative_x)
+									context.lineTo(current_position_x + edge_midpoint_relative_x + edge_midpoint_relative_y, current_position_y + edge_midpoint_relative_y - edge_midpoint_relative_x);
+									context.fill();
+								}
 							}
 							else
 							{
-								// The distance is |AC·AB| / ||AB||.
-								mouse_distance = Math.abs(AC.cross(AB)) / AB.length;
-							}
-							if (mouse_distance < each_link.style.width)
-							{
-								hovering = new StarMapInterface(each_link, storage.Link);
-								if (this.debug)
+								context.lineWidth = each_link.style.width;
+								context.strokeStyle = each_link.style.forecolor;
+								for (let current_length = 0; current_length < link_length; current_length += color_interval)
 								{
-									context.strokeStyle = COLOR_DEBUG;
-									context.lineWidth = each_link.style.width;
+									context.strokeStyle = context.strokeStyle === each_link.style.forecolor ? each_link.style.backcolor : each_link.style.forecolor;
 									context.beginPath();
-									context.moveTo(each_link.from.x, each_link.from.y);
-									context.lineTo(each_link.to.x, each_link.to.y);
+									context.moveTo(link_from_x + current_length * horizontal_ratio, link_from_y + current_length * vertical_ratio);
+									context.lineTo(link_from_x + (current_length + color_interval) * horizontal_ratio, link_from_y + (current_length + color_interval) * vertical_ratio);
 									context.stroke();
-									continue;
 								}
-							}
-						}
-						// Step 3 - Draw the active link.
-						if (each_link === this.active_element)
-						{
-							context.strokeStyle = COLOR_ACTIVATE;
-							context.lineWidth = each_link.style.width;
-							context.beginPath();
-							context.moveTo(each_link.from.x, each_link.from.y);
-							context.lineTo(each_link.to.x, each_link.to.y);
-							context.stroke();
-							continue;
-						}
-						// Step 4 - Optimize when the link is too thin to be displayed.
-						if (each_link.style.width * this.content.zoom <= THIN_LINK_WIDTH)
-						{
-							context.strokeStyle = each_link.style.forecolor;
-							context.lineWidth = each_link.style.width;
-							context.beginPath();
-							context.moveTo(each_link.from.x, each_link.from.y);
-							context.lineTo(each_link.to.x, each_link.to.y);
-							context.stroke();
-							continue;
-						}
-						// Step 5 - Detect if the link is double sided.
-						let doublesides = !each_link.style.onesided;
-						if (each_link.style.onesided)
-						{
-							for (const each_link2 of this.content.links)
-							{
-								if (each_link2.from == each_link.to && each_link2.to == each_link.from)
-								{
-									doublesides = true;
-									break;
-								}
-							}
-						}
-						// Step 6 - Draw the link.
-						const link_horizontal_length = each_link.to.x - each_link.from.x;
-						const link_vertical_length = each_link.to.y - each_link.from.y;
-						const link_length = Math.sqrt(link_horizontal_length ** 2 + link_vertical_length ** 2);
-						const horizontal_ratio = link_horizontal_length / link_length;
-						const vertical_ratio = link_vertical_length / link_length;
-						const color_interval_count = Math.floor(link_length / each_link.style.width);
-						const color_interval = link_length / color_interval_count;
-						if (each_link.style.onesided && !doublesides)
-						{
-							// "relative" means the relative position to the center of the node.
-							const edge_midpoint_relative_x = - color_interval / 2 * horizontal_ratio;
-							const edge_midpoint_relative_y = - color_interval / 2 * vertical_ratio;
-							context.fillStyle = each_link.style.forecolor;
-							for (let current_length = 0; current_length < link_length; current_length += color_interval)
-							{
-								const current_position_x = each_link.from.x + current_length * horizontal_ratio;
-								const current_position_y = each_link.from.y + current_length * vertical_ratio;
-								context.fillStyle = context.fillStyle === each_link.style.forecolor ? each_link.style.backcolor : each_link.style.forecolor;
-								context.beginPath();
-								context.moveTo(current_position_x, current_position_y);
-								context.lineTo(current_position_x + edge_midpoint_relative_x - edge_midpoint_relative_y, current_position_y + edge_midpoint_relative_y + edge_midpoint_relative_x);
-								context.lineTo(current_position_x - edge_midpoint_relative_x - edge_midpoint_relative_y, current_position_y - edge_midpoint_relative_y + edge_midpoint_relative_x)
-								context.lineTo(current_position_x + color_interval * horizontal_ratio, current_position_y - 2 * edge_midpoint_relative_y);
-								context.lineTo(current_position_x - edge_midpoint_relative_x + edge_midpoint_relative_y, current_position_y - edge_midpoint_relative_y - edge_midpoint_relative_x)
-								context.lineTo(current_position_x + edge_midpoint_relative_x + edge_midpoint_relative_y, current_position_y + edge_midpoint_relative_y - edge_midpoint_relative_x);
-								context.fill();
-							}
-						}
-						else
-						{
-							context.lineWidth = each_link.style.width;
-							context.strokeStyle = each_link.style.forecolor;
-							for (let current_length = 0; current_length < link_length; current_length += color_interval)
-							{
-								context.strokeStyle = context.strokeStyle === each_link.style.forecolor ? each_link.style.backcolor : each_link.style.forecolor;
-								context.beginPath();
-								context.moveTo(each_link.from.x + current_length * horizontal_ratio, each_link.from.y + current_length * vertical_ratio);
-								context.lineTo(each_link.from.x + (current_length + color_interval) * horizontal_ratio, each_link.from.y + (current_length + color_interval) * vertical_ratio);
-								context.stroke();
 							}
 						}
 					}
-					// Part 5 - Display the nodes and detect which node is hovered.
+					// Part 6 - Display the nodes and detect which node is hovered.
 					for (const each_node of this.content.nodes)
 					{
 						// Step 1 - Draw the subject (circle).
@@ -771,7 +812,7 @@
 							context.fillText(each_node.title, each_node.x, each_node.y + each_node.size * 2);
 						}
 					}
-					// Part 6 - Return the coordinate when nothing is hovered.
+					// Part 7 - Return the coordinate when nothing is hovered.
 					if (hover_place)
 					{
 						if (!hovering)
@@ -834,7 +875,7 @@
 					}
 					for (const each_link of this.content.links)
 					{
-						if ((each_link.from == node1 && each_link.to == node2 && each_link.style == style) || (!style.onesided && each_link.from == node2 && each_link.to == node1))
+						if (each_link.style == style && ((each_link.from == node1 && each_link.to == node2) || (!style.onesided && each_link.from == node2 && each_link.to == node1)))
 						{
 							new Log("创建失败", "已存在相同的连接", "error");
 							return;
@@ -927,7 +968,7 @@
 						new Log("无法打开星图", `名字为${id}`, "error");
 						return false;
 					}
-					if (content.version !== 1)
+					if (content.version !== CURRENT_VERSION)
 					{
 						new Log("无法打开星图", `星图版本不匹配，请查看帮助文档进行升级或降级\n保存时的版本号为 ${content.version !== undefined ? content.version : 0}\n需要的版本号为 ${ORIGINAL_CONTENT.version}`, "error");
 						return false;
