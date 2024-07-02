@@ -605,38 +605,33 @@
 					for (const each_link of this.content.links)
 					{
 						let link_group = undefined;
+						let onesided = each_link.style.onesided;
 						for (const each_link_endpoint_pair of link_groups.keys())
 						{
 							if (each_link_endpoint_pair.has(each_link.from) && each_link_endpoint_pair.has(each_link.to))
 							{
 								link_group = link_groups.get(each_link_endpoint_pair);
-								let doublesided = !each_link.style.onesided;
-								if (doublesided)
-								{
-									link_group.push({onesided: false, content: each_link});
-									break;
-								}
-								for (const each_link2 of link_group)
-								{
-									if (each_link.style === each_link2.content.style)
-									{
-										each_link2.onesided = false;
-										doublesided = true;
-										break;
-									}
-								}
-								if (!doublesided)
-								{
-									link_group.push({onesided: true, content: each_link});
-								}
 								break;
 							}
 						}
 						if (link_group === undefined)
 						{
-							link_group = [{onesided: true, content: each_link}];
+							link_group = [];
 							link_groups.set(new Set([each_link.from, each_link.to]), link_group);
 						}
+						else if (onesided)
+						{
+							for (const each_link2 of link_group)
+							{
+								if (each_link.style == each_link2.content.style)
+								{
+									onesided = false;
+									link_group.splice(link_group.indexOf(each_link2), 1);
+									break;
+								}
+							}
+						}
+						link_group.push({content: each_link, onesided: onesided});
 					}
 					// Part 5 - Display the links and detect which link is hovered.
 					let hovering;
