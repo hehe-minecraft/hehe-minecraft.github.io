@@ -671,8 +671,8 @@
 							const link_length = Math.sqrt(link_horizontal_length ** 2 + link_vertical_length ** 2);
 							const horizontal_ratio = link_horizontal_length / link_length;
 							const vertical_ratio = link_vertical_length / link_length;
-							const link_offset_x = Math.abs(vertical_ratio) * link_offset;
-							const link_offset_y = Math.abs(horizontal_ratio) * -link_offset;
+							const link_offset_x = (each_link_group[0].content.from.y - each_link_group[0].content.to.y) / link_length * link_offset;
+							const link_offset_y = (each_link_group[0].content.from.x - each_link_group[0].content.to.x) / link_length * -link_offset;
 							const link_from_x = each_link.from.x + link_offset_x;
 							const link_from_y = each_link.from.y + link_offset_y;
 							const link_to_x = each_link.to.x + link_offset_x;
