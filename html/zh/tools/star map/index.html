@@ -572,12 +572,7 @@
 					// This function is so complex that comments will help you better understand.
 					// The comments are in the order of "Part" > "Step".
 					// When hover_place is given, the function will return a StarMapInterface.
-					// Part 1 - Detect unavailable scenes.
-					if (!this.content)
-					{
-						return;
-					}
-					// Part 2 - Apply the transformation.
+					// Part 1 - Apply the transformation.
 					this.canvas.style.display = "none"; // Prevent the canvas being stretched.
 					const main = this.canvas.parentElement;
 					const details = document.querySelector("main>article");
@@ -592,7 +587,7 @@
 					context.translate(this.canvas.width / 2, this.canvas.height / 2);
 					context.translate(this.content.x, this.content.y);
 					context.scale(this.content.zoom, this.content.zoom);
-					// Part 3 - Display the origin in debug mode.
+					// Part 2 - Display the origin in debug mode.
 					if (this.debug)
 					{
 						context.fillStyle = COLOR_DEBUG;
@@ -600,7 +595,7 @@
 						context.arc(0, 0, 30, 0, 2 * Math.PI)
 						context.fill();
 					}
-					// Part 4 - Group the links.
+					// Part 3 - Group the links.
 					const link_groups = new Map(); // Each link group shares the same endpoints.
 					for (const each_link of this.content.links)
 					{
@@ -633,7 +628,7 @@
 						}
 						link_group.push({content: each_link, onesided: onesided});
 					}
-					// Part 5 - Display the links and detect which link is hovered.
+					// Part 4 - Display the links and detect which link is hovered.
 					let hovering;
 					const transform_matrix = new DOMMatrix();
 					transform_matrix.scaleSelf(1 / CANVAS_SCALE, 1 / CANVAS_SCALE);
@@ -642,35 +637,34 @@
 					transform_matrix.scaleSelf(this.content.zoom, this.content.zoom);
 					for (const each_link_group of link_groups.values())
 					{
+						// Step 1 - Optimize when the link is out of the screen, because the expense of displaying a link is so huge.
+						const link_from_transformed = transform_matrix.transformPoint(new DOMPoint(each_link_group[0].content.from.x, each_link_group[0].content.from.y));
+						const link_to_transformed = transform_matrix.transformPoint(new DOMPoint(each_link_group[0].content.to.x, each_link_group[0].content.to.y));
+						if ((link_from_transformed.x < 0 || link_from_transformed.x > this.canvas.width / CANVAS_SCALE
+							|| link_from_transformed.y < 0 || link_from_transformed.y > this.canvas.height / CANVAS_SCALE)
+							&& (link_to_transformed.x < 0 || link_to_transformed.x > this.canvas.width / CANVAS_SCALE
+							|| link_to_transformed.y < 0 || link_to_transformed.y > this.canvas.height / CANVAS_SCALE))
+						{
+							continue;
+						}
+						// Step 2 - Update the link offset.
+						const link_length = Math.sqrt((each_link_group[0].content.from.x - each_link_group[0].content.to.x) ** 2 + (each_link_group[0].content.from.y - each_link_group[0].content.to.y) ** 2);
 						let link_group_width = 0;
 						for (const each_link_wrapper of each_link_group.values())
 							link_group_width += each_link_wrapper.content.style.width;
 						let link_offset = (-link_group_width - each_link_group[0].content.style.width) / 2;
 						for (const [each_link_index, each_link_wrapper] of each_link_group.entries())
 						{
-							// Step 1 - Optimize when the link is out of the screen, because the expense of displaying a link is so huge.
 							const each_link = each_link_wrapper.content;
-							const link_from_transformed = transform_matrix.transformPoint(new DOMPoint(each_link.from.x, each_link.from.y));
-							const link_to_transformed = transform_matrix.transformPoint(new DOMPoint(each_link.to.x, each_link.to.y));
-							if ((link_from_transformed.x < 0 || link_from_transformed.x > this.canvas.width / CANVAS_SCALE
-								|| link_from_transformed.y < 0 || link_from_transformed.y > this.canvas.height / CANVAS_SCALE)
-								&& (link_to_transformed.x < 0 || link_to_transformed.x > this.canvas.width / CANVAS_SCALE
-								|| link_to_transformed.y < 0 || link_to_transformed.y > this.canvas.height / CANVAS_SCALE))
-							{
-								continue;
-							}
-							// Step 2 - Detect the hovered link.
+							link_offset += each_link.style.width;
+							// Step 3 - Detect the hovered link.
 							// We have some special names to refer to the positions.
 							// A,B: the start and end of the link.
 							// C: the mouse position.
 							// D: the perpendicular foot of the line AC on the line AB.
 							// We need to find the point D.
-							link_offset += each_link.style.width;
 							const link_horizontal_length = each_link.to.x - each_link.from.x;
 							const link_vertical_length = each_link.to.y - each_link.from.y;
-							const link_length = Math.sqrt(link_horizontal_length ** 2 + link_vertical_length ** 2);
-							const horizontal_ratio = link_horizontal_length / link_length;
-							const vertical_ratio = link_vertical_length / link_length;
 							const link_offset_x = (each_link_group[0].content.from.y - each_link_group[0].content.to.y) / link_length * link_offset;
 							const link_offset_y = (each_link_group[0].content.from.x - each_link_group[0].content.to.x) / link_length * -link_offset;
 							const link_from_x = each_link.from.x + link_offset_x;
@@ -685,20 +679,7 @@
 								const AB = B.minus(A);
 								const AC = C.minus(A);
 								const AC_dot_AB = AC.dot(AB);
-								let mouse_distance;
-								if (AC_dot_AB < 0)
-								{
-									mouse_distance = AC.length;
-								}
-								else if (AC_dot_AB > AB.length ** 2)
-								{
-									mouse_distance = C.minus(A).length;
-								}
-								else
-								{
-									// The distance is |AC·AB| / ||AB||.
-									mouse_distance = Math.abs(AC.cross(AB)) / AB.length * 2;
-								}
+								const mouse_distance = Math.abs(AC.cross(AB)) / AB.length * 2;
 								if (mouse_distance < each_link.style.width)
 								{
 									hovering = new StarMapInterface(each_link, storage.Link);
@@ -714,7 +695,7 @@
 									}
 								}
 							}
-							// Step 3 - Draw the active link.
+							// Step 4 - Draw the active link.
 							if (each_link === this.active_element)
 							{
 								context.strokeStyle = COLOR_ACTIVATE;
@@ -725,7 +706,7 @@
 								context.stroke();
 								continue;
 							}
-							// Step 4 - Optimize when the link is too thin to be displayed.
+							// Step 5 - Optimize when the link is too thin to be displayed.
 							if (each_link.style.width * this.content.zoom <= THIN_LINK_WIDTH)
 							{
 								context.strokeStyle = each_link.style.forecolor;
@@ -736,7 +717,9 @@
 								context.stroke();
 								continue;
 							}
-							// Step 5 - Draw the link.
+							// Step 6 - Draw the link.
+							const horizontal_ratio = link_horizontal_length / link_length;
+							const vertical_ratio = link_vertical_length / link_length;
 							const color_interval_count = Math.floor(link_length / each_link.style.width);
 							const color_interval = link_length / color_interval_count;
 							if (each_link_wrapper.onesided)
@@ -775,7 +758,7 @@
 							}
 						}
 					}
-					// Part 6 - Display the nodes and detect which node is hovered.
+					// Part 5 - Display the nodes and detect which node is hovered.
 					for (const each_node of this.content.nodes)
 					{
 						// Step 1 - Draw the subject (circle).
@@ -807,7 +790,7 @@
 							context.fillText(each_node.title, each_node.x, each_node.y + each_node.size * 2);
 						}
 					}
-					// Part 7 - Return the coordinate when nothing is hovered.
+					// Part 6 - Return the coordinate when nothing is hovered.
 					if (hover_place)
 					{
 						if (!hovering)
