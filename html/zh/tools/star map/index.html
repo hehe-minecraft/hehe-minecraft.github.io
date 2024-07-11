@@ -681,7 +681,9 @@
 							const link_from_y = each_link.from.y + link_offset_y;
 							const link_to_x = each_link.to.x + link_offset_x;
 							const link_to_y = each_link.to.y + link_offset_y;
-							if (hover_place)
+							if (hover_place
+								&& ((link_from_x < hover_place.x && link_to_x > hover_place.x)
+								|| (link_from_x > hover_place.x && link_to_x < hover_place.x)))
 							{
 								const A = new Vector([link_from_x, link_from_y]);
 								const B = new Vector([link_to_x, link_to_y]);
