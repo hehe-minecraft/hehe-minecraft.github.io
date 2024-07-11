@@ -13,7 +13,7 @@ export namespace parse_source
 			[/^NOTE /, "notice"],
 			[/^WARN /, "warning"],
 			[/^DEF /, "definition"]
-		])
+		]);
 		export enum chunk_type
 		{
 			Paragraph,
@@ -55,7 +55,7 @@ export namespace parse_source
 			[area_type.TermMeaning, "dfn"],
 			[area_type.Code, "code"],
 			[area_type.KeyboardInput, "kbd"]
-		])
+		]);
 	}
 	/* --- SOURCE Language Explanation ---
 	In this language, symbols are mainly capital letters.
@@ -434,58 +434,24 @@ export namespace parse_source
 			}
 			return keyword_stack[0].parameters[0];
 		}
-	}
-	export function parse_pre()
-	{
-		function add_lines(lines: string[], element: HTMLElement)
+		public static parse_pre(source: string, language?: string): HTMLPreElement
 		{
-			for (const each_line_index in lines)
+			const lines: string[] = source.replace(/^(\s*\n)*|(\s*\n)*\s+$/g, "").split(/\n/); // Remove trailing and leading newlines.
+			const tab_count: number = lines[0].match(/^\s*/)![0].length;
+			const element: HTMLPreElement = document.createElement("pre");
+			for (const [each_line_index, each_line_with_tab] of lines.entries())
 			{
-				const each_line: string = lines[each_line_index];
+				let each_line = each_line_with_tab.slice(tab_count);
 				const line_number: HTMLElement = document.createElement("span");
 				line_number.classList.add("line-number");
 				line_number.innerText = (Number(each_line_index) + 1).toString();
 				const line: HTMLElement = document.createElement("span");
 				line.classList.add("line");
-				line.innerText += each_line;
+				line.innerText = each_line;
 				element.appendChild(line_number);
 				element.appendChild(line);
 			}
-		}
-		const elements = document.getElementsByTagName("pre");
-		for (const each_element of elements)
-		{
-			const src: string | null = each_element.getAttribute("src");
-			if (src === null)
-			{
-				const original_text: string = each_element.innerText.replace(/\s*$/, "");
-				const lines: string[] = new Array();
-				const tabs: number = original_text.length - original_text.replace(/^\s*/, "").length;
-				each_element.innerText = "";
-				for (const each_line of original_text.split("\n"))
-				{
-					lines.push(each_line.substring(tabs));
-				}
-				add_lines(lines, each_element);
-			}
-			else
-			{
-				const file_request = new XMLHttpRequest();
-				file_request.open("GET", src, true);
-				file_request.onload = function ()
-				{
-					if (file_request.status === 200)
-					{
-						const lines = file_request.responseText.split("\n");
-						add_lines(lines, each_element);
-					}
-					else
-					{
-						each_element.innerText = "Unable to load file.";
-					}
-				}
-				file_request.send();
-			}
+			return element;
 		}
 	}
 }
@@ -502,4 +468,38 @@ window.addEventListener("DOMContentLoaded", () => {
 	parser.parse();
 });
 
-window.addEventListener("DOMContentLoaded", parse_source.parse_pre);
+window.addEventListener("DOMContentLoaded", () => {
+	const main_element = document.querySelector("main");
+	if (main_element === null || main_element.dataset.type === "source")
+		return;
+	const pre_elements = document.querySelectorAll("pre");
+	for (const each_pre_element of pre_elements)
+	{
+		const language: string = each_pre_element.dataset.language ?? "";
+		if (language === "")
+			continue;
+		const src: string | null = each_pre_element.getAttribute("src");
+		if (src === null)
+		{
+			const parsed_pre: HTMLPreElement = parse_source.Parser.parse_pre(each_pre_element.innerText, each_pre_element.dataset.language);
+			each_pre_element.replaceWith(parsed_pre);
+		}
+		else
+		{
+			const file_request = new XMLHttpRequest();
+			file_request.open("GET", src, true);
+			file_request.onload = function ()
+			{
+				if (file_request.status === 200)
+				{
+					const parsed_pre: HTMLPreElement = parse_source.Parser.parse_pre(each_pre_element.innerText, each_pre_element.dataset.language);
+					each_pre_element.replaceWith(parsed_pre);
+				}
+				else
+					each_pre_element.innerText = "Unable to load file.";
+			}
+			file_request.send();
+		}
+	}
+	const code_elements = document.querySelectorAll("code");
+});

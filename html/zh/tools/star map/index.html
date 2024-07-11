@@ -567,6 +567,16 @@
 					return element;
 				}
 
+				static draw_line(context, x1, y1, x2, y2, width, color)
+				{
+					context.strokeStyle = color;
+					context.lineWidth = width;
+					context.beginPath();
+					context.moveTo(x1, y1);
+					context.lineTo(x2, y2);
+					context.stroke();
+				}
+
 				flush(hover_place=undefined)
 				{
 					// This function is so complex that comments will help you better understand.
@@ -685,12 +695,7 @@
 									hovering = new StarMapInterface(each_link, storage.Link);
 									if (this.debug)
 									{
-										context.strokeStyle = COLOR_DEBUG;
-										context.lineWidth = each_link.style.width;
-										context.beginPath();
-										context.moveTo(link_from_x, link_from_y);
-										context.lineTo(link_to_x, link_to_y);
-										context.stroke();
+										Application.draw_line(context, link_from_x, link_from_y, link_to_x, link_to_y, each_link.style.width, COLOR_DEBUG);
 										continue;
 									}
 								}
@@ -698,23 +703,13 @@
 							// Step 4 - Draw the active link.
 							if (each_link === this.active_element)
 							{
-								context.strokeStyle = COLOR_ACTIVATE;
-								context.lineWidth = each_link.style.width;
-								context.beginPath();
-								context.moveTo(link_from_x, link_from_y);
-								context.lineTo(link_to_x, link_to_y);
-								context.stroke();
+								Application.draw_line(context, link_from_x, link_from_y, link_to_x, link_to_y, each_link.style.width, COLOR_ACTIVATE);
 								continue;
 							}
-							// Step 5 - Optimize when the link is too thin to be displayed.
-							if (each_link.style.width * this.content.zoom <= THIN_LINK_WIDTH)
+							// Step 5 - Optimize when the link is too thin to be displayed or the two colors are the same.
+							if (each_link.style.width * this.content.zoom <= THIN_LINK_WIDTH || each_link.style.forecolor === each_link.style.backcolor)
 							{
-								context.strokeStyle = each_link.style.forecolor;
-								context.lineWidth = each_link.style.width;
-								context.beginPath();
-								context.moveTo(link_from_x, link_from_y);
-								context.lineTo(link_to_x, link_to_y);
-								context.stroke();
+								Application.draw_line(context, link_from_x, link_from_y, link_to_x, link_to_y, each_link.style.width, each_link.style.forecolor);
 								continue;
 							}
 							// Step 6 - Draw the link.
@@ -776,7 +771,7 @@
 						// Step 3 - Detect the hovered node and highlight it when in debug mode.
 						if (hover_place && (hover_place.x - each_node.x) ** 2 + (hover_place.y - each_node.y) ** 2 < each_node.size ** 2)
 						{
-							hovering = new StarMapInterface(each_node, storage.Element);
+							hovering = new StarMapInterface(each_node, storage.Node);
 							if (this.debug)
 							{
 								context.fillStyle = COLOR_DEBUG;
@@ -1215,7 +1210,7 @@
 					user.right_clicked_element = active_element;
 					switch (active_element.type)
 					{
-						case storage.Element:
+						case storage.Node:
 							menus.get("node").style.display = "flex";
 							break;
 						case storage.Coordinate:
@@ -1350,7 +1345,7 @@
 					{
 						current_star_map.node_create(current_editing_element.content.x, current_editing_element.content.y, node_size, chosen_style, node_title);
 					}
-					else if (current_editing_element.type === storage.Element)
+					else if (current_editing_element.type === storage.Node)
 					{
 						current_editing_element.content.size = node_size;
 						current_editing_element.content.style = chosen_style;
@@ -1376,11 +1371,11 @@
 						return;
 					}
 					document.getElementById("link_edit-title").setCustomValidity("");
-					if (current_editing_element.type === storage.Element)
+					if (current_editing_element.type === storage.Node)
 					{
 						user.left_click_function = function (element)
 						{
-							if (element.type != storage.Element)
+							if (element.type != storage.Node)
 							{
 								return "你只能在两个节点创建链接";
 							}
@@ -1532,7 +1527,7 @@
 
 			const storage = {
 				Link: class {},
-				Element: class {},
+				Node: class {},
 				Coordinate: class {}
 			}
 
