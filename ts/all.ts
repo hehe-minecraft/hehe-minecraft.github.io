@@ -436,7 +436,7 @@ export namespace parse_source
 		}
 		public static parse_pre(source: string, language?: string): HTMLPreElement
 		{
-			const lines: string[] = source.replace(/^(\s*\n)*|(\s*\n)*\s+$/g, "").split(/\n/); // Remove trailing and leading newlines.
+			const lines: string[] = source.replace(/^(?:\s*\n)+|\b\s+$/g, "").split(/\n/); // Remove trailing and leading newlines.
 			const tab_count: number = lines[0].match(/^\s*/)![0].length;
 			const element: HTMLPreElement = document.createElement("pre");
 			for (const [each_line_index, each_line_with_tab] of lines.entries())
