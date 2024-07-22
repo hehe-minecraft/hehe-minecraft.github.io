@@ -5,4 +5,4 @@ export function setIntervalTimeout(callback: () => void, timeout: number, interv
 		clearInterval(intervalID);
 	}, timeout);
 	return intervalID;
-};
+}

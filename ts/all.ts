@@ -149,7 +149,7 @@ export namespace parse_source
 			this.source = "";
 			this.figures = [];
 		}
-		public parse()
+		public parse(): boolean
 		{
 			// Part 1 - Detect errors
 			if (this.target === undefined)
@@ -215,6 +215,7 @@ export namespace parse_source
 				}
 				section_stack[section_stack.length - 1].appendChild(each_result);
 			}
+			return true;
 		}
 		private static get_chunks(source: string): Chunk[]
 		{
@@ -272,7 +273,7 @@ export namespace parse_source
 					const element_stack: HTMLElement[] = [];
 					for (const each_line of tree_lines)
 					{
-						let tree_indent: number = each_line.match(/^ +/)?.[0].length ?? 0;
+						let tree_indent: number = each_line.match(/^ */)![0].length;
 						while (tree_indent < list_stack.length - 1)
 							list_stack.pop();
 						while (tree_indent < element_stack.length - 1)
@@ -384,7 +385,7 @@ export namespace parse_source
 				else
 				{
 					const last_keyword: keyword_entry = keyword_stack[keyword_stack.length - 1];
-					if (each_area === "TO")
+					if (each_area === "TO" && last_keyword.type === constant.area_type.Unknown)
 					{
 						last_keyword.type = constant.area_type.Link;
 						last_keyword.parameters.push([]);
@@ -393,7 +394,7 @@ export namespace parse_source
 					{
 						last_keyword.type = constant.area_type.LinkBlank;
 					}
-					else if (each_area === "NOUN")
+					else if (each_area === "NOUN" && last_keyword.type === constant.area_type.Unknown)
 					{
 						last_keyword.type = constant.area_type.Term;
 					}
@@ -402,15 +403,15 @@ export namespace parse_source
 						last_keyword.type = constant.area_type.TermMeaning;
 						last_keyword.parameters.push([]);
 					}
-					else if (each_area === "CODE")
+					else if (each_area === "CODE" && last_keyword.type === constant.area_type.Unknown)
 					{
 						last_keyword.type = constant.area_type.Code;
 					}
-					else if (each_area === "KEY")
+					else if (each_area === "KEY" && last_keyword.type === constant.area_type.Unknown)
 					{
 						last_keyword.type = constant.area_type.KeyboardInput;
 					}
-					else if (each_area === "FIGURE")
+					else if (each_area === "FIGURE" && last_keyword.type === constant.area_type.Unknown)
 					{
 						last_keyword.type = constant.area_type.FigureReference;
 					}
