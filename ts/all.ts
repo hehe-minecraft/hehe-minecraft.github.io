@@ -477,12 +477,10 @@ window.addEventListener("DOMContentLoaded", () => {
 	for (const each_pre_element of pre_elements)
 	{
 		const language: string = each_pre_element.dataset.language ?? "";
-		if (language === "")
-			continue;
 		const src: string | null = each_pre_element.getAttribute("src");
 		if (src === null)
 		{
-			const parsed_pre: HTMLPreElement = parse_source.Parser.parse_pre(each_pre_element.innerText, each_pre_element.dataset.language);
+			const parsed_pre: HTMLPreElement = parse_source.Parser.parse_pre(each_pre_element.innerText, language);
 			each_pre_element.replaceWith(parsed_pre);
 		}
 		else
@@ -493,7 +491,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			{
 				if (file_request.status === 200)
 				{
-					const parsed_pre: HTMLPreElement = parse_source.Parser.parse_pre(each_pre_element.innerText, each_pre_element.dataset.language);
+					const parsed_pre: HTMLPreElement = parse_source.Parser.parse_pre(each_pre_element.innerText, language);
 					each_pre_element.replaceWith(parsed_pre);
 				}
 				else
@@ -502,5 +500,4 @@ window.addEventListener("DOMContentLoaded", () => {
 			file_request.send();
 		}
 	}
-	const code_elements = document.querySelectorAll("code");
 });
