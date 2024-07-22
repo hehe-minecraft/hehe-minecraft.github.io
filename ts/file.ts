@@ -1,8 +1,7 @@
 export class UnexpectedFlowError extends Error
 {
-	name: "UnexpectedFlowError" = "UnexpectedFlowError";
+	static readonly name: "UnexpectedFlowError" = "UnexpectedFlowError";
 }
-
 export class AsyncObject
 {
 	protected actions: {[name: string]: Promise<any> | undefined};
@@ -19,7 +18,6 @@ export class AsyncObject
 		}
 	}
 }
-
 export function read_file(file: Blob): Promise<string | ArrayBuffer | null>
 {
 	const reader = new FileReader();
@@ -33,7 +31,6 @@ export function read_file(file: Blob): Promise<string | ArrayBuffer | null>
 		};
 	});
 }
-
 export class DataBase extends AsyncObject
 {
 	protected database?: IDBDatabase;
@@ -67,7 +64,6 @@ export class DataBase extends AsyncObject
 			};
 		});
 	}
-
 	public async write_to_data(area: string, key: string, content: any): Promise<void>
 	{
 		if (this.database === undefined)
@@ -94,7 +90,7 @@ export class DataBase extends AsyncObject
 		const transaction = this.database.transaction(area, "readwrite");
 		transaction.objectStore(area).delete(key);
 	}
-	public async get_data(area: string, key: string): Promise<void>
+	public async get_data(area: string, key: string): Promise<any>
 	{
 		if (this.database === undefined)
 		{
@@ -107,10 +103,10 @@ export class DataBase extends AsyncObject
 		const transaction = this.database.transaction(area, "readonly");
 		const request = transaction.objectStore(area).get(key);
 		return new Promise(function (resolve, reject) {
-			request.onsuccess = function (event) {
+			request.onsuccess = () => {
 				resolve(request.result);
 			};
-			request.onerror = function (event) {
+			request.onerror = () => {
 				reject(request.error);	
 			};
 		});

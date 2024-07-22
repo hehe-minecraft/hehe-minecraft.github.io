@@ -1,6 +1,6 @@
 export class Vector
 {
-	content: number[];
+	readonly content: number[];
 	constructor(list: number[])
 	{
 		this.content = list;

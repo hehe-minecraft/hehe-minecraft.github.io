@@ -1,4 +1,4 @@
-export function setIntervalTimeout(callback: () => void, timeout: number, interval: number)
+export function setIntervalTimeout(callback: () => void, timeout: number, interval: number): number
 {
 	const intervalID = setInterval(callback, interval);
 	setTimeout(function() {
