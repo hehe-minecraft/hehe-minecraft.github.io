@@ -1,14 +1,69 @@
+@media (prefers-color-scheme: light)
+{
+	:root
+	{
+		--background-body: #FFE;
+		--background-nav: #EEE;
+		--background-nav-heading: #888;
+		--background-table: #FFF8CC;
+		--background-table-heading: #FFD5D9;
+		--background-pre: #DDC;
+		--background-definition: #EEE;
+		--background-notice: #DEF;
+		--background-warning: #FFF5B0;
+		--color-nav-heading: #FFF;
+		--color-list-number: #AAA;
+		--color-text: #000;
+		--color-interval: #AAA;
+		--color-link: #AAA560;
+		--color-link-visited: #6060AA;
+		--border-table: #EE858C;
+		--border-key: #AAA;
+		--border-definition: #AAA;
+		--border-figure: #888;
+		--emphasis-pre: #EE858C;
+	}
+}
+
+@media (prefers-color-scheme: dark)
+{
+	:root
+	{
+		--background-body: #110;
+		--background-nav: #222;
+		--background-nav-heading: #666;
+		--background-table: #2A2942;
+		--background-table-heading: #4F2529;
+		--background-pre: #221;
+		--background-definition: #333;
+		--background-notice: #123;
+		--background-warning: #444500;
+		--color-nav-heading: #FFF;
+		--color-list-number: #AAA;
+		--color-text: #FFF;
+		--color-interval: #AAA;
+		--color-link: #CCC580;
+		--color-link-visited: #9090DD;
+		--border-table: #EE858C;
+		--border-key: #AAA;
+		--border-definition: #999;
+		--border-figure: #888;
+		--emphasis-pre: #EE858C;
+	}
+}
+
 body
 {
-	background-color: #FFFFEE;
+	background-color: var(--background-body);
+	color: var(--color-text);
 	margin: 0px 15px 20px 15px;
 }
 
 nav>p:not(#return)
 {
 	padding: 5px;
-	background-color: #888888;
-	color: #FFFFFF;
+	background-color: var(--background-nav-heading);
+	color: var(--color-nav-heading);
 	font-weight: bold;
 	text-align: center;
 	margin: 0;
@@ -18,7 +73,7 @@ span.color
 {
 	height: 0.8em;
 	width: 0.8em;
-	border: 1px solid #000000;
+	border: 1px solid var(--color-text);
 	display: inline-block;
 	vertical-align: middle;
 }
@@ -33,7 +88,7 @@ ol.catalogue
 {
 	margin: 0;
 	padding: 5px 10px 10px 10px;
-	background-color: #EEEEEE;
+	background-color: var(--background-nav);
 }
 
 ol.catalogue ol
@@ -47,12 +102,12 @@ ol.catalogue>li::before, ol.catalogue ol>li::before
 	content: counters(catalogue, ".") ".";
 	font-family: "Cascadia Mono", "Consolas", "Courier New", monospace;
 	font-size: small;
-	color: #AAAAAA;
+	color: var(--color-list-number);
 }
 
 ol.catalogue a
 {
-	color: #000000;
+	color: var(--color-text);
 }
 
 ol.tree, ol.tree ol
@@ -78,7 +133,7 @@ ol.tree>li::before, ol.tree ol>li::before
 	content: counters(tree, ".") ".";
 	font-family: "Cascadia Mono", "Consolas", "Courier New", monospace;
 	font-size: small;
-	color: #AAAAAA;
+	color: var(--color-list-number);
 }
 
 table
@@ -95,18 +150,18 @@ table col.title
 table td, table th
 {
 	padding: 3px 8px 3px 8px;
-	border: 1.2px solid #EE858C;
+	border: 1.2px solid var(--border-table);
 }
 
 table th
 {
 	font-weight: normal;
-	background-color: #FFD5D9;
+	background-color: var(--background-table-heading);
 }
 
 table td
 {
-	background-color: #FFF8CC;
+	background-color: var(--background-table);
 }
 
 details
@@ -116,9 +171,9 @@ details
 
 pre
 {
-	border-left: 3px solid #EE858C;
+	border-left: 3px solid var(--emphasis-pre);
 	padding: 5px;
-	background-color: rgba(128, 128, 128, 0.1);
+	background-color: var(--background-pre);
 	font-family: "Cascadia Code", "Consolas", "Courier New", monospace;
 	font-size: small;
 	tab-size: 4;
@@ -136,7 +191,7 @@ pre>span.line-number
 {
 	padding-right: 5px;
 	text-align: right;
-	color: #AAAAAA;
+	color: var(--color-list-number);
 	font-size: x-small;
 	user-select: none;
 }
@@ -148,7 +203,7 @@ code
 
 kbd
 {
-	border: 2px solid #AAAAAA;
+	border: 2px solid var(--border-key);
 	border-radius: 4px;
 	padding: 1px 4px;
 	margin: 0px 2px;
@@ -171,17 +226,17 @@ p.definition, p.notice, p.warning
 
 p.definition
 {
-	background-color: #EEEEEE;
+	background-color: var(--background-definition);
 }
 
 p.notice
 {
-	background-color: #DDEEFF;
+	background-color: var(--background-notice);
 }
 
 p.warning
 {
-	background: #FFF5B0;
+	background-color: var(--background-warning);
 }
 
 p#return
@@ -192,7 +247,7 @@ p#return
 dfn
 {
 	font-style: normal;
-	border-bottom: 2px dotted #AAAAAA;
+	border-bottom: 2px dotted var(--border-definition);
 }
 
 a
@@ -202,18 +257,18 @@ a
 
 a:link:not(ol.catalogue a)
 {
-	color: #AAA560;
+	color: var(--color-link);
 }
 
 a:visited:not(ol.catalogue a)
 {
-	color: #6060AA;
+	color: var(--color-link-visited);
 }
 
 main>hr
 {
 	margin: 2em 5px 2em 5px;
-	border: 1px solid #AAAAAA;
+	border: 1px solid var(--color-interval);
 }
 
 data-source
@@ -227,7 +282,7 @@ main figure
 	display: grid;
 	padding: 5px;
 	margin: 5px;
-	border: 1px solid #888888;
+	border: 1px solid var(--border-figure);
 }
 
 main figure svg
@@ -286,59 +341,4 @@ main figure figcaption
 {
 	font-family: "Consolas";
 	src: url("../fonts/consolas.ttf");
-}
-
-@media (prefers-color-scheme: dark)
-{
-	body
-	{
-		background-color: #111100;
-		color: #FFFFFF;
-	}
-	
-	span.color
-	{
-		border-color: #FFFFFF;
-	}
-
-	p.definition
-	{
-		background-color: #444444;
-	}
-	
-	p.notice
-	{
-		background-color: #112233;
-	}
-	
-	p.warning
-	{
-		background: #444500;
-	}
-
-	nav>p:not(#return)
-	{
-		background-color: #666666;
-	}
-
-	ol.catalogue
-	{
-		background-color: #222222;
-	}
-
-	ol.catalogue a
-	{
-		color: #FFFFFF;
-	}
-
-	table th
-	{
-		font-weight: normal;
-		background-color: #4F2529;
-	}
-
-	table td
-	{
-		background-color: #2A2942;
-	}
 }
