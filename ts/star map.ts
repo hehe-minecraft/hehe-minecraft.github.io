@@ -133,7 +133,7 @@ namespace elements
 }
 class StarMapHistory // Works like a stack
 {
-	private master: Application;
+	private readonly master: Application;
 	private history: Array<object> = [];
 	private current_index: number = -1;
 	constructor(application: Application)
@@ -175,7 +175,7 @@ class StarMapHistory // Works like a stack
 		this.master.flush();
 		return true;
 	}
-	redo(): boolean
+	public redo(): boolean
 	{
 		if (!this.history)
 		{
@@ -192,7 +192,7 @@ class StarMapHistory // Works like a stack
 		this.master.flush();
 		return true;
 	}
-	clear(): void
+	public clear(): void
 	{
 		this.history = new Array();
 		this.current_index = -1;
@@ -201,14 +201,14 @@ class StarMapHistory // Works like a stack
 }
 class Application
 {
-	public canvas: HTMLCanvasElement;
+	public readonly canvas: HTMLCanvasElement;
 	public content: typeof constants.original.content;
 	public file: string;
-	private list: HTMLSelectElement;
+	private readonly list: HTMLSelectElement;
 	public debug: boolean;
 	public active_element?: elements.general_element;
 	private drag_base: {x?: number, y?: number};
-	public history: StarMapHistory;
+	public readonly history: StarMapHistory;
 	constructor(canvas: HTMLCanvasElement, list: HTMLSelectElement)
 	{
 		this.canvas = canvas;
@@ -230,16 +230,16 @@ class Application
 		result.scaleSelf(this.content.zoom, this.content.zoom);
 		return result;
 	}
-	transform_into_canvas_space(x: number, y: number): DOMPoint
+	public transform_into_canvas_space(x: number, y: number): DOMPoint
 	{
 		return this.transform_matrix.inverse().transformPoint(new DOMPoint(x, y));
 	}
-	drag_start(x: number, y: number): void
+	public drag_start(x: number, y: number): void
 	{
 		this.drag_base.x = x;
 		this.drag_base.y = y;
 	}
-	drag_move(x: number, y: number): void
+	public drag_move(x: number, y: number): void
 	{
 		if (this.drag_base.x === undefined || this.drag_base.y === undefined)
 		{
@@ -257,7 +257,7 @@ class Application
 		this.content.x = original_x;
 		this.content.y = original_y;
 	}
-	drag_stop(x: number, y: number): void
+	public drag_stop(x: number, y: number): void
 	{
 		if (this.drag_base.x === undefined || this.drag_base.y === undefined)
 		{
@@ -288,7 +288,7 @@ class Application
 		}
 		this.drag_base = {x: undefined, y: undefined};
 	}
-	zoom(delta: number): void
+	public zoom(delta: number): void
 	{
 		const original_zoom: number = this.content.zoom;
 		this.content.zoom += delta * this.content.zoom * constants.motion.mouse_sensitivity;
@@ -301,7 +301,7 @@ class Application
 		this.content.y *= zoom_ratio;
 		this.flush();
 	}
-	activate<element_type extends (elements.general_element | undefined)>(element: element_type): element_type
+	public activate<element_type extends (elements.general_element | undefined)>(element: element_type): element_type
 	{
 		this.active_element = element;
 		this.flush();
@@ -325,7 +325,7 @@ class Application
 		}
 		return element;
 	}
-	static draw_line(context: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number, width: number, color: string)
+	public static draw_line(context: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number, width: number, color: string)
 	{
 		context.strokeStyle = color;
 		context.lineWidth = width;
@@ -334,9 +334,9 @@ class Application
 		context.lineTo(x2, y2);
 		context.stroke();
 	}
-	flush(): undefined;
-	flush(hover_place: {x: number, y: number}): elements.Interface;
-	flush(hover_place?: {x: number, y: number})
+	public flush(): undefined;
+	public flush(hover_place: {x: number, y: number}): elements.Interface;
+	public flush(hover_place?: {x: number, y: number})
 	{
 		// This function is so complex that comments will help you better understand.
 		// The comments are in the order of "Part" > "Step".
@@ -560,12 +560,10 @@ class Application
 			return hovering;
 		}
 	}
-	node_create(x: number, y: number, size: number, style: elements.NodeStyle, title: string = "", content: string = ""): elements.Node | undefined
+	public node_create(x: number, y: number, size: number, style: elements.NodeStyle, title: string = "", content: string = ""): elements.Node | undefined
 	{
 		if (size <= 0)
-		{
 			return;
-		}
 		const node: elements.Node = {
 			x: x,
 			y: y,
@@ -579,7 +577,7 @@ class Application
 		this.flush();
 		return node;
 	}
-	node_remove(node: elements.Node): void
+	public node_remove(node: elements.Node): void
 	{
 		const node_index = this.content.nodes.indexOf(node)
 		if (node_index !== -1)
@@ -601,7 +599,7 @@ class Application
 		this.history.snapshot();
 		this.flush();
 	}
-	link_create(node1: elements.Node, node2: elements.Node, style: elements.LinkStyle, title: string = "", content: string = ""): elements.Link | undefined
+	public link_create(node1: elements.Node, node2: elements.Node, style: elements.LinkStyle, title: string = "", content: string = ""): elements.Link | undefined
 	{
 		if (node1 === node2)
 		{
@@ -628,7 +626,7 @@ class Application
 		this.flush();
 		return link;
 	}
-	link_remove(link: elements.Link): void
+	public link_remove(link: elements.Link): void
 	{
 		const link_index: number = this.content.links.indexOf(link);
 		if (link_index !== -1)
@@ -644,7 +642,7 @@ class Application
 		this.history.snapshot();
 		this.flush();
 	}
-	node_style_create(color: string, name="Style"): elements.NodeStyle
+	public node_style_create(color: string, name="Style"): elements.NodeStyle
 	{
 		const style: elements.NodeStyle = {
 			color: color,
@@ -655,7 +653,7 @@ class Application
 		this.flush();
 		return style;
 	}
-	link_style_create(forecolor: string, backcolor: string, onesided: boolean, width: number, name: string = "Style"): elements.LinkStyle | undefined
+	public link_style_create(forecolor: string, backcolor: string, onesided: boolean, width: number, name: string = "Style"): elements.LinkStyle | undefined
 	{
 		if (width <= 0)
 		{
@@ -673,7 +671,7 @@ class Application
 		this.flush();
 		return style;
 	}
-	async file_list(): Promise<void>
+	public async file_list_update(): Promise<void>
 	{
 		while (this.list.childElementCount > 2)
 		{
@@ -686,7 +684,7 @@ class Application
 			this.list.appendChild(option_element);
 		}
 	}
-	async file_open(id: string): Promise<boolean>
+	public async file_open(id: string): Promise<boolean>
 	{
 		let content: elements.Content;
 		try
@@ -711,7 +709,7 @@ class Application
 		this.flush();
 		return true;
 	}
-	async file_create(id: string): Promise<void>
+	public async file_create(id: string): Promise<void>
 	{
 		if ((await tools_database.get_keys(constants.data_namespace)).includes(id))
 		{
@@ -731,16 +729,16 @@ class Application
 		document.body.classList.add("editing");
 		this.file = id;
 		this.file_save();
-		await this.file_list();
+		await this.file_list_update();
 		this.history.clear();
 		this.history.snapshot();
 	}
-	async file_save(): Promise<void>
+	public async file_save(): Promise<void>
 	{
 		await tools_database.write_to_data(constants.data_namespace, this.file, this.content);
 		new Log("星图已保存", `名字为${this.file}`, "success");
 	}
-	async file_close(): Promise<void>
+	public async file_close(): Promise<void>
 	{
 		document.body.classList.remove("editing");
 		this.content = constants.original.content;
@@ -751,7 +749,7 @@ class Application
 }
 class Log
 {
-	element: HTMLDivElement;
+	private readonly element: HTMLDivElement;
 	constructor(title: string, content: string, type: "info" | "success" | "error" = "info")
 	{
 		this.element = document.createElement("div");
@@ -766,7 +764,7 @@ class Log
 		const log_element = this.element;
 		setTimeout(function(){log_element.remove()}, constants.log_fade_time);
 	}
-	remove()
+	public remove()
 	{
 		this.element.remove();
 	}
@@ -1267,7 +1265,7 @@ window.addEventListener("DOMContentLoaded", function () {
 		(each_dialog.querySelector("button[value=cancel]") as HTMLButtonElement)!.onclick = 
 			() => {each_dialog.close();};
 	}
-	current_star_map.file_list();
+	current_star_map.file_list_update();
 	const details_area: HTMLElement = document.querySelector("main>article")!;
 	new AnimationHandler(details_area).transition_function = function (){
 		current_star_map.flush();

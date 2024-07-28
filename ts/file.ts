@@ -124,10 +124,10 @@ export class DataBase extends AsyncObject
 		const transaction = this.database.transaction(area, "readonly");
 		const request = transaction.objectStore(area).getAllKeys();
 		return new Promise(function (resolve, reject) {
-			request.onsuccess = function () {
+			request.onsuccess = () => {
 				resolve(request.result);
 			};
-			request.onerror = function () {
+			request.onerror = () => {
 				reject(request.error);	
 			};
 		});

@@ -6,9 +6,6 @@ export namespace parse_source
 	}
 	export namespace constant
 	{
-		export const chunk_concat_regexes: RegExp[] = [
-			/^ *- /
-		];
 		export const paragraph_prefixes: Map<RegExp, string> = new Map([
 			[/^NOTE /, "notice"],
 			[/^WARN /, "warning"],
@@ -21,15 +18,24 @@ export namespace parse_source
 			Heading,
 			Tree,
 			Interval,
-			Figure
+			Figure,
+			Code
 		};
-		export const chunk_type_regexes: Map<RegExp, chunk_type> = new Map([
-			[/^#+/, chunk_type.Heading],
-			[/^ *- /, chunk_type.Tree],
-			[/^===$/, chunk_type.Interval],
-			[/^FIGURE /, chunk_type.Figure],
-			[/^([ \t]*|<!-- .+ -->)$/, chunk_type.Comment],
-			[/./, chunk_type.Paragraph] // Default
+		export interface chunk_type_restrict
+		{
+			readonly before?: RegExp;
+			readonly includes?: RegExp;
+			readonly after?: RegExp;
+			readonly concat?: boolean;
+		}
+		export const chunk_type_restricts: Map<chunk_type, chunk_type_restrict> = new Map([
+			[chunk_type.Heading, { includes: /^#+/ }],
+			[chunk_type.Tree, { includes: /^ *- /, concat: true }],
+			[chunk_type.Interval, { includes: /^===$/ }],
+			[chunk_type.Code, { before: /```/, after: /```/ }],
+			[chunk_type.Figure, { includes: /^FIGURE / }],
+			[chunk_type.Comment, { includes: /^([ \t]*|<!-- .+ -->)$/ }],
+			[chunk_type.Paragraph,  {}]
 		]);
 		export enum area_type
 		{
@@ -98,8 +104,17 @@ export namespace parse_source
 		f.	Comment
 			We can use "<!-- comment -->" to create a comment.
 			Empty lines are also regarded as comments.
+		g.	Code
+			Cover a piece of code with "```" to create a code block.
+			We can add a language name right after (with no spaces) the leading "```" to specify the language.
+			No other block will be parsed in the code block.
+			* Language is not supported yet. *
+			e.g.
+			```c++
+			std::cout << "This is a code" << std::endl;
+			```
 	2.	Inlines
-		Each inline group is called a "area" in the file.
+		Each inline group is called an "area" in the file.
 		Inline symbols are surrounded by "[]".
 		a.	Link
 			We can use [name TO target] to create a link.
@@ -110,6 +125,7 @@ export namespace parse_source
 			The [NOUN term AS description] is more commonly used.
 		c.	Code
 			We can use [CODE code] to create a piece of code.
+			This is different from the code block, for this is parsed as "code" element while the code block is parsed as "pre".
 		d.	Keyboard Input
 			We can use [KEY key] to create a keyboard input.
 		e.	Figure Reference
@@ -120,23 +136,10 @@ export namespace parse_source
 		a.	If you are using figures in2 your codes, you should define the attribute "figure" (string), with the number placeholder as "$".
 			e.g. "Figure $" will be replaced into "Figure 1", "Figure 2", etc.
 	*/
-	class Chunk
+	interface Chunk
 	{
-		readonly content: string;
-		readonly type: constant.chunk_type;
-		constructor(content: string)
-		{
-			this.content = content;
-			this.type = constant.chunk_type.Paragraph;
-			for (const [each_regex, each_type] of constant.chunk_type_regexes)
-			{
-				if (each_regex.test(content))
-				{
-					this.type = each_type;
-					break;
-				}
-			}
-		}
+		content: string;
+		type: constant.chunk_type;
 	}
 	export class Parser
 	{
@@ -219,23 +222,49 @@ export namespace parse_source
 		}
 		private static get_chunks(source: string): Chunk[]
 		{
-			const areas: string[] = source.split(/\n/);
-			let index: number = 0;
-			while (index < areas.length - 1)
+			const lines: string[] = source.split(/\n/);
+			const chunks: Chunk[] = [];
+			let current_chunk_type: constant.chunk_type | undefined = undefined;
+			for (const each_line of lines)
 			{
-				index ++;
-				for (const each_regex of constant.chunk_concat_regexes)
+				if (current_chunk_type !== undefined)
 				{
-					if (each_regex.test(areas[index - 1]) && each_regex.test(areas[index]))
+					const current_chunk_restrict: constant.chunk_type_restrict = constant.chunk_type_restricts.get(current_chunk_type)!;
+					if (current_chunk_restrict.after?.test(each_line) ?? false)
 					{
-						areas[index - 1] += "\n" + areas[index];
-						areas.splice(index, 1);
-						index --;
+						chunks[chunks.length - 1].content += "\n" + each_line;
+						current_chunk_type = undefined;
+						continue;
+					}
+					else if (current_chunk_restrict.includes?.test(each_line) ?? true)
+					{
+						chunks[chunks.length - 1].content += "\n" + each_line;
+						continue;
+					}
+				}
+				for (const [each_chunk_type, each_chunk_restrict] of constant.chunk_type_restricts)
+				{
+					if (each_chunk_restrict.before?.test(each_line) ?? false)
+					{
+						chunks.push({ type: each_chunk_type, content: each_line });
+						current_chunk_type = each_chunk_type;
+						break;
+					}
+					else if (each_chunk_restrict.before !== undefined)
+					{
+						continue;
+					}
+					if ((each_chunk_restrict.includes?.test(each_line) ?? true))
+					{
+						if ((chunks[chunks.length - 1]?.type === each_chunk_type && each_chunk_restrict.concat === true) ?? false)
+							chunks[chunks.length - 1].content += "\n" + each_line;
+						else
+							chunks.push({ type: each_chunk_type, content: each_line });
 						break;
 					}
 				}
 			}
-			return areas.map(each_area => new Chunk(each_area));
+			return chunks;
 		}
 		public static attach(target: HTMLElement, elements: Iterable<Node>): void
 		{
@@ -294,6 +323,10 @@ export namespace parse_source
 					}
 					list_stack[0]?.classList.add("tree");
 					return list_stack[0];
+				case constant.chunk_type.Code:
+					const pre_content: string = chunk.content.replace(/^```[^\n]*|```$/g, "");
+					const pre_language: string = chunk.content.match(/^```([^\n]*)/)![1];
+					return Parser.parse_pre(pre_content, pre_language);
 				case constant.chunk_type.Figure:
 					const figure_id: string = chunk.content.replace(/^FIGURE /, "");
 					const original_figure: HTMLElement | null = document.getElementById(figure_id);
@@ -315,7 +348,7 @@ export namespace parse_source
 		private parse_inline(source: string): Iterable<Node>
 		{
 			// Part 1 - Divide areas (remove spaces but keep brackets)
-			const areas: string[] = source.match(/(\[|\]|[^[\] ]+)/g) ?? new Array();
+			const areas: string[] = source.match(/([\[\]]|[^\[\] ]+)/g) ?? new Array();
 			// Part 2 - Parse areas
 			interface keyword_entry
 			{
