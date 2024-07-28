@@ -1,18 +1,3 @@
-body
-{
-	background-color: #FFFFEE;
-	margin: 0px 15px 20px 15px;
-}
-
-div.list
-{
-	display: flex;
-	flex-direction: column;
-	border: 1px dotted #AAA560;
-	padding: 3px;
-	margin: 2px 2px 2px 0px;
-}
-
 label[for]
 {
 	cursor: pointer;
@@ -22,7 +7,7 @@ input, select
 {
 	border: none;
 	padding: 0 3px 0 3px;
-	border-bottom: 1.5px solid #666666;
+	border-bottom: 1.5px solid var(--border-input);
 	background-color: inherit;
 	color: inherit;
 	overflow: hidden;
@@ -35,22 +20,7 @@ dfn
 
 dfn:hover
 {
-	border-bottom: dotted 2px #AAAAAA;
-}
-
-a
-{
-	text-decoration: none;
-}
-
-a:link:not(ol.catalogue a)
-{
-	color: #AAA560;
-}
-
-a:visited:not(ol.catalogue a)
-{
-	color: #6060AA;
+	border-bottom: dotted 2px var(--border-definition);
 }
 
 button
@@ -82,13 +52,4 @@ textarea
 {
 	font-family: "Minecraft";
 	src: url("../fonts/minecraft.ttf");
-}
-
-@media(prefers-color-scheme: dark)
-{
-	body
-	{
-		background-color: #111100;
-		color: #FFFFFF;
-	}
 }
