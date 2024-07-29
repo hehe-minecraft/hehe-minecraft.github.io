@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="../../../../css/all.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../css/page.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../css/typesetting.css"/>
+		<script src="../../../../ts/all.js" type="module" defer></script>
+		<title>
+			hehe-minecraft - Source 代码指南
+		</title>
+	</head>
+	<body>
+		<h1>
+			hehe-minecraft - Source 代码指南
+		</h1>
+		<nav>
+			<p>
+				内容索引
+			</p>
+			<ol class="catalogue"></ol>
+			<p id="return">
+				<a href="../../index.html">
+					返回上一页：主页
+				</a>
+			</p>
+		</nav>
+		<main data-type="source">
+			NOTE Source 代码对缩进敏感。
+			你可能要先认识基本的 HTML 语言语法。
+			#块级元素
+			每个块级元素占据一行或多行空间。
+			##正文
+			正文是最基础的块级元素。正文的前后都可以没有修饰。
+			正文对应[CODE &lt;p&gt;]。
+			正文前面可以加入三种前缀：[CODE NOTE]、[CODE WARN]和[CODE DEF]，分别代表注意、警告和定义，它们的显示效果如下：
+			NOTE 注意－[CODE NOTE]
+			WARN 警告－[CODE WARN]
+			DEF 定义－[CODE DEF]
+			##标题
+			要创建一个标题，你需要在正文之前加上若干[CODE #]号，[CODE #]号越多，标题层级越靠内，如：
+			```
+			#一级标题
+			###三级标题
+			########八级标题
+			```
+			上述代码的作用效果等同于以下 HTML 代码：
+			```HTML
+			&lt;h2&gt;一级标题&lt;/h2&gt;
+			&lt;h4&gt;三级标题&lt;/h4&gt;
+			&lt;h6&gt;八级标题&lt;/h6&gt;
+			```
+			NOTE 程序为页面的大标题预留了[CODE &lt;h1&gt;]，所以一级标题从[CODE &lt;h2&gt;]开始。对于过小的（超过五级的）标题，在 HTML 中无法直接表示，因此会在正文中被显示为[CODE &lt;h6&gt;]的大小，但在目录中显示层级不变。
+			标题的层级可以不连续。
+			每个标题都自带一个 HTML 的[CODE id]，其值满足：将标题层级从低到高依次排列，每一层级都是标题的内容，层级之间都用连字符连接，若有跳过的层级，则被跳过的层级内容默认为被跳过的层级向高最近一级的内容，例如：
+			```
+			# A
+			## B
+			#### D
+			##### E
+			## F
+			```
+			会得到的[CODE id]分别为：
+			```
+			A
+			A-B
+			A-B-D-D
+			A-B-D-D-E
+			A-F
+			```
+			##分隔线
+			要创建一根分隔线，请在独立的一行中输入[CODE ===]。
+			其等同于以下 HTML 代码：
+			```HTML
+			&lt;hr/&gt;
+			```
+			##列表
+			NOTE 只可以创建有序列表。
+			每个列表项前面都需要添加一个连字符（[CODE -]），连字符与列表项之间需要一个空格分开。连字符前空格数量代表有序列表的层级，如：
+			```
+			- 章节 1
+			- 章节 2
+			 - 章节 2.1
+			 - 章节 2.2
+			- 章节 3
+			```
+			上述代码可以创建以下列表：
+			- 章节 1
+			- 章节 2
+			 - 章节 2.1
+			 - 章节 2.2
+			- 章节 3
+			列表的层级在增加时需要是连续的，需要尽量避免以下代码：
+			```
+			- 章节 1
+			  - 章节 1.1.1
+			  - 章节 1.1.2
+			  - 章节 1.1.3
+			- 章节 2
+			```
+			它会创建以下列表：
+			- 章节 1
+			  - 章节 1.1.1
+			  - 章节 1.1.2
+			  - 章节 1.1.3
+			- 章节 2
+			NOTE 程序会将不连续增加的列表层级自动修改为依次递增。
+			##注释
+			注释格式与 HTML 中一样，但只允许单行的注释，即[CODE &lt;!-- 注释 --&gt;]。
+			NOTE 特别地，空行会被视作注释。
+			注释不会显示在正式的文档中。
+			##代码段
+			将一段代码的前后各插入两行，在其中填入[CODE ```]来创建代码段。
+			代码段会被解析成[CODE &lt;pre&gt;]元素，会标记行号。
+			##图象
+			在一行中使用[CODE FIGURE id]来展示一个图象。其中，[CODE id]是图象在 HTML 文档中的[CODE id]属性，程序会根据该[CODE id]来找到展示的图象；找到的图象需要是 HTML 中的[CODE &lt;figure&gt;]元素。如果找不到图象或者图象并非[CODE &lt;figure&gt;]元素，程序会跳过这一行。
+			图象会被显示在右侧，顶端对齐插入位置。图象会从右向左依次排列。
+			你可以在一个 Source 代码中反复展示一个图象。反复展示的图象编号不会改变。
+			图象最好存储在[CODE data-source]元素中，其中的元素不会直接显示在平面上。
+			以下是展示图像的案例：
+			```
+			&lt;!-- Source 代码 --&gt;
+			FIGURE picture
+			```
+			```HTML
+			&lt;!-- HTML 代码 --&gt;
+			&lt;data-source&gt;
+			  &lt;figure id="picture"&gt;
+			    &lt;svg width="30" height="30"&gt;
+			      &lt;circle cx="15" cy="15" r="10" stroke="#AAAAAA" stroke-width="3" fill="none"/&gt;
+			    &lt;/svg&gt;
+			    &lt;figcaption&gt;
+			      一个圆圈
+			    &lt;/figcaption&gt;
+			  &lt;/figure&gt;
+			&lt;/data-source&gt;
+			```
+			FIGURE picture
+			显示效果如右图所示。
+			###自动编号
+			程序将[CODE parse_source.environment.figure]值视作图象自动编号的格式。不设定该值就不会自动编号。自动编号会插入在图象中[CODE &lt;figcaption&gt;]元素内容之前。就算图象中不存在[CODE &lt;figcaption&gt;]元素，自动编号也存在，只是不会显示在图象中而已。
+			[CODE parse_source.environment.figure]是一个字符串，其中的[CODE $]字符被视作自动编号的数字占位符。编号从 1 开始。
+			在以上示例中加入以下 JavaScript 代码，即可为图象添加编号：
+			```JavaScript
+			import {parse_source} from "ts/all.js"; // ts 文件夹在根目录
+			parse_source.environment.figure = "图 $ ";
+			```
+			FIGURE picture_count
+			显示效果如右图所示。
+			#行内元素
+			行内元素不会占据一行以上的空间，大部分可以嵌套，如：
+			```
+			[[CODE GitHub] TO github.com]
+			```
+			每一个行内元素都需要使用方括号（[CODE []]）围绕，因此方括号是保留字，不建议使用。行内元素的关键字是完全用大写字母组成的单词。除案例外，下文会省略方括号。
+			##超链接
+			超链接的格式是[CODE name TO target]，其中[CODE name]指超链接的显示形式，[CODE target]指超链接的目标。
+			WARN [CODE target]部分不可嵌套其他行内元素，嵌套会导致未定义行为。
+			例如：
+			```
+			[GitHub TO github.com]
+			```
+			上述代码的作用效果等同于以下 HTML 代码：
+			```
+			&lt;a href="github.com"&gt;GitHub&lt;/a&gt;
+			```
+			会被展示为：[Github TO github.com]。
+			##术语
+			术语的格式是[CODE NOUN name]或者[CODE NOUN name AS definition]，其中[CODE name]指术语的名称，[CODE definition]表示术语的定义。如果术语有定义，则鼠标悬停在术语会显示该定义。
+			WARN [CODE definition]部分不可嵌套其他行内元素，嵌套会导致未定义行为。
+			例如：
+			```
+			[NOUN GitHub AS 一个程序托管平台]
+			```
+			上述代码的作用效果等同于以下 HTML 代码：
+			```
+			&lt;dfn title="一个程序托管平台"&gt;GitHub&lt;/dfn&gt;
+			```
+			会被展示为：[NOUN GitHub AS 一个程序托管平台]。
+			##代码片段
+			代码片段的格式是[CODE CODE content]，其中[CODE content]指代码片段的内容。
+			例如：
+			```
+			[CODE function(){}]
+			```
+			上述代码的作用效果等同于以下 HTML 代码：
+			```
+			&lt;code&gt;function(){}&lt;/code&gt;
+			```
+			会被展示为：[CODE function(){}]。
+			##键盘输入
+			与代码片段类似，键盘输入的格式是[CODE KEY key]，其中[CODE key]指键盘按键，整体等同于 HTML 中的[CODE &lt;kbd&gt;]元素，显示成[KEY Shift]。
+			##图象引用
+			图象引用需要启动[自动编号 TO #块级元素-图象-自动编号]，它会按照自动编号的格式进行显示。
+			图象引用的格式是[CODE FIGURE id]，其中，[CODE id]是图象在 HTML 文档中的[CODE id]属性，拥有该属性的元素如果在上文被显示，即会复制其编号到文档中，并替换这个行内元素；反之，编号为 0 。
+			例如，将之前[“图 1 一个圆圈” TO #块级元素-图象-自动编号]案例中的 Source 代码改为：
+			```
+			FIGURE picture
+			如[FIGURE picture]，屏幕上有一个圆圈。
+			```
+			根据[CODE picture]的编号，程序会将[CODE FIGURE picture]替换为“图 1 ”，即：
+			```
+			FIGURE picture
+			如图 1 ，屏幕上有一个圆圈。
+			```
+			显示效果如下：
+			FIGURE picture_count
+			如图 1 ，屏幕上有一个圆圈。
+		</main>
+		<data-source>
+			<figure id="picture">
+				<svg width="30" height="30">
+					<circle cx="15" cy="15" r="10" stroke="#AAAAAA" stroke-width="3" fill="none"/>
+				</svg>
+				<figcaption>
+					一个圆圈
+				</figcaption>
+			</figure>
+			<figure id="picture_count">
+				<svg width="30" height="30">
+					<circle cx="15" cy="15" r="10" stroke="#AAAAAA" stroke-width="3" fill="none"/>
+				</svg>
+				<figcaption>
+					图 1 一个圆圈
+				</figcaption>
+			</figure>
+		</data-source>
+	</body>
+</html>

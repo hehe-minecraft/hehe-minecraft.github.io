@@ -32,7 +32,7 @@ export namespace parse_source
 			[chunk_type.Heading, { includes: /^#+/ }],
 			[chunk_type.Tree, { includes: /^ *- /, concat: true }],
 			[chunk_type.Interval, { includes: /^===$/ }],
-			[chunk_type.Code, { before: /```/, after: /```/ }],
+			[chunk_type.Code, { before: /^```/, after: /^```$/ }],
 			[chunk_type.Figure, { includes: /^FIGURE / }],
 			[chunk_type.Comment, { includes: /^([ \t]*|<!-- .+ -->)$/ }],
 			[chunk_type.Paragraph,  {}]
@@ -330,7 +330,7 @@ export namespace parse_source
 				case constant.chunk_type.Figure:
 					const figure_id: string = chunk.content.replace(/^FIGURE /, "");
 					const original_figure: HTMLElement | null = document.getElementById(figure_id);
-					if (original_figure === null)
+					if (original_figure === null || original_figure.tagName !== "FIGURE")
 						return undefined;
 					if (this.figures.indexOf(original_figure) === -1)
 						this.figures.push(original_figure);

@@ -119,25 +119,19 @@
 			FIGURE content_edit_logo
 			对着节点或链接打开编辑菜单，选择如[FIGURE content_edit_logo]的文本符号来编辑内容。
 			编辑内容的界面左侧是源代码区域，右侧是预览区域，源代码会在右侧实时预览。
-			源代码区域中需要输入本网站特有的 Source 代码。
-			NOTE Source 代码对缩进敏感。
-			编辑内容部分并不支持所有 Source 代码，以下将会讲解支持的代码部分。
-			###正文
-			正文没有任何修饰，只需要在一行里面写字就行。
-			###标题
-			标题需要在一列的最前面加上“[CODE #]”，“[CODE #]”越多，标题越小，如“[CODE #]”表示一级标题，“[CODE ###]”表示三级标题。
-			标题可以跨级创建。
-			###分割线
-			NOTE 分割线用来分开两个一级标题。
-			要创建一根分割线，请在独立的一行中输入“[CODE ===]”。
-			###列表
-			列表需要在一列前面加上若干空格和“[CODE - ]”，空格越多，列表等级越高。
-			NOTE “[CODE -]”后面必须要有空格。
-			NOTE 列表在进入更高级时不可以跨级创建，例如“[CODE    - ]”（前面三个空格）创建在“[CODE  - ]”（前面一个空格）会被自动识别为“[CODE   - ]”（前面两个空格）。
-			列表会自动结束。
-			###超链接
-			超链接需要将标题放在方括号中，其后紧跟“[CODE  TO ]”，再放入超链接的目标。
-			目标需要是一个 HTML 网站。
+			源代码区域中需要输入本网站特有的 Source 代码，但编辑内容部分并不支持所有 Source 代码，支持的代码包括：
+			- 块级元素
+			 - [正文 TO ../../application/source.html#块级元素-正文]
+			 - [标题 TO ../../application/source.html#块级元素-标题]
+			 - [分隔线 TO ../../application/source.html#块级元素-分隔线]
+			 - [列表 TO ../../application/source.html#块级元素-列表]
+			 - [注释 TO ../../application/source.html#块级元素-注释]
+			 - [代码段 TO ../../application/source.html#块级元素-代码段]
+			- 行内元素
+			 - [超链接 TO ../../application/source.html#行内元素-超链接]
+			 - [术语 TO ../../application/source.html#行内元素-术语]
+			 - [代码片段 TO ../../application/source.html#行内元素-代码片段]
+			 - [键盘输入 TO ../../application/source.html#行内元素-键盘输入]
 			##自动排版
 			WARN 自动排版对性能要求较大。
 			FIGURE auto_typesetting_logo
