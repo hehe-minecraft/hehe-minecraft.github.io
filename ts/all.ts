@@ -1,3 +1,5 @@
+import {elements} from "./elements.js"
+
 export namespace parse_source
 {
 	export namespace environment
@@ -53,8 +55,10 @@ export namespace parse_source
 			Code,
 			// Parameter 1 : Term meaning content (only accept the first value, must be a text)
 			KeyboardInput,
-			FigureReference
+			FigureReference,
 			// Parameter 0 : Figure id (only accept the first value, must be a text)
+			Math
+			// Parameter 0 : Math content (only accept the first value, must be a text)
 		}
 		export const area_with_content: Map<area_type, keyof HTMLElementTagNameMap> = new Map([
 			[area_type.Link, "a"],
@@ -102,6 +106,12 @@ export namespace parse_source
 			["\\cdot", "·"],
 			["\\times", "×"],
 			["\\div", "÷"],
+			["\\circ", "∘"],
+			["\\bullet", "•"],
+			["\\oplus", "⊕"],
+			["\\ominus", "⊖"],
+			["\\otimes", "⊗"],
+			["\\oslash", "⊘"],
 			["\\neq", "≠"],
 			["\\leq", "≤"],
 			["\\geq", "≥"],
@@ -113,14 +123,21 @@ export namespace parse_source
 			["\\propto", "∝"],
 			["\\sim", "∼"],
 			["\\equiv", "≡"],
+			["\\cong", "≅"],
+			["\\perp", "⊥"],
+			["\\parallel", "∥"],
 			["\\in", "∈"],
 			["\\notin", "∉"],
 			["\\cap", "∩"],
+			["\\intersection", "∩"],
 			["\\cup", "∪"],
+			["\\union", "∪"],
 			["\\subset", "⊂"],
 			["\\supset", "⊃"],
 			["\\subseteq", "⊆"],
 			["\\supseteq", "⊇"],
+			["\\subsetneqq", "⫋"],
+			["\\supsetneqq", "⫌"],
 			["\\land", "∧"],
 			["\\lor", "∨"],
 			["\\lnot", "¬"],
@@ -131,24 +148,41 @@ export namespace parse_source
 			["\\oiint", "∯"],
 			["\\iiint", "∭"],
 			["\\oiiint", "∰"],
-			["\\idotsint", "∰"],
 			["\\prod", "∏"],
+			["\\coprod", "∐"],
+			["\\bigcap", "⋂"],
+			["\\bigintersection", "⋂"],
+			["\\bigcup", "⋃"],
+			["\\bigunion", "⋃"],
+			["\\bigwedge", "⋀"],
+			["\\bigand", "⋀"],
+			["\\bigvee", "⋁"],
+			["\\bigor", "⋁"],
+			["\\bigodot", "⨀"],
+			["\\leftarrow", "←"],
 			["\\rightarrow", "→"],
 			["\\leftrightarrow", "↔"],
 			["\\uparrow", "↑"],
 			["\\downarrow", "↓"],
-			["\\leftarrow", "←"],
 			["\\updownarrow", "↕"],
+			["\\Leftarrow", "⇐"],
+			["\\Rightarrow", "⇒"],
+			["\\Leftrightarrow", "⇔"],
+			["\\Uparrow", "⇑"],
+			["\\Downarrow", "⇓"],
+			["\\Updownarrow", "⇕"],
 			["\\vdots", "⋮"],
 			["\\cdots", "⋯"],
 			["\\ddots", "⋱"],
+			["\\dagger", "†"],
+			["\\ddagger", "‡"]
 		]);
 		export const math_identifier_replace: Map<RegExp | string, string> = new Map([
 			["\\alpha", "α"],
 			["\\beta", "β"],
 			["\\gamma", "γ"],
 			["\\delta", "δ"],
-			["\\epsilon", "ε"],
+			["\\epsilon", "ϵ"],
 			["\\zeta", "ζ"],
 			["\\eta", "η"],
 			["\\theta", "θ"],
@@ -168,6 +202,38 @@ export namespace parse_source
 			["\\chi", "χ"],
 			["\\psi", "ψ"],
 			["\\omega", "ω"],
+			["\\Alpha", "Α"],
+			["\\Beta", "Β"],
+			["\\Gamma", "Γ"],
+			["\\Delta", "Δ"],
+			["\\Epsilon", "Ε"],
+			["\\Zeta", "Ζ"],
+			["\\Eta", "Η"],
+			["\\Theta", "Θ"],
+			["\\Iota", "Ι"],
+			["\\Kappa", "Κ"],
+			["\\Lambda", "Λ"],
+			["\\Mu", "Μ"],
+			["\\Nu", "Ν"],
+			["\\Xi", "Ξ"],
+			["\\Omicron", "Ο"],
+			["\\Pi", "Π"],
+			["\\Rho", "Ρ"],
+			["\\Sigma", "Σ"],
+			["\\Tau", "Τ"],
+			["\\Upsilon", "Υ"],
+			["\\Phi", "Φ"],
+			["\\Chi", "Χ"],
+			["\\Psi", "Ψ"],
+			["\\Omega", "Ω"],
+			["\\digamma", "ϝ"],
+			["\\varepsilon", "ε"],
+			["\\vartheta", "ϑ"],
+			["\\varkappa", "ϰ"],
+			["\\varpi", "ϖ"],
+			["\\varrho", "ϱ"],
+			["\\varsigma", "ς"],
+			["\\varphi", "ϕ"],
 			["\\infty", "∞"],
 			["\\forall", "∀"],
 			["\\exists", "∃"],
@@ -254,6 +320,78 @@ export namespace parse_source
 			["\\boldx", "𝐱"],
 			["\\boldy", "𝐲"],
 			["\\boldz", "𝐳"],
+			["\\bold0", "𝟎"],
+			["\\bold1", "𝟏"],
+			["\\bold2", "𝟐"],
+			["\\bold3", "𝟑"],
+			["\\bold4", "𝟒"],
+			["\\bold5", "𝟓"],
+			["\\bold6", "𝟔"],
+			["\\bold7", "𝟕"],
+			["\\bold8", "𝟖"],
+			["\\bold9", "𝟗"],
+			["\\boardA", "𝔸"],
+			["\\boardB", "𝔹"],
+			["\\boardC", "ℂ"],
+			["\\boardD", "𝔻"],
+			["\\boardE", "𝔼"],
+			["\\boardF", "𝔽"],
+			["\\boardG", "𝔾"],
+			["\\boardH", "ℍ"],
+			["\\boardI", "𝕀"],
+			["\\boardJ", "𝕁"],
+			["\\boardK", "𝕂"],
+			["\\boardL", "𝕃"],
+			["\\boardM", "𝕄"],
+			["\\boardN", "ℕ"],
+			["\\boardO", "𝕆"],
+			["\\boardP", "ℙ"],
+			["\\boardQ", "ℚ"],
+			["\\boardR", "ℝ"],
+			["\\boardS", "𝕊"],
+			["\\boardT", "𝕋"],
+			["\\boardU", "𝕌"],
+			["\\boardV", "𝕍"],
+			["\\boardW", "𝕎"],
+			["\\boardX", "𝕏"],
+			["\\boardY", "𝕐"],
+			["\\boardZ", "ℤ"],
+			["\\boarda", "𝕒"],
+			["\\boardb", "𝕓"],
+			["\\boardc", "𝕔"],
+			["\\boardd", "𝕕"],
+			["\\boarde", "𝕖"],
+			["\\boardf", "𝕗"],
+			["\\boardg", "𝕘"],
+			["\\boardh", "𝕙"],
+			["\\boardi", "𝕚"],
+			["\\boardj", "𝕛"],
+			["\\boardk", "𝕜"],
+			["\\boardl", "𝕝"],
+			["\\boardm", "𝕞"],
+			["\\boardn", "𝕟"],
+			["\\boardo", "𝕠"],
+			["\\boardp", "𝕡"],
+			["\\boardq", "𝕢"],
+			["\\boardr", "𝕣"],
+			["\\boards", "𝕤"],
+			["\\boardt", "𝕥"],
+			["\\boardu", "𝕦"],
+			["\\boardv", "𝕧"],
+			["\\boardw", "𝕨"],
+			["\\boardx", "𝕩"],
+			["\\boardy", "𝕪"],
+			["\\boardz", "𝕫"],
+			["\\board0", "𝟘"],
+			["\\board1", "𝟙"],
+			["\\board2", "𝟚"],
+			["\\board3", "𝟛"],
+			["\\board4", "𝟜"],
+			["\\board5", "𝟝"],
+			["\\board6", "𝟞"],
+			["\\board7", "𝟟"],
+			["\\board8", "𝟠"],
+			["\\board9", "𝟡"],
 			["\\calliA", "𝒜"],
 			["\\calliB", "ℬ"],
 			["\\calliC", "𝒞"],
@@ -357,59 +495,7 @@ export namespace parse_source
 			["\\frakw", "𝔴"],
 			["\\frakx", "𝔵"],
 			["\\fraky", "𝔶"],
-			["\\frakz", "𝔷"],
-			["\\boardA", "𝔸"],
-			["\\boardB", "𝔹"],
-			["\\boardC", "ℂ"],
-			["\\boardD", "𝔻"],
-			["\\boardE", "𝔼"],
-			["\\boardF", "𝔽"],
-			["\\boardG", "𝔾"],
-			["\\boardH", "ℍ"],
-			["\\boardI", "𝕀"],
-			["\\boardJ", "𝕁"],
-			["\\boardK", "𝕂"],
-			["\\boardL", "𝕃"],
-			["\\boardM", "𝕄"],
-			["\\boardN", "ℕ"],
-			["\\boardO", "𝕆"],
-			["\\boardP", "ℙ"],
-			["\\boardQ", "ℚ"],
-			["\\boardR", "ℝ"],
-			["\\boardS", "𝕊"],
-			["\\boardT", "𝕋"],
-			["\\boardU", "𝕌"],
-			["\\boardV", "𝕍"],
-			["\\boardW", "𝕎"],
-			["\\boardX", "𝕏"],
-			["\\boardY", "𝕐"],
-			["\\boardZ", "ℤ"],
-			["\\boarda", "𝕒"],
-			["\\boardb", "𝕓"],
-			["\\boardc", "𝕔"],
-			["\\boardd", "𝕕"],
-			["\\boarde", "𝕖"],
-			["\\boardf", "𝕗"],
-			["\\boardg", "𝕘"],
-			["\\boardh", "𝕙"],
-			["\\boardi", "𝕚"],
-			["\\boardj", "𝕛"],
-			["\\boardk", "𝕜"],
-			["\\boardl", "𝕝"],
-			["\\boardm", "𝕞"],
-			["\\boardn", "𝕟"],
-			["\\boardo", "𝕠"],
-			["\\boardp", "𝕡"],
-			["\\boardq", "𝕢"],
-			["\\boardr", "𝕣"],
-			["\\boards", "𝕤"],
-			["\\boardt", "𝕥"],
-			["\\boardu", "𝕦"],
-			["\\boardv", "𝕧"],
-			["\\boardw", "𝕨"],
-			["\\boardx", "𝕩"],
-			["\\boardy", "𝕪"],
-			["\\boardz", "𝕫"],
+			["\\frakz", "𝔷"]
 		]);
 		export const math_binary_operator: Map<string, keyof MathMLElementTagNameMap> = new Map([
 		    ["^", "msup"],
@@ -506,6 +592,9 @@ export namespace parse_source
 		e.	Figure Reference
 			We can use [FIGURE figure] to refer to a figure.
 			The figure must exist in a block before it.
+		f.	Math
+			We can use [MATH code] to create a math block.
+			See "h. Math" in "2. Blocks".
 	3.	Environment
 		You should define all your environment settings in a variable called "parse_source.environment".
 		a.	If you are using figures in2 your codes, you should define the attribute "figure" (string), with the number placeholder as "$".
@@ -641,13 +730,6 @@ export namespace parse_source
 			}
 			return chunks;
 		}
-		public static attach(target: HTMLElement, elements: Iterable<Node>): void
-		{
-			for (const each_element of elements)
-			{
-				target.appendChild(each_element);
-			}
-		}
 		private parse_chunk(chunk: Chunk): HTMLElement | undefined
 		{
 			switch (chunk.type)
@@ -664,12 +746,12 @@ export namespace parse_source
 							break;
 						}
 					}
-					Parser.attach(paragraph_element, this.parse_inline(paragraph_content));
+					elements.attach(paragraph_element, this.parse_inline(paragraph_content));
 					return paragraph_element;
 				case constant.chunk_type.Heading:
 					const heading_level = chunk.content.match(/^#+/)?.[0].length ?? 1;
 					const heading_element: HTMLElement = document.createElement(`h${heading_level + 1 > 6 ? 6 : heading_level + 1}`); // h1 is used at the top of the document.
-					Parser.attach(heading_element, this.parse_inline(chunk.content.replace(/^#+/, "")));
+					elements.attach(heading_element, this.parse_inline(chunk.content.replace(/^#+/, "")));
 					return heading_element;
 				case constant.chunk_type.Tree:
 					const tree_lines: string[] = chunk.content.split(/\n/);
@@ -694,7 +776,7 @@ export namespace parse_source
 						const list_item: HTMLElement = document.createElement("li");
 						list_stack[list_stack.length - 1].appendChild(list_item);
 						element_stack.push(list_item);
-						Parser.attach(list_item, this.parse_inline(each_line.replace(/^ *- /, "")));
+						elements.attach(list_item, this.parse_inline(each_line.replace(/^ *- /, "")));
 					}
 					list_stack[0]?.classList.add("tree");
 					return list_stack[0];
@@ -730,17 +812,17 @@ export namespace parse_source
 			interface keyword_entry
 			{
 				type: constant.area_type,
-				parameters: Node[][]
+				parameters: elements.NodeGroup[]
 				// The first dimension is the index of the parameter.
 				// The second dimension is the nodes of the parameter.
 			};
-			const default_keyword: keyword_entry = {type: constant.area_type.Content, parameters: [[]]};
+			const default_keyword: keyword_entry = {type: constant.area_type.Content, parameters: [new elements.NodeGroup()]};
 			const keyword_stack: keyword_entry[] = [Object.assign({}, default_keyword)]; // The first entry should never be popped.
 			for (const each_area of areas)
 			{
 				if (each_area === "[")
 				{
-					keyword_stack.push({type: constant.area_type.Unknown, parameters: [[]]});
+					keyword_stack.push({type: constant.area_type.Unknown, parameters: [new elements.NodeGroup()]});
 				}
 				else if (each_area === "]")
 				{
@@ -755,7 +837,7 @@ export namespace parse_source
 					if (constant.area_with_content.has(current_keyword.type))
 					{
 						const new_node: HTMLElement = document.createElement(constant.area_with_content.get(current_keyword.type)!);
-						Parser.attach(new_node, current_keyword.parameters[0]);
+						elements.attach(new_node, current_keyword.parameters[0]);
 						last_parameter.push(new_node);
 						switch (current_keyword.type)
 						{
@@ -791,6 +873,14 @@ export namespace parse_source
 						const new_element_figure_reference: Text = document.createTextNode(environment.figure.replace(/\$/g, figure_number.toString()));
 						last_parameter.push(new_element_figure_reference);
 					}
+					else if (current_keyword.type === constant.area_type.Math)
+					{
+						if (current_keyword.parameters[0][0] === undefined)
+							break;
+						const new_element = Parser.parse_math(current_keyword.parameters[0][0].textContent!);
+						new_element.setAttribute("inline", "");
+						last_parameter.push(new_element);
+					}
 				}
 				else
 				{
@@ -798,7 +888,7 @@ export namespace parse_source
 					if (each_area === "TO" && last_keyword.type === constant.area_type.Unknown)
 					{
 						last_keyword.type = constant.area_type.Link;
-						last_keyword.parameters.push([]);
+						last_keyword.parameters.push(new elements.NodeGroup());
 					}
 					else if (each_area === "BLANK" && last_keyword.type === constant.area_type.Link)
 					{
@@ -811,7 +901,7 @@ export namespace parse_source
 					else if (each_area === "AS" && last_keyword.type === constant.area_type.Term)
 					{
 						last_keyword.type = constant.area_type.TermMeaning;
-						last_keyword.parameters.push([]);
+						last_keyword.parameters.push(new elements.NodeGroup());
 					}
 					else if (each_area === "CODE" && last_keyword.type === constant.area_type.Unknown)
 					{
@@ -824,6 +914,10 @@ export namespace parse_source
 					else if (each_area === "FIGURE" && last_keyword.type === constant.area_type.Unknown)
 					{
 						last_keyword.type = constant.area_type.FigureReference;
+					}
+					else if (each_area === "MATH" && last_keyword.type === constant.area_type.Unknown)
+					{
+						last_keyword.type = constant.area_type.Math;
 					}
 					else
 					{
@@ -874,7 +968,7 @@ export namespace parse_source
 				elements: MathMLElement[];
 				parent: MathMLElement;
 			}
-			const element: MathMLElement = Parser.math_element("math");
+			const element: MathMLElement = elements.math_element("math");
 			const element_stack: element_group[] = [{ elements: [], parent: element }]; // The first entry should never be popped.
 			for (const each_match of source.matchAll(/\\(?:[a-zA-Z0-9]+|[\\|{}])|\^{2}|_{2}|>{2,3}|<{2,3}|[<>]=|->|[^0-9\\]|\d+(?:\.\d+)?/g))
 			{
@@ -884,7 +978,7 @@ export namespace parse_source
 				if (each_symbol === " ") {}
 				else if (each_symbol === "{")
 				{
-					const new_element: MathMLElement = Parser.math_element("mrow");
+					const new_element: MathMLElement = elements.math_element("mrow");
 					current_elements.push(new_element);
 					element_stack.push({ elements: [], parent: new_element });
 				}
@@ -892,57 +986,56 @@ export namespace parse_source
 				{
 					if (current_parent.tagName !== "mrow")
 						continue;
-					for (const each_element of current_elements)
-						current_parent.appendChild(each_element);
+					elements.attach(current_parent, current_elements);
 					element_stack.pop();
 				}
 				else if (constant.math_unary_operator.has(each_symbol))
 				{
-					const new_element: MathMLElement = Parser.math_element(constant.math_unary_operator.get(each_symbol)!);
+					const new_element: MathMLElement = elements.math_element(constant.math_unary_operator.get(each_symbol)!);
 					current_elements.push(new_element);
 					element_stack.push({ elements: [], parent: new_element });
 				}
 				else if (constant.math_binary_operator.has(each_symbol))
 				{
-					const base_element: MathMLElement = current_elements.pop() ?? Parser.math_element("mrow");
-					const new_element: MathMLElement = Parser.math_element(constant.math_binary_operator.get(each_symbol)!);
+					const base_element: MathMLElement = current_elements.pop() ?? elements.math_element("mrow");
+					const new_element: MathMLElement = elements.math_element(constant.math_binary_operator.get(each_symbol)!);
 					current_elements.push(new_element);
 					element_stack.push({ elements: [base_element], parent: new_element });
 				}
 				else if (constant.math_operator_replace.has(each_symbol))
 				{
-					const new_element: MathMLElement = Parser.math_element("mo");
+					const new_element: MathMLElement = elements.math_element("mo");
 					new_element.textContent = constant.math_operator_replace.get(each_symbol)!;
 					current_elements.push(new_element);
 				}
 				else if (constant.math_identifier_replace.has(each_symbol))
 				{
-					const new_element: MathMLElement = Parser.math_element("mi");
+					const new_element: MathMLElement = elements.math_element("mi");
 					new_element.textContent = constant.math_identifier_replace.get(each_symbol)!;
 					current_elements.push(new_element);
 				}
 				else if (each_symbol === "\\diff")
 				{
-					const new_element: MathMLElement = Parser.math_element("mi");
+					const new_element: MathMLElement = elements.math_element("mi");
 					new_element.setAttribute("mathvariant", "normal");
 					new_element.textContent = "d";
 					current_elements.push(new_element);
 				}
 				else if (/^(?:[()\[\]⌈⌉⌊⌋⟨⟩|‖<>=,.+−×⋅])$/.test(each_symbol)) // operator
 				{
-					const new_element: MathMLElement = Parser.math_element("mo");
+					const new_element: MathMLElement = elements.math_element("mo");
 					new_element.textContent = each_symbol;
 					current_elements.push(new_element);
 				}
 				else if (/^\d+(?:\.\d+)?$/.test(each_symbol)) // number
 				{
-					const new_element: MathMLElement = Parser.math_element("mn");
+					const new_element: MathMLElement = elements.math_element("mn");
 					new_element.textContent = each_symbol;
 					current_elements.push(new_element);
 				}
 				else // indentifier
 				{
-					const new_element: MathMLElement = Parser.math_element("mi");
+					const new_element: MathMLElement = elements.math_element("mi");
 					new_element.textContent = each_symbol;
 					current_elements.push(new_element);
 				}
@@ -952,13 +1045,11 @@ export namespace parse_source
 					element_stack.pop();
 					if (current_level.parent.nodeName !== "mroot")
 					{
-						for (const each_element of current_level.elements)
-							current_level.parent.appendChild(each_element);
+						elements.attach(current_level.parent, current_level.elements);
 					}
 					else // mrow needs to reverse to support 3\root 2
 					{
-						while (current_level.elements.length > 0)
-							current_level.parent.appendChild(current_level.elements.pop()!);
+						elements.attach(current_level.parent, current_level.elements.reverse())
 					}
 					current_level = element_stack[element_stack.length - 1];
 				}
@@ -966,10 +1057,6 @@ export namespace parse_source
 			for (const each_element of element_stack[0].elements)
 				element.appendChild(each_element);
 			return element as HTMLElement;
-		}
-		public static math_element<key extends keyof MathMLElementTagNameMap>(name: key): MathMLElementTagNameMap[key]
-		{
-			return document.createElementNS("http://www.w3.org/1998/Math/MathML", name);
 		}
 	}
 }
