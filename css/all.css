@@ -142,14 +142,10 @@ kbd
 	margin: 0px 2px;
 }
 
-:root[data-browser=webkit] math:not([inline])
-{
-	display: block;
-}
-
-:root[data-browser=ms] math:not([inline])
+math:not([inline])
 {
 	display: block math;
+	math-style: normal;
 }
 
 p.definition, p.notice, p.warning

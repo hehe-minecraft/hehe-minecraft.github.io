@@ -19,14 +19,15 @@ export namespace parse_source
 			Tree,
 			Interval,
 			Figure,
-			Code
+			Code,
+			Math
 		};
 		export interface chunk_type_restrict
 		{
-			readonly before?: RegExp;
-			readonly includes?: RegExp;
-			readonly after?: RegExp;
-			readonly concat?: boolean;
+			readonly before?: RegExp; // undefined is considered as no restriction
+			readonly includes?: RegExp; // undefined is considered as no restriction
+			readonly after?: RegExp; // undefined is considered as no restriction
+			readonly concat?: boolean; // undefined is considered as false
 		}
 		export const chunk_type_restricts: Map<chunk_type, chunk_type_restrict> = new Map([
 			[chunk_type.Heading, { includes: /^#+/ }],
@@ -34,6 +35,7 @@ export namespace parse_source
 			[chunk_type.Interval, { includes: /^===$/ }],
 			[chunk_type.Code, { before: /^```/, after: /^```$/ }],
 			[chunk_type.Figure, { includes: /^FIGURE / }],
+			[chunk_type.Math, { includes: /^MATH / }],
 			[chunk_type.Comment, { includes: /^([ \t]*|<!-- .+ -->)$/ }],
 			[chunk_type.Paragraph,  {}]
 		]);
@@ -62,6 +64,364 @@ export namespace parse_source
 			[area_type.Code, "code"],
 			[area_type.KeyboardInput, "kbd"]
 		]);
+		export const math_parameter_count: Map<keyof MathMLElementTagNameMap, number> = new Map([
+			["mfrac", 2],
+			["mover", 2],
+			["mroot", 2],
+			["msqrt", 1],
+			["msub", 2],
+			["msubsup", 3],
+			["msup", 2],
+			["munder", 2],
+			["munderover", 3]
+		]);
+		export const math_operator_replace: Map<RegExp | string, string> = new Map([
+			["-", "−"],
+			["*", "×"],
+			[">>", "≫"],
+			["<<", "≪"],
+			[">>>", "⋙"],
+			["<<<", "⋘"],
+			["->", "→"],
+			[">=", "≥"],
+			["<=", "≤"],
+			["\\\\", "\\"],
+			["\\{", "{"],
+			["\\}", "}"],
+			["\\lfloor", "⌊"],
+			["\\rfloor", "⌋"],
+			["\\lceil", "⌈"],
+			["\\rceil", "⌉"],
+			["\\langle", "⟨"],
+			["\\rangle", "⟩"],
+			["\\|", "‖"],
+			["\\mid", "|"],
+			["\\nmid", "∤"],
+			["\\pm", "±"],
+			["\\mp", "∓"],
+			["\\cdot", "·"],
+			["\\times", "×"],
+			["\\div", "÷"],
+			["\\neq", "≠"],
+			["\\leq", "≤"],
+			["\\geq", "≥"],
+			["\\gg", "≫"],
+			["\\ll", "≪"],
+			["\\ggg", "⋙"],
+			["\\lll", "⋘"],
+			["\\approx", "≈"],
+			["\\propto", "∝"],
+			["\\sim", "∼"],
+			["\\equiv", "≡"],
+			["\\in", "∈"],
+			["\\notin", "∉"],
+			["\\cap", "∩"],
+			["\\cup", "∪"],
+			["\\subset", "⊂"],
+			["\\supset", "⊃"],
+			["\\subseteq", "⊆"],
+			["\\supseteq", "⊇"],
+			["\\land", "∧"],
+			["\\lor", "∨"],
+			["\\lnot", "¬"],
+			["\\sum", "∑"],
+			["\\int", "∫"],
+			["\\oint", "∮"],
+			["\\iint", "∬"],
+			["\\oiint", "∯"],
+			["\\iiint", "∭"],
+			["\\oiiint", "∰"],
+			["\\idotsint", "∰"],
+			["\\prod", "∏"],
+			["\\rightarrow", "→"],
+			["\\leftrightarrow", "↔"],
+			["\\uparrow", "↑"],
+			["\\downarrow", "↓"],
+			["\\leftarrow", "←"],
+			["\\updownarrow", "↕"],
+			["\\vdots", "⋮"],
+			["\\cdots", "⋯"],
+			["\\ddots", "⋱"],
+		]);
+		export const math_identifier_replace: Map<RegExp | string, string> = new Map([
+			["\\alpha", "α"],
+			["\\beta", "β"],
+			["\\gamma", "γ"],
+			["\\delta", "δ"],
+			["\\epsilon", "ε"],
+			["\\zeta", "ζ"],
+			["\\eta", "η"],
+			["\\theta", "θ"],
+			["\\iota", "ι"],
+			["\\kappa", "κ"],
+			["\\lambda", "λ"],
+			["\\mu", "μ"],
+			["\\nu", "ν"],
+			["\\xi", "ξ"],
+			["\\omicron", "ο"],
+			["\\pi", "π"],
+			["\\rho", "ρ"],
+			["\\sigma", "σ"],
+			["\\tau", "τ"],
+			["\\upsilon", "υ"],
+			["\\phi", "φ"],
+			["\\chi", "χ"],
+			["\\psi", "ψ"],
+			["\\omega", "ω"],
+			["\\infty", "∞"],
+			["\\forall", "∀"],
+			["\\exists", "∃"],
+			["\\nabla", "∇"],
+			["\\emptyset", "⌀"],
+			["\\o", "⌀"],
+			["\\partial", "∂"],
+			["\\lim", "lim"],
+			["\\sin", "sin"],
+			["\\cos", "cos"],
+			["\\tan", "tan"],
+			["\\cot", "cot"],
+			["\\sec", "sec"],
+			["\\csc", "csc"],
+			["\\sinh", "sinh"],
+			["\\cosh", "cosh"],
+			["\\tanh", "tanh"],
+			["\\coth", "coth"],
+			["\\sech", "sech"],
+			["\\csch", "csch"],
+			["\\arcsin", "arcsin"],
+			["\\arccos", "arccos"],
+			["\\arctan", "arctan"],
+			["\\arccot", "arccot"],
+			["\\arcsec", "arcsec"],
+			["\\arccsc", "arccsc"],
+			["\\arsinh", "arsinh"],
+			["\\arcosh", "arcosh"],
+			["\\artanh", "artanh"],
+			["\\arcoth", "arcoth"],
+			["\\arsech", "arsech"],
+			["\\arcsch", "arcsch"],
+			["\\ln", "ln"],
+			["\\log", "log"],
+			["\\boldA", "𝐀"],
+			["\\boldB", "𝐁"],
+			["\\boldC", "𝐂"],
+			["\\boldD", "𝐃"],
+			["\\boldE", "𝐄"],
+			["\\boldF", "𝐅"],
+			["\\boldG", "𝐆"],
+			["\\boldH", "𝐇"],
+			["\\boldI", "𝐈"],
+			["\\boldJ", "𝐉"],
+			["\\boldK", "𝐊"],
+			["\\boldL", "𝐋"],
+			["\\boldM", "𝐌"],
+			["\\boldN", "𝐍"],
+			["\\boldO", "𝐎"],
+			["\\boldP", "𝐏"],
+			["\\boldQ", "𝐐"],
+			["\\boldR", "𝐑"],
+			["\\boldS", "𝐒"],
+			["\\boldT", "𝐓"],
+			["\\boldU", "𝐔"],
+			["\\boldV", "𝐕"],
+			["\\boldW", "𝐖"],
+			["\\boldX", "𝐗"],
+			["\\boldY", "𝐘"],
+			["\\boldZ", "𝐙"],
+			["\\bolda", "𝐚"],
+			["\\boldb", "𝐛"],
+			["\\boldc", "𝐜"],
+			["\\boldd", "𝐝"],
+			["\\bolde", "𝐞"],
+			["\\boldf", "𝐟"],
+			["\\boldg", "𝐠"],
+			["\\boldh", "𝐡"],
+			["\\boldi", "𝐢"],
+			["\\boldj", "𝐣"],
+			["\\boldk", "𝐤"],
+			["\\boldl", "𝐥"],
+			["\\boldm", "𝐦"],
+			["\\boldn", "𝐧"],
+			["\\boldo", "𝐨"],
+			["\\boldp", "𝐩"],
+			["\\boldq", "𝐪"],
+			["\\boldr", "𝐫"],
+			["\\bolds", "𝐬"],
+			["\\boldt", "𝐭"],
+			["\\boldu", "𝐮"],
+			["\\boldv", "𝐯"],
+			["\\boldw", "𝐰"],
+			["\\boldx", "𝐱"],
+			["\\boldy", "𝐲"],
+			["\\boldz", "𝐳"],
+			["\\calliA", "𝒜"],
+			["\\calliB", "ℬ"],
+			["\\calliC", "𝒞"],
+			["\\calliD", "𝒟"],
+			["\\calliE", "ℰ"],
+			["\\calliF", "ℱ"],
+			["\\calliG", "𝒢"],
+			["\\calliH", "ℋ"],
+			["\\calliI", "ℐ"],
+			["\\calliJ", "𝒥"],
+			["\\calliK", "𝒦"],
+			["\\calliL", "ℒ"],
+			["\\calliM", "ℳ"],
+			["\\calliN", "𝒩"],
+			["\\calliO", "𝒪"],
+			["\\calliP", "𝒫"],
+			["\\calliQ", "𝒬"],
+			["\\calliR", "ℛ"],
+			["\\calliS", "𝒮"],
+			["\\calliT", "𝒯"],
+			["\\calliU", "𝒰"],
+			["\\calliV", "𝒱"],
+			["\\calliW", "𝒲"],
+			["\\calliX", "𝒳"],
+			["\\calliY", "𝒴"],
+			["\\calliZ", "𝒵"],
+			["\\callia", "𝒶"],
+			["\\callib", "𝒷"],
+			["\\callic", "𝒸"],
+			["\\callid", "𝒹"],
+			["\\callie", "ℯ"],
+			["\\callif", "𝒻"],
+			["\\callig", "ℊ"],
+			["\\callih", "𝒽"],
+			["\\callii", "𝒾"],
+			["\\callij", "𝒿"],
+			["\\callik", "𝓀"],
+			["\\callil", "𝓁"],
+			["\\callim", "𝓂"],
+			["\\callin", "𝓃"],
+			["\\callio", "ℴ"],
+			["\\callip", "𝓅"],
+			["\\calliq", "𝓆"],
+			["\\callir", "𝓇"],
+			["\\callis", "𝓈"],
+			["\\callit", "𝓉"],
+			["\\calliu", "𝓊"],
+			["\\calliv", "𝓋"],
+			["\\calliw", "𝓌"],
+			["\\callix", "𝓍"],
+			["\\calliy", "𝓎"],
+			["\\calliz", "𝓏"],
+			["\\frakA", "𝔄"],
+			["\\frakB", "𝔅"],
+			["\\frakC", "ℭ"],
+			["\\frakD", "𝔇"],
+			["\\frakE", "𝔈"],
+			["\\frakF", "𝔉"],
+			["\\frakG", "𝔊"],
+			["\\frakH", "ℌ"],
+			["\\frakI", "ℑ"],
+			["\\frakJ", "𝔍"],
+			["\\frakK", "𝔎"],
+			["\\frakL", "𝔏"],
+			["\\frakM", "𝔐"],
+			["\\frakN", "𝔑"],
+			["\\frakO", "𝔒"],
+			["\\frakP", "𝔓"],
+			["\\frakQ", "𝔔"],
+			["\\frakR", "ℜ"],
+			["\\frakS", "𝔖"],
+			["\\frakT", "𝔗"],
+			["\\frakU", "𝔘"],
+			["\\frakV", "𝔙"],
+			["\\frakW", "𝔚"],
+			["\\frakX", "𝔛"],
+			["\\frakY", "𝔜"],
+			["\\frakZ", "ℨ"],
+			["\\fraka", "𝔞"],
+			["\\frakb", "𝔟"],
+			["\\frakc", "𝔠"],
+			["\\frakd", "𝔡"],
+			["\\frake", "𝔢"],
+			["\\frakf", "𝔣"],
+			["\\frakg", "𝔤"],
+			["\\frakh", "𝔥"],
+			["\\fraki", "𝔦"],
+			["\\frakj", "𝔧"],
+			["\\frakk", "𝔨"],
+			["\\frakl", "𝔩"],
+			["\\frakm", "𝔪"],
+			["\\frakn", "𝔫"],
+			["\\frako", "𝔬"],
+			["\\frakp", "𝔭"],
+			["\\frakq", "𝔮"],
+			["\\frakr", "𝔯"],
+			["\\fraks", "𝔰"],
+			["\\frakt", "𝔱"],
+			["\\fraku", "𝔲"],
+			["\\frakv", "𝔳"],
+			["\\frakw", "𝔴"],
+			["\\frakx", "𝔵"],
+			["\\fraky", "𝔶"],
+			["\\frakz", "𝔷"],
+			["\\boardA", "𝔸"],
+			["\\boardB", "𝔹"],
+			["\\boardC", "ℂ"],
+			["\\boardD", "𝔻"],
+			["\\boardE", "𝔼"],
+			["\\boardF", "𝔽"],
+			["\\boardG", "𝔾"],
+			["\\boardH", "ℍ"],
+			["\\boardI", "𝕀"],
+			["\\boardJ", "𝕁"],
+			["\\boardK", "𝕂"],
+			["\\boardL", "𝕃"],
+			["\\boardM", "𝕄"],
+			["\\boardN", "ℕ"],
+			["\\boardO", "𝕆"],
+			["\\boardP", "ℙ"],
+			["\\boardQ", "ℚ"],
+			["\\boardR", "ℝ"],
+			["\\boardS", "𝕊"],
+			["\\boardT", "𝕋"],
+			["\\boardU", "𝕌"],
+			["\\boardV", "𝕍"],
+			["\\boardW", "𝕎"],
+			["\\boardX", "𝕏"],
+			["\\boardY", "𝕐"],
+			["\\boardZ", "ℤ"],
+			["\\boarda", "𝕒"],
+			["\\boardb", "𝕓"],
+			["\\boardc", "𝕔"],
+			["\\boardd", "𝕕"],
+			["\\boarde", "𝕖"],
+			["\\boardf", "𝕗"],
+			["\\boardg", "𝕘"],
+			["\\boardh", "𝕙"],
+			["\\boardi", "𝕚"],
+			["\\boardj", "𝕛"],
+			["\\boardk", "𝕜"],
+			["\\boardl", "𝕝"],
+			["\\boardm", "𝕞"],
+			["\\boardn", "𝕟"],
+			["\\boardo", "𝕠"],
+			["\\boardp", "𝕡"],
+			["\\boardq", "𝕢"],
+			["\\boardr", "𝕣"],
+			["\\boards", "𝕤"],
+			["\\boardt", "𝕥"],
+			["\\boardu", "𝕦"],
+			["\\boardv", "𝕧"],
+			["\\boardw", "𝕨"],
+			["\\boardx", "𝕩"],
+			["\\boardy", "𝕪"],
+			["\\boardz", "𝕫"],
+		]);
+		export const math_binary_operator: Map<string, keyof MathMLElementTagNameMap> = new Map([
+		    ["^", "msup"],
+			["^^", "mover"],
+			["_", "msub"],
+			["__", "munder"],
+			["/", "mfrac"],
+			["\\root", "mroot"]
+		]);
+		export const math_unary_operator: Map<string, keyof MathMLElementTagNameMap> = new Map([
+			["\\sqrt", "msqrt"]
+		]);
 	}
 	/* --- SOURCE Language Explanation ---
 	In this language, symbols are mainly capital letters.
@@ -79,7 +439,7 @@ export namespace parse_source
 			e.g. "#" refers to <h2>, "#####" and "######" refer to <h6>.
 		c.	List
 			We can't define an unordered list.
-			i.	Ordered List
+			1)	Ordered List
 				We use "-" to define an ordered list.
 				Adding space before the "-" makes the entry smaller.
 				e.g.
@@ -91,11 +451,7 @@ export namespace parse_source
 				   1. Subcaption
 				2. Caption 2
 		d.	Interval
-			We sometimes need some intervals between two headings.
-			e.g.
-			#Heading 1
-			===
-			#Heading 2
+			Intervals are defined as "===".
 		e.	Figure
 			We can use "FIGURE id" to insert a figure.
 			The source <figure> with the id should be also in the file.
@@ -113,6 +469,25 @@ export namespace parse_source
 			```c++
 			std::cout << "This is a code" << std::endl;
 			```
+		h.	Math
+			We can use "MATH code" to create a math block.
+			The syntax is similar to LaTeX. The differences are listed below.
+			1)	We use "/" instead of "\over".
+			2)	Removed "\frac".
+			3)	We use "^^" and "__" to create "mover" and "munder" respectively.
+			4)	We can also use these abbreviations.
+				a)	"\o" -> "\varnothing"
+				b)	"->" -> "\rightarrow"
+				c)	">>" -> "\gg"
+				d)	"<<" -> "\ll"
+				e)	">>>" -> "\ggg"
+				f)	"<<<" -> "\lll"
+				g)	">=" -> "\geq"
+				h)	"<=" -> "\leq"
+			5)	"\bold", "\calli", "\board" and "\frak" followed by a letter refer to "\mathbf", "\mathcal", "\mathbb" and "\mathfrak" respectively.
+			6)	Add more trigonometric functions. e.g. "\arsinh", "\csch", "\arccsc".
+			7)	We use "3 \root 2" instead of "\sqrt[3]{2}".
+			8)	"\\" does not refer to a new line.
 	2.	Inlines
 		Each inline group is called an "area" in the file.
 		Inline symbols are surrounded by "[]".
@@ -343,6 +718,8 @@ export namespace parse_source
 					return figure_display;
 				case constant.chunk_type.Interval:
 					return document.createElement("hr");
+				case constant.chunk_type.Math:
+					return Parser.parse_math(chunk.content.replace(/^MATH /, ""));
 			}
 		}
 		private parse_inline(source: string): Iterable<Node>
@@ -489,6 +866,110 @@ export namespace parse_source
 				element.appendChild(line);
 			}
 			return element;
+		}
+		public static parse_math(source: string): HTMLElement
+		{
+			interface element_group
+			{
+				elements: MathMLElement[];
+				parent: MathMLElement;
+			}
+			const element: MathMLElement = Parser.math_element("math");
+			const element_stack: element_group[] = [{ elements: [], parent: element }]; // The first entry should never be popped.
+			for (const each_match of source.matchAll(/\\(?:[a-zA-Z0-9]+|[\\|{}])|\^{2}|_{2}|>{2,3}|<{2,3}|[<>]=|->|[^0-9\\]|\d+(?:\.\d+)?/g))
+			{
+				let each_symbol = each_match[0];
+				const current_parent: MathMLElement = element_stack[element_stack.length - 1].parent;
+				const current_elements: MathMLElement[] = element_stack[element_stack.length - 1].elements;
+				if (each_symbol === " ") {}
+				else if (each_symbol === "{")
+				{
+					const new_element: MathMLElement = Parser.math_element("mrow");
+					current_elements.push(new_element);
+					element_stack.push({ elements: [], parent: new_element });
+				}
+				else if (each_symbol === "}")
+				{
+					if (current_parent.tagName !== "mrow")
+						continue;
+					for (const each_element of current_elements)
+						current_parent.appendChild(each_element);
+					element_stack.pop();
+				}
+				else if (constant.math_unary_operator.has(each_symbol))
+				{
+					const new_element: MathMLElement = Parser.math_element(constant.math_unary_operator.get(each_symbol)!);
+					current_elements.push(new_element);
+					element_stack.push({ elements: [], parent: new_element });
+				}
+				else if (constant.math_binary_operator.has(each_symbol))
+				{
+					const base_element: MathMLElement = current_elements.pop() ?? Parser.math_element("mrow");
+					const new_element: MathMLElement = Parser.math_element(constant.math_binary_operator.get(each_symbol)!);
+					current_elements.push(new_element);
+					element_stack.push({ elements: [base_element], parent: new_element });
+				}
+				else if (constant.math_operator_replace.has(each_symbol))
+				{
+					const new_element: MathMLElement = Parser.math_element("mo");
+					new_element.textContent = constant.math_operator_replace.get(each_symbol)!;
+					current_elements.push(new_element);
+				}
+				else if (constant.math_identifier_replace.has(each_symbol))
+				{
+					const new_element: MathMLElement = Parser.math_element("mi");
+					new_element.textContent = constant.math_identifier_replace.get(each_symbol)!;
+					current_elements.push(new_element);
+				}
+				else if (each_symbol === "\\diff")
+				{
+					const new_element: MathMLElement = Parser.math_element("mi");
+					new_element.setAttribute("mathvariant", "normal");
+					new_element.textContent = "d";
+					current_elements.push(new_element);
+				}
+				else if (/^(?:[()\[\]⌈⌉⌊⌋⟨⟩|‖<>=,.+−×⋅])$/.test(each_symbol)) // operator
+				{
+					const new_element: MathMLElement = Parser.math_element("mo");
+					new_element.textContent = each_symbol;
+					current_elements.push(new_element);
+				}
+				else if (/^\d+(?:\.\d+)?$/.test(each_symbol)) // number
+				{
+					const new_element: MathMLElement = Parser.math_element("mn");
+					new_element.textContent = each_symbol;
+					current_elements.push(new_element);
+				}
+				else // indentifier
+				{
+					const new_element: MathMLElement = Parser.math_element("mi");
+					new_element.textContent = each_symbol;
+					current_elements.push(new_element);
+				}
+				let current_level: element_group = element_stack[element_stack.length - 1];
+				while ((constant.math_parameter_count.get(current_level.parent.nodeName as keyof MathMLElementTagNameMap) ?? +Infinity) <= current_level.elements.length)
+				{
+					element_stack.pop();
+					if (current_level.parent.nodeName !== "mroot")
+					{
+						for (const each_element of current_level.elements)
+							current_level.parent.appendChild(each_element);
+					}
+					else // mrow needs to reverse to support 3\root 2
+					{
+						while (current_level.elements.length > 0)
+							current_level.parent.appendChild(current_level.elements.pop()!);
+					}
+					current_level = element_stack[element_stack.length - 1];
+				}
+			}
+			for (const each_element of element_stack[0].elements)
+				element.appendChild(each_element);
+			return element as HTMLElement;
+		}
+		public static math_element<key extends keyof MathMLElementTagNameMap>(name: key): MathMLElementTagNameMap[key]
+		{
+			return document.createElementNS("http://www.w3.org/1998/Math/MathML", name);
 		}
 	}
 }
