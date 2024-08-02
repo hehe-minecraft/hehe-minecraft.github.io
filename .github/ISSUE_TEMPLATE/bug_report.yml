@@ -1,0 +1,58 @@
+name: Report the bugs on our website
+description: Tell us the bug you've found on our website.
+body:
+- type: markdown
+  attributes:
+    value: |
+      Thank you for helping us to improve our website!
+      __Before you start, please make sure there's no similar issue reported.__
+      __This repository uses HTML5, CSS3, JavaScript ESNext, so please also make sure your browser supports them.__
+      Want to suggest a new feature? Please look [here in the discussion channel](https://github.com/hehe-minecraft/hehe-minecraft.github.io/discussions/categories/feature-request).
+- type: dropdown
+  attributes:
+    label: Browser Core
+    description: On which browser you've found the bug?
+    options:
+    - "Chrome"
+    - "Webkit"
+    - "Blink"
+    - "Gecko"
+    - "Trident"
+    - "Others"
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Description
+    description: Please describe the bug you've found.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Reproduction
+    description: Please describe the steps to reproduce the bug.
+    placeholder: |
+      1.
+      2.
+      3.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Expected Result
+    description: What do you expect to happen?
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Additional Files
+    description: You can provide additional files that may help us to understand the bug.
+  validations:
+    required: false
+- type: checkboxes
+  attributes:
+    label: Before Submitting
+    description: Please make sure you've checked the following before submitting the issue. Issues which don't meet the requirements will be closed.
+    options:
+    - label: I've checked there's no similar issue reported.
+      required: true
