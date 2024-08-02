@@ -16,7 +16,7 @@ export namespace elements
 		{
 			for (const node of nodes)
 			{
-				if (this[this.length - 1] instanceof Text)
+				if (this[this.length - 1] instanceof Text && node instanceof Text)
 					this[this.length - 1].textContent! += node.textContent;
 				else
 					super.push(node);

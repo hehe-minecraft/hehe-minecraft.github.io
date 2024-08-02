@@ -22,7 +22,8 @@ export namespace parse_source
 			Interval,
 			Figure,
 			Code,
-			Math
+			Math,
+			Table
 		};
 		export interface chunk_type_restrict
 		{
@@ -39,6 +40,7 @@ export namespace parse_source
 			[chunk_type.Figure, { includes: /^FIGURE / }],
 			[chunk_type.Math, { includes: /^MATH / }],
 			[chunk_type.Comment, { includes: /^([ \t]*|<!-- .+ -->)$/ }],
+			[chunk_type.Table, { before: /^TABLE$/, after: /^END$/ }],
 			[chunk_type.Paragraph,  {}]
 		]);
 		export enum area_type
@@ -142,14 +144,14 @@ export namespace parse_source
 			["\\lor", "∨"],
 			["\\lnot", "¬"],
 			["\\sum", "∑"],
+			["\\prod", "∏"],
+			["\\coprod", "∐"],
 			["\\int", "∫"],
 			["\\oint", "∮"],
 			["\\iint", "∬"],
 			["\\oiint", "∯"],
 			["\\iiint", "∭"],
 			["\\oiiint", "∰"],
-			["\\prod", "∏"],
-			["\\coprod", "∐"],
 			["\\bigcap", "⋂"],
 			["\\bigintersection", "⋂"],
 			["\\bigcup", "⋃"],
@@ -240,6 +242,7 @@ export namespace parse_source
 			["\\nabla", "∇"],
 			["\\emptyset", "⌀"],
 			["\\o", "⌀"],
+			["\\diff", "d"],
 			["\\partial", "∂"],
 			["\\lim", "lim"],
 			["\\sin", "sin"],
@@ -268,6 +271,8 @@ export namespace parse_source
 			["\\arcsch", "arcsch"],
 			["\\ln", "ln"],
 			["\\log", "log"],
+			["\\lg", "lg"],
+			["\\exp", "exp"],
 			["\\boldA", "𝐀"],
 			["\\boldB", "𝐁"],
 			["\\boldC", "𝐂"],
@@ -497,6 +502,33 @@ export namespace parse_source
 			["\\fraky", "𝔶"],
 			["\\frakz", "𝔷"]
 		]);
+		export const math_variant_normal_identifiers: string[] = [
+			"\\Alpha",
+			"\\Beta",
+			"\\Gamma",
+			"\\Delta",
+			"\\Epsilon",
+			"\\Zeta",
+			"\\Eta",
+			"\\Theta",
+			"\\Iota",
+			"\\Kappa",
+			"\\Lambda",
+			"\\Mu",
+			"\\Nu",
+			"\\Xi",
+			"\\Omicron",
+			"\\Pi",
+			"\\Rho",
+			"\\Sigma",
+			"\\Tau",
+			"\\Upsilon",
+			"\\Phi",
+			"\\Chi",
+			"\\Psi",
+			"\\Omega",
+			"\\diff"
+		];
 		export const math_binary_operator: Map<string, keyof MathMLElementTagNameMap> = new Map([
 		    ["^", "msup"],
 			["^^", "mover"],
@@ -574,6 +606,37 @@ export namespace parse_source
 			6)	Add more trigonometric functions. e.g. "\arsinh", "\csch", "\arccsc".
 			7)	We use "3 \root 2" instead of "\sqrt[3]{2}".
 			8)	"\\" does not refer to a new line.
+		i.	Table
+			To create a table, use "TABLE" before and "END" after it.
+			Each normal table cell should be surrounded by "|:" and ":|".
+			Header cells should be surrounded by "|::" and "::|".
+			"|" can be shared between cells.
+			After the cell body and ":"s, you can add ">number" to let it span over "number + 1" columns.
+			Also, you can add "vnumber" to let it span over "number + 1" rows.
+			The numbers must not be negative.
+			">" and "v" can be used at the same time, with ">" before "v".
+			e.g.
+			TABLE
+			|::Header 1::|::Header 2::|::Header 3::|
+			|:Cell 1:|   |:Cell 2:>0v0|:Rowspan:v1|
+			|:Colspan:>1|
+			|:Both:>1v1|              |:Cell 3:|
+			                          |:Cell 4:|
+			END
+			will produce
+			+----------+----------+----------+
+			| Header 1 | Header 2 | Header 3 |
+			+----------+----------+----------+
+			| Cell 1   | Cell 2   | Rowspan  |
+			+----------+----------+          |
+			| Colspan             |          |
+			+---------------------+----------+
+			| Both                | Cell 3   |
+			|                     +----------+
+			|                     | Cell 4   |
+			+---------------------+----------|
+			where "Header 1" to "Header 3" are header cells (th), and the rest are normal cells (td).
+	2.	Chunks
 	2.	Inlines
 		Each inline group is called an "area" in the file.
 		Inline symbols are surrounded by "[]".
@@ -802,6 +865,24 @@ export namespace parse_source
 					return document.createElement("hr");
 				case constant.chunk_type.Math:
 					return Parser.parse_math(chunk.content.replace(/^MATH /, ""));
+				case constant.chunk_type.Table:
+					const table_element: HTMLElement = document.createElement("table");
+					for (const each_line of chunk.content.replace(/^TABLE\n|\nEND$/g, "").split(/\n/))
+					{
+						const table_row: HTMLElement = document.createElement("tr");
+						for (const each_cell_match of each_line.matchAll(/(?<=\|)(?<colons>:{1,2})(?<content>.*?)\k<colons>(?<colspan>>\d+?)?(?<rowspan>v\d+?)?(?=\|)/g))
+						{
+							const table_cell: HTMLTableCellElement = document.createElement(each_cell_match.groups!.colons === "::" ? "th" : "td");
+							if (each_cell_match.groups!.colspan !== undefined)
+								table_cell.colSpan = parseInt(each_cell_match.groups!.colspan.replace(">", "")) + 1;
+							if (each_cell_match.groups!.rowspan !== undefined)
+								table_cell.rowSpan = parseInt(each_cell_match.groups!.rowspan.replace("v", "")) + 1;
+							elements.attach(table_cell, this.parse_inline(each_cell_match.groups!.content));
+							table_row.appendChild(table_cell);
+						}
+						table_element.appendChild(table_row);
+					}
+					return table_element;
 			}
 		}
 		private parse_inline(source: string): Iterable<Node>
@@ -1011,14 +1092,9 @@ export namespace parse_source
 				else if (constant.math_identifier_replace.has(each_symbol))
 				{
 					const new_element: MathMLElement = elements.math_element("mi");
+					if (constant.math_variant_normal_identifiers.includes(each_symbol))
+						new_element.setAttribute("mathvariant", "normal");
 					new_element.textContent = constant.math_identifier_replace.get(each_symbol)!;
-					current_elements.push(new_element);
-				}
-				else if (each_symbol === "\\diff")
-				{
-					const new_element: MathMLElement = elements.math_element("mi");
-					new_element.setAttribute("mathvariant", "normal");
-					new_element.textContent = "d";
 					current_elements.push(new_element);
 				}
 				else if (/^(?:[()\[\]⌈⌉⌊⌋⟨⟩|‖<>=,.+−×⋅])$/.test(each_symbol)) // operator
