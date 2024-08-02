@@ -39,7 +39,20 @@ textarea
 	resize: none;
 	tab-size: 4;
 	background-color: rgba(128, 128, 128, 0.1);
+	color: unset;
 	margin: 1px 0 1px 0;
+}
+
+dialog
+{
+	border-radius: 5px;
+	color: unset;
+	background-color: var(--background-body);
+}
+
+dialog::backdrop
+{
+	background-color: rgb(from var(--color-text) r g b / 0.1);
 }
 
 @font-face
