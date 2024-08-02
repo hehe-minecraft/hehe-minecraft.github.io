@@ -874,9 +874,9 @@ export namespace parse_source
 						{
 							const table_cell: HTMLTableCellElement = document.createElement(each_cell_match.groups!.colons === "::" ? "th" : "td");
 							if (each_cell_match.groups!.colspan !== undefined)
-								table_cell.colSpan = parseInt(each_cell_match.groups!.colspan.replace(">", "")) + 1;
+								table_cell.colSpan = parseInt(each_cell_match.groups!.colspan.match(/\d+/)![0]) + 1;
 							if (each_cell_match.groups!.rowspan !== undefined)
-								table_cell.rowSpan = parseInt(each_cell_match.groups!.rowspan.replace("v", "")) + 1;
+								table_cell.rowSpan = parseInt(each_cell_match.groups!.rowspan.match(/\d+/)![0]) + 1;
 							elements.attach(table_cell, this.parse_inline(each_cell_match.groups!.content));
 							table_row.appendChild(table_cell);
 						}
