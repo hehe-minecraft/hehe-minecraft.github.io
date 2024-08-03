@@ -5,6 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		<link rel="stylesheet" type="text/css" href="../../../../css/all.css"/>
 		<link rel="stylesheet" type="text/css" href="../../../../css/page.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../css/code.css"/>
 		<link rel="stylesheet" type="text/css" href="../../../../css/typesetting.css"/>
 		<script src="../../../../ts/all.js" type="module" defer></script>
 		<title>
@@ -28,6 +29,7 @@
 		</nav>
 		<main data-type="source">
 			NOTE Source 代码对缩进敏感。
+			NOTE 请尽量不要在一行开头或方括号里面输入除已支持关键字外的全大写字母单词，它们可能作为将来版本的关键字。
 			你可能要先认识基本的 HTML 语言语法。
 			#块级元素
 			每个块级元素占据一行或多行空间。
@@ -422,7 +424,7 @@
 			```
 			MATH \bolda=\lim__{\Delta t->0}{\Delta\boldv}/{\Delta t}
 			##表格
-			表格前面一行需要输入[CODE TABLE]，后一行需要输入[CODE END]。
+			表格前面一行需要以[CODE TABLE]标识，后一行需要以[CODE END]标识。
 			表格的每一个单元格都需要使用[CODE |: :|]包裹。如果要使单元格成为标题单元格，则需要使用[CODE |:: ::|]包裹。单元格之间的[CODE |]可以共用。非单元格区域内输入任何东西都不会显示。
 			在单元格末尾的[CODE :]和[CODE |]之间，可以添加单元格跨行或跨列的信息。可以使用[CODE &gt;]来表示向右再横跨若干列，使用[CODE v]来表示向下再扩展若干行，扩展的列数和行数要写在[CODE &gt;]和[CODE v]之后。如果要同时扩展行和列，应该先扩展列（[CODE &gt;]），再扩展行（[CODE v]）。如[CODE |:content:>1v2|]表示这个单元格向右扩展一列，向下扩展两行，因此它总共占有的列数是二，行数是三。扩展的列数和行数如果为零，则其占有的列数和行数不会改变。扩展的列数和行数如果为负或不是整数，则单元格无效。
 			```
@@ -441,6 +443,37 @@
 			|:向右扩展:>1|
 			|:同时扩展:>1v1|      |:单元格三:|
 			                     |:单元格四:|
+			END
+			##函数输入输出集
+			函数的输入输出集之前一行要以[CODE FUNCTIONIO]标识，之后一行用[CODE END]标识。如果有任意一行非空且不符合输入或输出的格式，则自动在此行标识[CODE END]。
+			NOTE 强烈建议在函数输入输出集后一行添加[CODE END]标识，这样不仅可以增强可读性，也可以减少异常的产生。
+			如果一行的以[CODE I ]（有空格）开头，则该行被标记为函数输入之一，会显示在左侧；如果以[CODE O ]（有空格）开头，则该行被标记为函数输出之一，会显示在右侧。输入和输出可以混合，不改变显示效果，如：
+			```
+			FUNCTIONIO
+			I 输入一
+			I 输入二
+			O 输出一
+			I 输入三
+			O 输出二
+			END
+			```
+			等同于：
+			```
+			FUNCTIONIO
+			I 输入一
+			I 输入二
+			I 输入三
+			O 输出一
+			O 输出二
+			END
+			```
+			都被显示为：
+			FUNCTIONIO
+			I 输入一
+			I 输入二
+			O 输出一
+			I 输入三
+			O 输出二
 			END
 			#行内元素
 			行内元素不会占据一行以上的空间，大部分可以嵌套，如：

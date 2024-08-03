@@ -1,0 +1,144 @@
+@media(prefers-color-scheme: light)
+{
+	:root
+	{
+		--background-function-input: #DDF;
+		--background-function-input-decorate: #AAF;
+		--background-function-output: #FCC;
+		--background-function-output-decorate: #FAA;
+		--border-function-input-decorate: #88F;
+		--border-function-output-decorate: #F88;
+		--border-function-io-entry: #AAA;
+	}
+}
+
+@media(prefers-color-scheme: dark)
+{
+	:root
+	{
+		--background-function-input: #335;
+		--background-function-input-decorate: #668;
+		--background-function-output: #533;
+		--background-function-output-decorate: #866;
+		--border-function-input-decorate: #446;
+		--border-function-output-decorate: #644;
+		--border-function-io-entry: #AAA;
+	}
+}
+
+.input::before, .output::before
+{
+	content: '';
+	position: absolute;
+	padding: 0.4em;
+	top: -0.3em;
+	width: 0;
+	height: 0;
+}
+
+.input, .output
+{
+	margin-top: 1em;
+	margin-bottom: 0;
+	position: relative;
+	border-radius: 10px;
+	text-align: initial;
+	padding: 15px 8px 8px 8px;
+}
+
+.input:empty, .output:empty
+{
+	outline-offset: -2px;
+	height: 1em;
+}
+
+.input::before
+{
+	transform: rotate(-30deg);
+	background-color: var(--background-function-input-decorate);
+	border: var(--border-function-input-decorate) solid 0.2em;
+	left: -0.3em;
+}
+
+.input
+{
+	margin-left: 1em;
+}
+
+.input:not(:empty)
+{
+	background-color: var(--background-function-input);
+}
+
+.input:empty
+{
+	outline: 2px dashed var(--background-function-input-decorate);
+}
+
+.output::before
+{
+	transform: rotate(30deg);
+	background-color: var(--background-function-output-decorate);
+	border: var(--border-function-output-decorate) solid 0.2em;
+	right: -0.3em;
+}
+
+.output
+{
+	margin-right: 1em;
+}
+
+.output:not(:empty)
+{
+	background-color: var(--background-function-output);
+}
+
+.output:empty
+{
+	outline: 2px dashed var(--background-function-output-decorate);
+}
+
+div.input p, div.output p
+{
+	margin: 0;
+}
+
+div.input p:not(:first-child), div.output p:not(:first-child)
+{
+	padding-top: 10px;
+	border-top: 1px solid var(--border-function-io-entry);
+}
+
+div.input p:not(:last-child), div.output p:not(:last-child)
+{
+	padding-bottom: 10px;
+	border-bottom: 1px solid var(--border-function-io-entry);
+}
+
+div.io
+{
+	margin-bottom: 8px;
+}
+
+@media (min-width: 700px)
+{
+	div.io
+	{
+		display: grid;
+		grid-template-columns: 50% 50%;
+		column-gap: 10px;
+		align-items: start;
+		grid-template-areas: 
+		"input output";
+	}
+
+	.input
+	{
+		grid-area: input;
+	}
+
+	.output
+	{
+		grid-area: output;
+	}
+}

@@ -23,7 +23,8 @@ export namespace parse_source
 			Figure,
 			Code,
 			Math,
-			Table
+			Table,
+			FunctionIO
 		};
 		export interface chunk_type_restrict
 		{
@@ -41,6 +42,7 @@ export namespace parse_source
 			[chunk_type.Math, { includes: /^MATH / }],
 			[chunk_type.Comment, { includes: /^([ \t]*|<!-- .+ -->)$/ }],
 			[chunk_type.Table, { before: /^TABLE$/, after: /^END$/ }],
+			[chunk_type.FunctionIO, { before: /^FUNCTIONIO$/, includes: /^[IO] |^$/, after: /^END$/ }],
 			[chunk_type.Paragraph,  {}]
 		]);
 		export enum area_type
@@ -545,6 +547,8 @@ export namespace parse_source
 	In this language, symbols are mainly capital letters.
 	1.	Blocks
 		Each block group is called a "chunk" in the file.
+		Normally each block has only one line, but some has multiple lines.
+		Most multi-line blocks are closed by "END".
 		a.	Normal Text
 			We use a single line to create a text (exactly <p>).
 			We can add some symbols before it, like "NOTE", "WARN", "DEF" (for definition).
@@ -607,7 +611,7 @@ export namespace parse_source
 			7)	We use "3 \root 2" instead of "\sqrt[3]{2}".
 			8)	"\\" does not refer to a new line.
 		i.	Table
-			To create a table, use "TABLE" before and "END" after it.
+			This is a multi-line block which starts with "TABLE" and ends with "END" (necessary).
 			Each normal table cell should be surrounded by "|:" and ":|".
 			Header cells should be surrounded by "|::" and "::|".
 			"|" can be shared between cells.
@@ -636,7 +640,25 @@ export namespace parse_source
 			|                     | Cell 4   |
 			+---------------------+----------|
 			where "Header 1" to "Header 3" are header cells (th), and the rest are normal cells (td).
-	2.	Chunks
+		j.	Function io
+			This is a multi-line block which starts with "FUNCTIONIO" and ends with "END" (unnecessary).
+			"END" is unnecessary if the next line doesn't start with "I" or "O".
+			Lines starting with "I" are inputs, which shows on the left, while lines starting with "O" are outputs, which shows on the right.
+			Inputs and outputs can be mixed up.
+			e.g.
+			FUNCTIONIO
+			I input 1
+			I input 2
+			O output 1
+			I input 3
+			O output 2
+			END
+			will produce
+			+---------+  +----------+
+			| input 1 |  | output 1 |
+			| input 2 |  | output 2 |
+			| input 3 |  +----------+
+			+---------+
 	2.	Inlines
 		Each inline group is called an "area" in the file.
 		Inline symbols are surrounded by "[]".
@@ -768,6 +790,10 @@ export namespace parse_source
 						chunks[chunks.length - 1].content += "\n" + each_line;
 						continue;
 					}
+					else
+					{
+						current_chunk_type = undefined;
+					}
 				}
 				for (const [each_chunk_type, each_chunk_restrict] of constant.chunk_type_restricts)
 				{
@@ -883,6 +909,26 @@ export namespace parse_source
 						table_element.appendChild(table_row);
 					}
 					return table_element;
+				case constant.chunk_type.FunctionIO:
+					const io_element: HTMLDivElement = document.createElement("div");
+					const input_element: HTMLDivElement = document.createElement("div");
+					const output_element: HTMLDivElement = document.createElement("div");
+					io_element.classList.add("io");
+					input_element.classList.add("input");
+					output_element.classList.add("output");
+					elements.attach(io_element, [input_element, output_element]);
+					for (const each_line of chunk.content.split("\n"))
+					{
+						if (each_line === "FUNCTIONIO" || each_line === "END" || each_line === "")
+							continue;
+						const line_element = document.createElement("p");
+						elements.attach(line_element, this.parse_inline(each_line.slice(2)));
+						if (each_line.startsWith("I"))
+							input_element.appendChild(line_element);
+						else // starts with O
+							output_element.appendChild(line_element);
+					}
+					return io_element;
 			}
 		}
 		private parse_inline(source: string): Iterable<Node>
