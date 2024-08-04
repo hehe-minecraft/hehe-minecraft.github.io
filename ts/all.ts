@@ -1091,7 +1091,7 @@ export namespace parse_source
 					else if (current_keyword.type === constant.area_type.FigureReference)
 					{
 						if (current_keyword.parameters[0][0] === undefined)
-							break;
+							continue;
 						let figure_number: number = 0;
 						for (const [each_figure_number, each_figure] of this.figures.entries())
 						{
@@ -1107,7 +1107,7 @@ export namespace parse_source
 					else if (current_keyword.type === constant.area_type.Math)
 					{
 						if (current_keyword.parameters[0][0] === undefined)
-							break;
+							continue;
 						const new_element = Parser.parse_math(current_keyword.parameters[0][0].textContent!);
 						new_element.setAttribute("inline", "");
 						last_parameter.push(new_element);
