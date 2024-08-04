@@ -128,8 +128,7 @@ div.io
 		grid-template-columns: 50% 50%;
 		column-gap: 10px;
 		align-items: start;
-		grid-template-areas: 
-		"input output";
+		grid-template-areas: "input output";
 	}
 
 	.input

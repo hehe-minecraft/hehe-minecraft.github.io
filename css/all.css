@@ -17,6 +17,7 @@
 		--color-interval: #AAA;
 		--color-link: #AAA560;
 		--color-link-visited: #6060AA;
+		--color-math-error: #F66;
 		--border-table: #EE858C;
 		--border-key: #AAA;
 		--border-definition: #AAA;
@@ -45,6 +46,7 @@
 		--color-interval: #AAA;
 		--color-link: #CCC580;
 		--color-link-visited: #9090DD;
+		--color-math-error: #F66;
 		--border-table: #EE858C;
 		--border-key: #AAA;
 		--border-definition: #999;
@@ -146,6 +148,13 @@ math:not([inline])
 {
 	display: block math;
 	math-style: normal;
+}
+
+merror
+{
+	border: none;
+	background: unset;
+	color: var(--color-math-error);
 }
 
 p.definition, p.notice, p.warning

@@ -275,6 +275,58 @@ export namespace parse_source
 			["\\log", "log"],
 			["\\lg", "lg"],
 			["\\exp", "exp"],
+			["\\normalA", "A"],
+			["\\normalB", "B"],
+			["\\normalC", "C"],
+			["\\normalD", "D"],
+			["\\normalE", "E"],
+			["\\normalF", "F"],
+			["\\normalG", "G"],
+			["\\normalH", "H"],
+			["\\normalI", "I"],
+			["\\normalJ", "J"],
+			["\\normalK", "K"],
+			["\\normalL", "L"],
+			["\\normalM", "M"],
+			["\\normalN", "N"],
+			["\\normalO", "O"],
+			["\\normalP", "P"],
+			["\\normalQ", "Q"],
+			["\\normalR", "R"],
+			["\\normalS", "S"],
+			["\\normalT", "T"],
+			["\\normalU", "U"],
+			["\\normalV", "V"],
+			["\\normalW", "W"],
+			["\\normalX", "X"],
+			["\\normalY", "Y"],
+			["\\normalZ", "Z"],
+			["\\normala", "a"],
+			["\\normalb", "b"],
+			["\\normalc", "c"],
+			["\\normald", "d"],
+			["\\normale", "e"],
+			["\\normalf", "f"],
+			["\\normalg", "g"],
+			["\\normalh", "h"],
+			["\\normali", "i"],
+			["\\normalj", "j"],
+			["\\normalk", "k"],
+			["\\normall", "l"],
+			["\\normalm", "m"],
+			["\\normaln", "n"],
+			["\\normalo", "o"],
+			["\\normalp", "p"],
+			["\\normalq", "q"],
+			["\\normalr", "r"],
+			["\\normals", "s"],
+			["\\normalt", "t"],
+			["\\normalu", "u"],
+			["\\normalv", "v"],
+			["\\normalw", "w"],
+			["\\normalx", "x"],
+			["\\normaly", "y"],
+			["\\normalz", "z"],
 			["\\boldA", "𝐀"],
 			["\\boldB", "𝐁"],
 			["\\boldC", "𝐂"],
@@ -529,6 +581,58 @@ export namespace parse_source
 			"\\Chi",
 			"\\Psi",
 			"\\Omega",
+			"\\normalA",
+			"\\normalB",
+			"\\normalC",
+			"\\normalD",
+			"\\normalE",
+			"\\normalF",
+			"\\normalG",
+			"\\normalH",
+			"\\normalI",
+			"\\normalJ",
+			"\\normalK",
+			"\\normalL",
+			"\\normalM",
+			"\\normalN",
+			"\\normalO",
+			"\\normalP",
+			"\\normalQ",
+			"\\normalR",
+			"\\normalS",
+			"\\normalT",
+			"\\normalU",
+			"\\normalV",
+			"\\normalW",
+			"\\normalX",
+			"\\normalY",
+			"\\normalZ",
+			"\\normala",
+			"\\normalb",
+			"\\normalc",
+			"\\normald",
+			"\\normale",
+			"\\normalf",
+			"\\normalg",
+			"\\normalh",
+			"\\normali",
+			"\\normalj",
+			"\\normalk",
+			"\\normall",
+			"\\normalm",
+			"\\normaln",
+			"\\normalo",
+			"\\normalp",
+			"\\normalq",
+			"\\normalr",
+			"\\normals",
+			"\\normalt",
+			"\\normalu",
+			"\\normalv",
+			"\\normalw",
+			"\\normalx",
+			"\\normaly",
+			"\\normalz",
 			"\\diff"
 		];
 		export const math_binary_operator: Map<string, keyof MathMLElementTagNameMap> = new Map([
@@ -606,7 +710,7 @@ export namespace parse_source
 				f)	"<<<" -> "\lll"
 				g)	">=" -> "\geq"
 				h)	"<=" -> "\leq"
-			5)	"\bold", "\calli", "\board" and "\frak" followed by a letter refer to "\mathbf", "\mathcal", "\mathbb" and "\mathfrak" respectively.
+			5)	"\normal", "\bold", "\calli", "\board" and "\frak" followed by a letter refer to "\mathrm", "\mathbf", "\mathcal", "\mathbb" and "\mathfrak" respectively.
 			6)	Add more trigonometric functions. e.g. "\arsinh", "\csch", "\arccsc".
 			7)	We use "3 \root 2" instead of "\sqrt[3]{2}".
 			8)	"\\" does not refer to a new line.
@@ -1153,6 +1257,14 @@ export namespace parse_source
 				{
 					const new_element: MathMLElement = elements.math_element("mn");
 					new_element.textContent = each_symbol;
+					current_elements.push(new_element);
+				}
+				else if (each_symbol.startsWith("\\"))
+				{
+					const new_element: MathMLElement = elements.math_element("merror");
+					const inner_text_element: MathMLElement = elements.math_element("mtext");
+					inner_text_element.textContent = each_symbol;
+					new_element.appendChild(inner_text_element);
 					current_elements.push(new_element);
 				}
 				else // indentifier

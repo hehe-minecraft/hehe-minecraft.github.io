@@ -113,8 +113,8 @@ dfn
 		display: grid;
 		grid-template-columns: 30% 70%;
 		grid-template-areas: 
-		"heading heading"
-		"nav main";
+			"heading heading"
+			"nav main";
 	}
 
 	h1 
