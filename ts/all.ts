@@ -275,6 +275,13 @@ export namespace parse_source
 			["\\log", "log"],
 			["\\lg", "lg"],
 			["\\exp", "exp"],
+			["\\det", "det"],
+			["\\max", "max"],
+			["\\min", "min"],
+			["\\gcd", "gcd"],
+			["\\lcm", "lcm"],
+			["\\mod", "mod"],
+			["\\card", "card"],
 			["\\normalA", "A"],
 			["\\normalB", "B"],
 			["\\normalC", "C"],
@@ -644,7 +651,9 @@ export namespace parse_source
 			["\\root", "mroot"]
 		]);
 		export const math_unary_operator: Map<string, keyof MathMLElementTagNameMap> = new Map([
-			["\\sqrt", "msqrt"]
+			["\\sqrt", "msqrt"],
+			["\\cell", "mtd"],
+			["\\row", "mtr"]
 		]);
 	}
 	/* --- SOURCE Language Explanation ---
@@ -714,6 +723,10 @@ export namespace parse_source
 			6)	Add more trigonometric functions. e.g. "\arsinh", "\csch", "\arccsc".
 			7)	We use "3 \root 2" instead of "\sqrt[3]{2}".
 			8)	"\\" does not refer to a new line.
+			9)	We use "\matrix" to create an matrix.
+				e.g. |\matrix{{{1}{2}}{{3}{4}}}| will produce
+				| 1  2 |
+				| 3  4 |
 		i.	Table
 			This is a multi-line block which starts with "TABLE" and ends with "END" (necessary).
 			Each normal table cell should be surrounded by "|:" and ":|".
@@ -1201,21 +1214,33 @@ export namespace parse_source
 			}
 			const element: MathMLElement = elements.math_element("math");
 			const element_stack: element_group[] = [{ elements: [], parent: element }]; // The first entry should never be popped.
-			for (const each_match of source.matchAll(/\\(?:[a-zA-Z0-9]+|[\\|{}])|\^{2}|_{2}|>{2,3}|<{2,3}|[<>]=|->|[^0-9\\]|\d+(?:\.\d+)?/g))
+			for (const each_match of source.matchAll(/\\(?:matrix\{|[a-zA-Z0-9]+|[\\|{}])|\^{2}|_{2}|>{2,3}|<{2,3}|[<>]=|->|[^0-9\\]|\d+(?:\.\d+)?/g))
 			{
 				let each_symbol = each_match[0];
 				const current_parent: MathMLElement = element_stack[element_stack.length - 1].parent;
 				const current_elements: MathMLElement[] = element_stack[element_stack.length - 1].elements;
 				if (each_symbol === " ") {}
+				else if (each_symbol === "\\matrix{")
+				{
+					const new_element: MathMLElement = elements.math_element("mtable");
+					current_elements.push(new_element);
+					element_stack.push({ elements: [], parent: new_element });
+				}
 				else if (each_symbol === "{")
 				{
-					const new_element: MathMLElement = elements.math_element("mrow");
+					let new_element: MathMLElement;
+					if (current_parent.tagName === "mtr")
+						new_element = elements.math_element("mtd");
+					else if (current_parent.tagName === "mtable")
+						new_element = elements.math_element("mtr");
+					else
+						new_element = elements.math_element("mrow");
 					current_elements.push(new_element);
 					element_stack.push({ elements: [], parent: new_element });
 				}
 				else if (each_symbol === "}")
 				{
-					if (current_parent.tagName !== "mrow")
+					if (!["mrow", "mtable", "mtr", "mtd"].includes(current_parent.tagName))
 						continue;
 					elements.attach(current_parent, current_elements);
 					element_stack.pop();
