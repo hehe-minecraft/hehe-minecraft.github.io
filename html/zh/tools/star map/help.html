@@ -83,6 +83,10 @@
 			在编辑完成之后，点击对话框右下角的“确定”以确认编辑。
 			存在样式时，点击样式选择区域特定的样式来应用它。每个样式会将自己的颜色显示为背景色。
 			创建节点时标题、大小和样式是必填的。如果没有选择样式，点击“确定”时会在“标题”一框中显示提醒：“你还没有选择样式”。
+			##删除节点样式
+			NOTE 删除节点样式会使得所有使用该样式的节点切换为指定的另一种样式。
+			在节点编辑界面的样式选择区域中，选中一个样式并按下键盘的[KEY Delete]键来删除样式。
+			删除样式会出现一个对话框，在这里面选中的样式将作为删除后所有使用该样式的节点的样式。
 			##移动节点
 			FIGURE node_move_logo
 			对着节点打开编辑菜单，选择如[FIGURE node_move_logo]的箭头符号来移动节点。
@@ -106,6 +110,8 @@
 			存在样式时，点击样式选择区域特定的样式来应用它。每个样式会将自己的主颜色显示为字体颜色，将次颜色显示为背景色。
 			创建链接时标题和样式是必填的。如果没有选择样式，点击“确定”时会在“标题”一框中显示提醒：“你还没有选择样式”。
 			双向链接无法在两个连接点内反复创建，将它们交换顺序也不行。而对于单向链接，可以将初始点和结束点交换位置再次创建，这样其显示方式会类似于[FIGURE link]下半部分（双向链接）。
+			##删除链接样式
+			删除链接样式的过程与[删除节点样式 TO #使用方法-删除节点样式]的过程类似。
 			##编辑链接
 			NOTE 编辑链接时，你只能编辑标题和样式，而不是内容。
 			FIGURE element_edit_logo
@@ -192,9 +198,9 @@
 					</g>
 					<g>
 						<marker id="link_marker" markerWidth="2" markerHeight="1" refY="0.5">
-							<path d="M0,0 l1,0 l0.5,0.5 l-0.5,0.5 l-1,0 l0.5,-0.5" fill="#6666AA" stroke="none"/>
+							<path d="M0,0 h1 l0.5,0.5 l-0.5,0.5 h-1 l0.5,-0.5" fill="#6666AA" stroke="none"/>
 						</marker>
-						<path d="M15,55 l7.5,0 l7.5,0 l7.5,0 l7.5,0 l7.5,0 l7.5,0 l7.5,0 l7.5,0" stroke-width="4" stroke="#8888CC" marker-mid="url(#link_marker)"/>
+						<path d="M15,55 h7.5 h7.5 h7.5 h7.5 h7.5 h7.5 h7.5 h7.5" stroke-width="4" stroke="#8888CC" marker-mid="url(#link_marker)"/>
 						<g fill="#8888CC">
 							<circle cx="15" cy="55" r="10"/>
 							<circle cx="75" cy="55" r="10"/>
@@ -215,7 +221,7 @@
 			</figure>
 			<figure id="node_move_logo" class="logo">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
-					<path d="M5,15 l20,0 m0,0 l-8,-8 l8,8 l-8,8" stroke-width="3" stroke="#FFFFFF" fill="none"/>
+					<path d="M5,15 h20 m0,0 l-8,-8 l8,8 l-8,8" stroke-width="3" stroke="#FFFFFF" fill="none"/>
 				</svg>
 				<figcaption>
 					移动节点图标
@@ -223,7 +229,7 @@
 			</figure>
 			<figure id="element_edit_logo" class="logo">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
-					<path d="M5,25 l0,-7 l13,-13 l7,7 l-13,13 l-7,0 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
+					<path d="M5,25 v-7 l13,-13 l7,7 l-13,13 h-7 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
 				</svg>
 				<figcaption>
 					编辑节点及链接图标
@@ -268,7 +274,7 @@
 			<figure id="auto_typesetting_logo" class="logo">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
 					<circle cx="15" cy="15" r="5" fill="#FFFFFF"/>
-					<path d="M8,10 l-3,5 l3,5 l-3,-5 m0,0 l20,0 m0,0 l-3,-5 l3,5 l-3,5" stroke-width="2" stroke="#FFFFFF" fill="none"/>
+					<path d="M8,10 l-3,5 l3,5 l-3,-5 m0,0 h20 m0,0 l-3,-5 l3,5 l-3,5" stroke-width="2" stroke="#FFFFFF" fill="none"/>
 				</svg>
 				<figcaption>
 					自动排版图标
@@ -289,7 +295,7 @@
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
 					<g stroke="#FFFFFF" fill="none">
 						<rect height="15" width="20" y="10" x="5" stroke-dasharray="3 2"/>
-						<path d='M15,4 l0,15 m-2,-3 l2,3 l2,-3'/>
+						<path d='M15,4 v15 m-2,-3 l2,3 l2,-3'/>
 					</g>
 				</svg>
 				<figcaption>

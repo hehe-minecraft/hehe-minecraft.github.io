@@ -1,4 +1,4 @@
-export namespace elements
+export namespace nodes
 {
 	export class NodeGroup extends Array<Node>
 	{

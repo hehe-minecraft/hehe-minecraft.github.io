@@ -6,7 +6,7 @@
 		<link rel="stylesheet" type="text/css" href="../../../../css/all.css"/>
 		<link rel="stylesheet" type="text/css" href="../../../../css/app.css"/>
 		<script src="../../../../ts/all.js" type="module"></script>
-		<script src="../../../../ts/star map.js" type="module"></script>
+		<script src="../../../../ts/zh/star map.js" type="module"></script>
 		<title>
 			hehe-minecraft - 星图
 		</title>
@@ -136,7 +136,7 @@
 				height: 100%;
 			}
 
-			main>article
+			main>aside
 			{
 				box-sizing: border-box;
 				grid-area: details;
@@ -144,12 +144,40 @@
 				padding: 10px;
 				transition: all ease-in-out 0.5s;
 				overflow-y: scroll;
+				display: grid;
+				grid-template-columns: min-content 1fr;
+				grid-template-rows: min-content 1fr auto;
+				grid-template-areas:
+					"svg title"
+					"content content";
 			}
 
-			main>article.hide
+			main>aside::-webkit-scrollbar
+			{
+				display: none;
+			}
+
+			main>aside.hide
 			{
 				padding: 0px;
 				opacity: 0;
+			}
+
+			main>aside>svg
+			{
+				grid-area: svg;
+			}
+
+			main>aside>h1
+			{
+				grid-area: title;
+				font-size: 2em;
+				margin: auto 0 auto 10px;
+			}
+
+			main>aside>article
+			{
+				grid-area: content;
 			}
 
 			dialog>h2
@@ -202,7 +230,7 @@
 				grid-column-end: -1;
 			}
 
-			.choose_list
+			choose-list
 			{
 				display: flex;
 				flex-wrap: wrap;
@@ -210,7 +238,7 @@
 				justify-content: center;
 			}
 
-			.choose_list>*
+			choose-list>choose-item
 			{
 				display: block;
 				width: 5em;
@@ -221,7 +249,12 @@
 				margin: 5px;
 			}
 
-			.choose_list>:last-of-type
+			choose-list>choose-item[selected]
+			{
+				outline: 2px solid var(--color-text);
+			}
+
+			choose-list>choose-item:last-of-type
 			{
 				background-color: #DDDDFF;
 			}
@@ -336,7 +369,13 @@
 			<canvas id="canvas" tabindex="0">
 				你的浏览器无法正常运行星图软件。
 			</canvas>
-			<article id="article" class="hide"></article>
+			<aside id="details" class="hide">
+				<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60">
+					<path id="details_icon"/>
+				</svg>
+				<h1 id="details_title"></h1>
+				<article id="details_content"></article>
+			</aside>
 		</main>
 		<menu>
 			<button id="button_save" title="保存">
@@ -375,12 +414,12 @@
 			</button>
 			<button id="button_move_node" title="移动节点">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
-					<path d="M5,15 l20,0 m0,0 l-8,-8 l8,8 l-8,8" stroke-width="3" stroke="#FFFFFF" fill="none"/>
+					<path d="M5,15 h20 m0,0 l-8,-8 l8,8 l-8,8" stroke-width="3" stroke="#FFFFFF" fill="none"/>
 				</svg>
 			</button>
 			<button id="button_modify_node" title="编辑节点">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
-					<path d="M5,25 l0,-7 l13,-13 l7,7 l-13,13 l-7,0 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
+					<path d="M5,25 v-7 l13,-13 l7,7 l-13,13 h-7 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
 				</svg>
 			</button>
 			<button id="button_node_modify_content" title="编辑内容">
@@ -414,7 +453,7 @@
 			</button>
 			<button id="button_modify_link" title="编辑链接">
 				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30">
-					<path d="M5,25 l0,-7 l13,-13 l7,7 l-13,13 l-7,0 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
+					<path d="M5,25 v-7 l13,-13 l7,7 l-13,13 h-7 Z m0,-7 l7,7" stroke-width="2" stroke="#FFFFFF" fill="none"/>
 				</svg>
 			</button>
 			<button id="button_link_modify_content" title="编辑内容">
@@ -452,11 +491,11 @@
 			<h2>
 				编辑节点
 			</h2>
-			<div class="choose_list">
-				<span id="button_add_node_style">
+			<choose-list>
+				<choose-item id="button_add_node_style" tabindex="0">
 					新建
-				</span>
-			</div>
+				</choose-item>
+			</choose-list>
 			<form method="dialog">
 				<label for="node_edit-title">
 					标题
@@ -478,11 +517,11 @@
 			<h2>
 				编辑链接
 			</h2>
-			<div class="choose_list">
-				<span id="button_add_link_style">
+			<choose-list>
+				<choose-item id="button_add_link_style" tabindex="0">
 					新建
-				</span>
-			</div>
+				</choose-item>
+			</choose-list>
 			<form method="dialog">
 				<label for="link_edit-title">
 					标题
@@ -546,6 +585,32 @@
 					创建
 				</button>
 			</form>
+		</dialog>
+		<dialog id="remove_node_style">
+			<button value="cancel">
+				<img src="../../../../images/tools/star map/close.svg" alt="关闭"/>
+			</button>
+			<h2>
+				删除节点样式——请选择原有节点样式转移目标
+			</h2>
+			<choose-list>
+			</choose-list>
+			<button value="submit" id="button_remove_node_style">
+				删除
+			</button>
+		</dialog>
+		<dialog id="remove_link_style">
+			<button value="cancel">
+				<img src="../../../../images/tools/star map/close.svg" alt="关闭"/>
+			</button>
+			<h2>
+				删除链接样式——请选择原有链接样式转移目标
+			</h2>
+			<choose-list>
+			</choose-list>
+			<button value="submit" id="button_remove_link_style">
+				删除
+			</button>
 		</dialog>
 		<dialog id="content_edit">
 			<button value="cancel">

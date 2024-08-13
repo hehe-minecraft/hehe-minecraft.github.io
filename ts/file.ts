@@ -90,7 +90,7 @@ export class DataBase extends AsyncObject
 		const transaction = this.database.transaction(area, "readwrite");
 		transaction.objectStore(area).delete(key);
 	}
-	public async get_data(area: string, key: string): Promise<any>
+	public async get_data(area: string, key: string): Promise<any | never>
 	{
 		if (this.database === undefined)
 		{

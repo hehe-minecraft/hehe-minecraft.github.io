@@ -13,6 +13,11 @@ input, select
 	overflow: hidden;
 }
 
+option
+{
+	background-color: var(--background-body);
+}
+
 dfn
 {
 	font-style: normal;
@@ -27,6 +32,7 @@ button
 {
 	cursor: pointer;
 	background-color: inherit;
+	color: inherit;
 	border: none;
 	padding: 0px;
 }

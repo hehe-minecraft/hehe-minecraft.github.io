@@ -1,4 +1,4 @@
-import {elements} from "./elements.js"
+import {nodes} from "./nodes.js"
 
 export namespace parse_source
 {
@@ -8,7 +8,7 @@ export namespace parse_source
 	}
 	export namespace constant
 	{
-		export const paragraph_prefixes: Map<RegExp, string> = new Map([
+		export const paragraph_prefixes: ReadonlyMap<RegExp, string> = new Map([
 			[/^NOTE /, "notice"],
 			[/^WARN /, "warning"],
 			[/^DEF /, "definition"]
@@ -33,7 +33,7 @@ export namespace parse_source
 			readonly after?: RegExp; // undefined is considered as no restriction
 			readonly concat?: boolean; // undefined is considered as false
 		}
-		export const chunk_type_restricts: Map<chunk_type, chunk_type_restrict> = new Map([
+		export const chunk_type_restricts: ReadonlyMap<chunk_type, chunk_type_restrict> = new Map([
 			[chunk_type.Heading, { includes: /^#+/ }],
 			[chunk_type.Tree, { includes: /^ *- /, concat: true }],
 			[chunk_type.Interval, { includes: /^===$/ }],
@@ -64,7 +64,7 @@ export namespace parse_source
 			Math
 			// Parameter 0 : Math content (only accept the first value, must be a text)
 		}
-		export const area_with_content: Map<area_type, keyof HTMLElementTagNameMap> = new Map([
+		export const area_with_content: ReadonlyMap<area_type, keyof HTMLElementTagNameMap> = new Map([
 			[area_type.Link, "a"],
 			[area_type.LinkBlank, "a"],
 			[area_type.Term, "dfn"],
@@ -72,7 +72,7 @@ export namespace parse_source
 			[area_type.Code, "code"],
 			[area_type.KeyboardInput, "kbd"]
 		]);
-		export const math_parameter_count: Map<keyof MathMLElementTagNameMap, number> = new Map([
+		export const math_parameter_count: ReadonlyMap<keyof MathMLElementTagNameMap, number> = new Map([
 			["mfrac", 2],
 			["mover", 2],
 			["mroot", 2],
@@ -83,7 +83,7 @@ export namespace parse_source
 			["munder", 2],
 			["munderover", 3]
 		]);
-		export const math_operator_replace: Map<RegExp | string, string> = new Map([
+		export const math_operator_replace: ReadonlyMap<RegExp | string, string> = new Map([
 			["-", "−"],
 			["*", "×"],
 			[">>", "≫"],
@@ -181,7 +181,7 @@ export namespace parse_source
 			["\\dagger", "†"],
 			["\\ddagger", "‡"]
 		]);
-		export const math_identifier_replace: Map<RegExp | string, string> = new Map([
+		export const math_identifier_replace: ReadonlyMap<RegExp | string, string> = new Map([
 			["\\alpha", "α"],
 			["\\beta", "β"],
 			["\\gamma", "γ"],
@@ -563,7 +563,7 @@ export namespace parse_source
 			["\\fraky", "𝔶"],
 			["\\frakz", "𝔷"]
 		]);
-		export const math_variant_normal_identifiers: string[] = [
+		export const math_variant_normal_identifiers: ReadonlyArray<string> = [
 			"\\Alpha",
 			"\\Beta",
 			"\\Gamma",
@@ -642,7 +642,7 @@ export namespace parse_source
 			"\\normalz",
 			"\\diff"
 		];
-		export const math_binary_operator: Map<string, keyof MathMLElementTagNameMap> = new Map([
+		export const math_binary_operator: ReadonlyMap<string, keyof MathMLElementTagNameMap> = new Map([
 		    ["^", "msup"],
 			["^^", "mover"],
 			["_", "msub"],
@@ -650,7 +650,7 @@ export namespace parse_source
 			["/", "mfrac"],
 			["\\root", "mroot"]
 		]);
-		export const math_unary_operator: Map<string, keyof MathMLElementTagNameMap> = new Map([
+		export const math_unary_operator: ReadonlyMap<string, keyof MathMLElementTagNameMap> = new Map([
 			["\\sqrt", "msqrt"],
 			["\\cell", "mtd"],
 			["\\row", "mtr"]
@@ -952,12 +952,12 @@ export namespace parse_source
 							break;
 						}
 					}
-					elements.attach(paragraph_element, this.parse_inline(paragraph_content));
+					nodes.attach(paragraph_element, this.parse_inline(paragraph_content));
 					return paragraph_element;
 				case constant.chunk_type.Heading:
 					const heading_level = chunk.content.match(/^#+/)?.[0].length ?? 1;
 					const heading_element: HTMLElement = document.createElement(`h${heading_level + 1 > 6 ? 6 : heading_level + 1}`); // h1 is used at the top of the document.
-					elements.attach(heading_element, this.parse_inline(chunk.content.replace(/^#+/, "")));
+					nodes.attach(heading_element, this.parse_inline(chunk.content.replace(/^#+/, "")));
 					return heading_element;
 				case constant.chunk_type.Tree:
 					const tree_lines: string[] = chunk.content.split(/\n/);
@@ -982,7 +982,7 @@ export namespace parse_source
 						const list_item: HTMLElement = document.createElement("li");
 						list_stack[list_stack.length - 1].appendChild(list_item);
 						element_stack.push(list_item);
-						elements.attach(list_item, this.parse_inline(each_line.replace(/^ *- /, "")));
+						nodes.attach(list_item, this.parse_inline(each_line.replace(/^ *- /, "")));
 					}
 					list_stack[0]?.classList.add("tree");
 					return list_stack[0];
@@ -1020,7 +1020,7 @@ export namespace parse_source
 								table_cell.colSpan = parseInt(each_cell_match.groups!.colspan.match(/\d+/)![0]) + 1;
 							if (each_cell_match.groups!.rowspan !== undefined)
 								table_cell.rowSpan = parseInt(each_cell_match.groups!.rowspan.match(/\d+/)![0]) + 1;
-							elements.attach(table_cell, this.parse_inline(each_cell_match.groups!.content));
+							nodes.attach(table_cell, this.parse_inline(each_cell_match.groups!.content));
 							table_row.appendChild(table_cell);
 						}
 						table_element.appendChild(table_row);
@@ -1033,13 +1033,13 @@ export namespace parse_source
 					io_element.classList.add("io");
 					input_element.classList.add("input");
 					output_element.classList.add("output");
-					elements.attach(io_element, [input_element, output_element]);
+					nodes.attach(io_element, [input_element, output_element]);
 					for (const each_line of chunk.content.split("\n"))
 					{
 						if (each_line === "FUNCTIONIO" || each_line === "END" || each_line === "")
 							continue;
 						const line_element = document.createElement("p");
-						elements.attach(line_element, this.parse_inline(each_line.slice(2)));
+						nodes.attach(line_element, this.parse_inline(each_line.slice(2)));
 						if (each_line.startsWith("I"))
 							input_element.appendChild(line_element);
 						else // starts with O
@@ -1056,17 +1056,17 @@ export namespace parse_source
 			interface keyword_entry
 			{
 				type: constant.area_type,
-				parameters: elements.NodeGroup[]
+				parameters: nodes.NodeGroup[]
 				// The first dimension is the index of the parameter.
 				// The second dimension is the nodes of the parameter.
 			};
-			const default_keyword: keyword_entry = {type: constant.area_type.Content, parameters: [new elements.NodeGroup()]};
+			const default_keyword: keyword_entry = {type: constant.area_type.Content, parameters: [new nodes.NodeGroup()]};
 			const keyword_stack: keyword_entry[] = [Object.assign({}, default_keyword)]; // The first entry should never be popped.
 			for (const each_area of areas)
 			{
 				if (each_area === "[")
 				{
-					keyword_stack.push({type: constant.area_type.Unknown, parameters: [new elements.NodeGroup()]});
+					keyword_stack.push({type: constant.area_type.Unknown, parameters: [new nodes.NodeGroup()]});
 				}
 				else if (each_area === "]")
 				{
@@ -1081,7 +1081,7 @@ export namespace parse_source
 					if (constant.area_with_content.has(current_keyword.type))
 					{
 						const new_node: HTMLElement = document.createElement(constant.area_with_content.get(current_keyword.type)!);
-						elements.attach(new_node, current_keyword.parameters[0]);
+						nodes.attach(new_node, current_keyword.parameters[0]);
 						last_parameter.push(new_node);
 						switch (current_keyword.type)
 						{
@@ -1132,7 +1132,7 @@ export namespace parse_source
 					if (each_area === "TO" && last_keyword.type === constant.area_type.Unknown)
 					{
 						last_keyword.type = constant.area_type.Link;
-						last_keyword.parameters.push(new elements.NodeGroup());
+						last_keyword.parameters.push(new nodes.NodeGroup());
 					}
 					else if (each_area === "BLANK" && last_keyword.type === constant.area_type.Link)
 					{
@@ -1145,7 +1145,7 @@ export namespace parse_source
 					else if (each_area === "AS" && last_keyword.type === constant.area_type.Term)
 					{
 						last_keyword.type = constant.area_type.TermMeaning;
-						last_keyword.parameters.push(new elements.NodeGroup());
+						last_keyword.parameters.push(new nodes.NodeGroup());
 					}
 					else if (each_area === "CODE" && last_keyword.type === constant.area_type.Unknown)
 					{
@@ -1212,7 +1212,7 @@ export namespace parse_source
 				elements: MathMLElement[];
 				parent: MathMLElement;
 			}
-			const element: MathMLElement = elements.math_element("math");
+			const element: MathMLElement = nodes.math_element("math");
 			const element_stack: element_group[] = [{ elements: [], parent: element }]; // The first entry should never be popped.
 			for (const each_match of source.matchAll(/\\(?:matrix\{|[a-zA-Z0-9]+|[\\|{}])|\^{2}|_{2}|>{2,3}|<{2,3}|[<>]=|->|[^0-9\\]|\d+(?:\.\d+)?/g))
 			{
@@ -1222,7 +1222,7 @@ export namespace parse_source
 				if (each_symbol === " ") {}
 				else if (each_symbol === "\\matrix{")
 				{
-					const new_element: MathMLElement = elements.math_element("mtable");
+					const new_element: MathMLElement = nodes.math_element("mtable");
 					current_elements.push(new_element);
 					element_stack.push({ elements: [], parent: new_element });
 				}
@@ -1230,11 +1230,11 @@ export namespace parse_source
 				{
 					let new_element: MathMLElement;
 					if (current_parent.tagName === "mtr")
-						new_element = elements.math_element("mtd");
+						new_element = nodes.math_element("mtd");
 					else if (current_parent.tagName === "mtable")
-						new_element = elements.math_element("mtr");
+						new_element = nodes.math_element("mtr");
 					else
-						new_element = elements.math_element("mrow");
+						new_element = nodes.math_element("mrow");
 					current_elements.push(new_element);
 					element_stack.push({ elements: [], parent: new_element });
 				}
@@ -1242,31 +1242,31 @@ export namespace parse_source
 				{
 					if (!["mrow", "mtable", "mtr", "mtd"].includes(current_parent.tagName))
 						continue;
-					elements.attach(current_parent, current_elements);
+					nodes.attach(current_parent, current_elements);
 					element_stack.pop();
 				}
 				else if (constant.math_unary_operator.has(each_symbol))
 				{
-					const new_element: MathMLElement = elements.math_element(constant.math_unary_operator.get(each_symbol)!);
+					const new_element: MathMLElement = nodes.math_element(constant.math_unary_operator.get(each_symbol)!);
 					current_elements.push(new_element);
 					element_stack.push({ elements: [], parent: new_element });
 				}
 				else if (constant.math_binary_operator.has(each_symbol))
 				{
-					const base_element: MathMLElement = current_elements.pop() ?? elements.math_element("mrow");
-					const new_element: MathMLElement = elements.math_element(constant.math_binary_operator.get(each_symbol)!);
+					const base_element: MathMLElement = current_elements.pop() ?? nodes.math_element("mrow");
+					const new_element: MathMLElement = nodes.math_element(constant.math_binary_operator.get(each_symbol)!);
 					current_elements.push(new_element);
 					element_stack.push({ elements: [base_element], parent: new_element });
 				}
 				else if (constant.math_operator_replace.has(each_symbol))
 				{
-					const new_element: MathMLElement = elements.math_element("mo");
+					const new_element: MathMLElement = nodes.math_element("mo");
 					new_element.textContent = constant.math_operator_replace.get(each_symbol)!;
 					current_elements.push(new_element);
 				}
 				else if (constant.math_identifier_replace.has(each_symbol))
 				{
-					const new_element: MathMLElement = elements.math_element("mi");
+					const new_element: MathMLElement = nodes.math_element("mi");
 					if (constant.math_variant_normal_identifiers.includes(each_symbol))
 						new_element.setAttribute("mathvariant", "normal");
 					new_element.textContent = constant.math_identifier_replace.get(each_symbol)!;
@@ -1274,27 +1274,27 @@ export namespace parse_source
 				}
 				else if (/^(?:[()\[\]⌈⌉⌊⌋⟨⟩|‖<>=,.+−×⋅])$/.test(each_symbol)) // operator
 				{
-					const new_element: MathMLElement = elements.math_element("mo");
+					const new_element: MathMLElement = nodes.math_element("mo");
 					new_element.textContent = each_symbol;
 					current_elements.push(new_element);
 				}
 				else if (/^\d+(?:\.\d+)?$/.test(each_symbol)) // number
 				{
-					const new_element: MathMLElement = elements.math_element("mn");
+					const new_element: MathMLElement = nodes.math_element("mn");
 					new_element.textContent = each_symbol;
 					current_elements.push(new_element);
 				}
 				else if (each_symbol.startsWith("\\"))
 				{
-					const new_element: MathMLElement = elements.math_element("merror");
-					const inner_text_element: MathMLElement = elements.math_element("mtext");
+					const new_element: MathMLElement = nodes.math_element("merror");
+					const inner_text_element: MathMLElement = nodes.math_element("mtext");
 					inner_text_element.textContent = each_symbol;
 					new_element.appendChild(inner_text_element);
 					current_elements.push(new_element);
 				}
 				else // indentifier
 				{
-					const new_element: MathMLElement = elements.math_element("mi");
+					const new_element: MathMLElement = nodes.math_element("mi");
 					new_element.textContent = each_symbol;
 					current_elements.push(new_element);
 				}
@@ -1304,11 +1304,11 @@ export namespace parse_source
 					element_stack.pop();
 					if (current_level.parent.nodeName !== "mroot")
 					{
-						elements.attach(current_level.parent, current_level.elements);
+						nodes.attach(current_level.parent, current_level.elements);
 					}
 					else // mrow needs to reverse to support 3\root 2
 					{
-						elements.attach(current_level.parent, current_level.elements.reverse())
+						nodes.attach(current_level.parent, current_level.elements.reverse())
 					}
 					current_level = element_stack[element_stack.length - 1];
 				}
