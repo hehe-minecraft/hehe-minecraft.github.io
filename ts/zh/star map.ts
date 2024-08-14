@@ -59,7 +59,7 @@ namespace constants
 		export const up = "ArrowUp";
 		export const down = "ArrowDown";
 		export const right_click = "Enter";
-		export const zoom_in = "+";
+		export const zoom_in = "="; // The same position as "+"
 		export const zoom_out = "-";
 		export const choose = " ";
 		export const undo = "z";
