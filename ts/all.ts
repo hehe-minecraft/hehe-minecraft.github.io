@@ -1013,7 +1013,7 @@ export namespace parse_source
 					for (const each_line of chunk.content.replace(/^TABLE\n|\nEND$/g, "").split(/\n/))
 					{
 						const table_row: HTMLElement = document.createElement("tr");
-						for (const each_cell_match of each_line.matchAll(/(?<=\|)(?<colons>:{1,2})(?<content>.*?)\k<colons>(?<colspan>>\d+?)?(?<rowspan>v\d+?)?(?=\|)/g))
+						for (const each_cell_match of each_line.matchAll(new RegExp("(?<colons>:{1,2})(?<content>.*?)\\k<colons>(?<colspan>>\\d+?)?(?<rowspan>v\\d+?)?(?=\|)", "g")))
 						{
 							const table_cell: HTMLTableCellElement = document.createElement(each_cell_match.groups!.colons === "::" ? "th" : "td");
 							if (each_cell_match.groups!.colspan !== undefined)
