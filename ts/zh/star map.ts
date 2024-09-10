@@ -526,7 +526,7 @@ class StarMap
 					}
 				}
 				// Step 4 - Draw the active link.
-				if (each_link === this.active_element?.content ?? false)
+				if (this.active_element !== undefined && each_link === this.active_element.content)
 				{
 					StarMap.draw_line(context, link_from_x, link_from_y, link_to_x, link_to_y, each_link.style.width, constants.color.activate);
 					continue;
@@ -587,7 +587,7 @@ class StarMap
 			context.arc(each_node.x, each_node.y, each_node.size, 0, 2 * Math.PI);
 			context.fill();
 			// Step 2 - Draw the active outline.
-			if (each_node === this.active_element?.content ?? false)
+			if (this.active_element !== undefined && each_node === this.active_element.content)
 			{
 				context.strokeStyle = constants.color.activate;
 				context.lineWidth = constants.display.activate_stroke;
@@ -1236,7 +1236,7 @@ namespace user
 		export function modify_dialog(): void
 		{
 			const current_editing_element: star_map_elements.Interface | undefined = right_clicked_element;
-			if (current_editing_element?.type !== constants.storage.Node ?? true)
+			if (current_editing_element === undefined || current_editing_element?.type !== constants.storage.Node)
 				return;
 			const editing_node = current_editing_element!.content as star_map_elements.Node;
 			(document.getElementById("node_edit-title") as HTMLInputElement).value = editing_node.title;
@@ -1393,7 +1393,7 @@ namespace user
 		export function modify(): void
 		{
 			const current_editing_element: star_map_elements.Interface | undefined = right_clicked_element;
-			if (current_editing_element?.type !== constants.storage.Link ?? true)
+			if (current_editing_element === undefined || current_editing_element.type !== constants.storage.Link)
 				return;
 			const editing_link = current_editing_element!.content as star_map_elements.Link;
 			(document.getElementById("link_edit-title") as HTMLInputElement).value = editing_link.title;
