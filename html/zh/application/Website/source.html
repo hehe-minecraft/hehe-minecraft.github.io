@@ -230,6 +230,7 @@
 			|:[CODE &gt;&gt;]:|:[CODE \gg]:|:[MATH \gg]:|
 			|:[CODE &gt;&gt;&gt;]:|:[CODE \ggg]:|:[MATH \ggg]:|
 			|:[CODE -&gt;]:|:[CODE \rightarrow]:|:[MATH \rightarrow]:|
+			|:[CODE =&gt;]:|:[CODE \Rightarrow]:|:[MATH \Rightarrow]:|
 			END
 			如果不想使用简写，可以在简写中插入空格破坏简写语法。
 			####转义字符（符号）
@@ -412,7 +413,7 @@
 			|:[MATH x]:|:[MATH \callix]:|:[MATH \frakx]:|:[MATH \boldx]:|:[MATH \boardx]:|
 			|:[MATH y]:|:[MATH \calliy]:|:[MATH \fraky]:|:[MATH \boldy]:|:[MATH \boardy]:|
 			|:[MATH z]:|:[MATH \calliz]:|:[MATH \frakz]:|:[MATH \boldz]:|:[MATH \boardz]:|
-			|:[MATH 0]:|:没有对应字体:>1v9|:[MATH \bold0]:|:[MATH \board0]:|
+			|:[MATH 0]:|:没有对应字体:&gt;1v9|:[MATH \bold0]:|:[MATH \board0]:|
 			|:[MATH 1]:|:[MATH \bold1]:|:[MATH \board1]:|
 			|:[MATH 2]:|:[MATH \bold2]:|:[MATH \board2]:|
 			|:[MATH 3]:|:[MATH \bold3]:|:[MATH \board3]:|
@@ -426,28 +427,28 @@
 			除了以上这些前缀，还有[CODE normal]前缀，它会将字母转化为正体形式。
 			输入方式是先输入字体前缀，再输入想要更改的字符：
 			```
-			MATH \bolda=\lim__{\Delta t->0}{\Delta\boldv}/{\Delta t}
+			MATH \bolda=\lim__{\Delta t-&gt;0}{\Delta\boldv}/{\Delta t}
 			```
-			MATH \bolda=\lim__{\Delta t->0}{\Delta\boldv}/{\Delta t}
+			MATH \bolda=\lim__{\Delta t-&gt;0}{\Delta\boldv}/{\Delta t}
 			##表格
 			表格前面一行需要以[CODE TABLE]标识，后一行需要以[CODE END]标识。
 			表格的每一个单元格都需要使用[CODE |: :|]包裹。如果要使单元格成为标题单元格，则需要使用[CODE |:: ::|]包裹。单元格之间的[CODE |]可以共用。非单元格区域内输入任何东西都不会显示。
-			在单元格末尾的[CODE :]和[CODE |]之间，可以添加单元格跨行或跨列的信息。可以使用[CODE &gt;]来表示向右再横跨若干列，使用[CODE v]来表示向下再扩展若干行，扩展的列数和行数要写在[CODE &gt;]和[CODE v]之后。如果要同时扩展行和列，应该先扩展列（[CODE &gt;]），再扩展行（[CODE v]）。如[CODE |:content:>1v2|]表示这个单元格向右扩展一列，向下扩展两行，因此它总共占有的列数是二，行数是三。扩展的列数和行数如果为零，则其占有的列数和行数不会改变。扩展的列数和行数如果为负或不是整数，则单元格无效。
+			在单元格末尾的[CODE :]和[CODE |]之间，可以添加单元格跨行或跨列的信息。可以使用[CODE &gt;]来表示向右再横跨若干列，使用[CODE v]来表示向下再扩展若干行，扩展的列数和行数要写在[CODE &gt;]和[CODE v]之后。如果要同时扩展行和列，应该先扩展列（[CODE &gt;]），再扩展行（[CODE v]）。如[CODE |:content:&gt;1v2|]表示这个单元格向右扩展一列，向下扩展两行，因此它总共占有的列数是二，行数是三。扩展的列数和行数如果为零，则其占有的列数和行数不会改变。扩展的列数和行数如果为负或不是整数，则单元格无效。
 			```
 			TABLE
 			|::标题一::|::标题二::|::标题三::|
-			|:单元格一:|:单元格二:>0v0|:向下扩展:v1|
-			|:向右扩展:>1|
-			|:同时扩展:>1v1|     |:单元格三:|
+			|:单元格一:|:单元格二:&gt;0v0|:向下扩展:v1|
+			|:向右扩展:&gt;1|
+			|:同时扩展:&gt;1v1|     |:单元格三:|
 			                    |:单元格四:|
 			END
 			```
 			以上代码会产生如下效果：
 			TABLE
 			|::标题一::|::标题二::|::标题三::|
-			|:单元格一:|:单元格二:>0v0|:向下扩展:v1|
-			|:向右扩展:>1|
-			|:同时扩展:>1v1|      |:单元格三:|
+			|:单元格一:|:单元格二:&gt;0v0|:向下扩展:v1|
+			|:向右扩展:&gt;1|
+			|:同时扩展:&gt;1v1|      |:单元格三:|
 			                     |:单元格四:|
 			END
 			##函数输入输出集
