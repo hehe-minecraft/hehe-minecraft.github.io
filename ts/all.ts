@@ -1323,12 +1323,12 @@ export namespace parse_source
 
 window.addEventListener("DOMContentLoaded", () => {
 	const main_element = document.querySelector("main");
-	const nav_element = document.querySelector("body>nav>ol.catalogue");
-	if (main_element === null || nav_element === null || main_element.dataset.type !== "source")
+	const nav_element = document.querySelector("body>nav>ol.catalogue:empty");
+	if (main_element === null || main_element.dataset.type !== "source")
 		return;
 	const parser = new parse_source.Parser();
 	parser.target = main_element;
-	parser.target_nav = nav_element as HTMLElement;
+	parser.target_nav = nav_element as (HTMLElement | undefined);
 	parser.source = main_element.textContent?.replace(/\n\t*/g, "\n") ?? "";
 	parser.parse();
 });
