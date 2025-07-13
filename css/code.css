@@ -6,6 +6,7 @@
 		--background-function-input-decorate: #AAF;
 		--background-function-output: #FCC;
 		--background-function-output-decorate: #FAA;
+		--border-heading-separation-line: #888;
 		--border-function-input-decorate: #88F;
 		--border-function-output-decorate: #F88;
 		--border-function-io-entry: #AAA;
@@ -20,10 +21,45 @@
 		--background-function-input-decorate: #668;
 		--background-function-output: #533;
 		--background-function-output-decorate: #866;
+		--border-heading-separation-line: #AAA;
 		--border-function-input-decorate: #446;
 		--border-function-output-decorate: #644;
 		--border-function-io-entry: #AAA;
 	}
+}
+
+h2
+{
+	font-size: 2em;
+	padding-bottom: 0.3em;
+	border-bottom: 2px solid var(--border-heading-separation-line);
+}
+
+h3, h4, h5, h6
+{
+	margin-bottom: 0.5em;
+}
+
+h3
+{
+	font-size: 1.7em;
+	padding-bottom: 0.3em;
+	border-bottom: 1px solid var(--border-heading-separation-line);
+}
+
+h4
+{
+	font-size: 1.5em;
+}
+
+h5
+{
+	font-size: 1.3em;
+}
+
+h6
+{
+	font-size: 1em;
 }
 
 .input::before, .output::before
@@ -106,13 +142,13 @@ div.input p, div.output p
 div.input p:not(:first-child), div.output p:not(:first-child)
 {
 	padding-top: 10px;
-	border-top: 1px solid var(--border-function-io-entry);
+	border-top: 0.5px solid var(--border-function-io-entry);
 }
 
 div.input p:not(:last-child), div.output p:not(:last-child)
 {
 	padding-bottom: 10px;
-	border-bottom: 1px solid var(--border-function-io-entry);
+	border-bottom: 0.5px solid var(--border-function-io-entry);
 }
 
 div.io
