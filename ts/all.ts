@@ -800,7 +800,7 @@ export namespace parse_source
 			See "h. Math" in "2. Blocks".
 	3.	Environment
 		You should define all your environment settings in a variable called "parse_source.environment".
-		a.	If you are using figures in2 your codes, you should define the attribute "figure" (string), with the number placeholder as "$".
+		a.	If you are using figures in your codes, you should define the attribute "figure" (string), with the number placeholder as "$".
 			e.g. "Figure $" will be replaced into "Figure 1", "Figure 2", etc.
 	*/
 	interface Chunk
@@ -851,9 +851,9 @@ export namespace parse_source
 					{
 						const new_section: HTMLElement = document.createElement("section");
 						if (section_stack.length === 1)
-							new_section.id = each_chunk.content.replace(/^#+/, "");
+							new_section.id = each_result.innerText.replace(/^#+/, "");
 						else
-							new_section.id = `${section_stack[section_stack.length - 1].id}-${each_chunk.content.replace(/^#+/, "")}`;
+							new_section.id = `${section_stack[section_stack.length - 1].id}-${each_result.innerText.replace(/^#+/, "")}`;
 						section_stack[section_stack.length - 1].appendChild(new_section);
 						section_stack.push(new_section);
 					}
