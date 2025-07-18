@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/all.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/code.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/page.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/typesetting.css"/>
+		<script src="../../../../../ts/all.js" type="module" defer></script>
+		<title>
+			hehe-minecraft - constant.ixx
+		</title>
+		<script type="module">
+			import {parse_source} from "../../../../../ts/all.js";
+			parse_source.environment.figure = "图 $ ";
+		</script>
+	</head>
+	<body>
+		<h1>
+			hehe-minecraft - constant.ixx
+		</h1>
+		<nav>
+			<p>
+				内容索引
+			</p>
+			<ol class="catalogue"></ol>
+			<p id="return">
+				<a href="index.html">
+					返回上一页：Minecraft for C 开发者文档
+				</a>
+			</p>
+		</nav>
+		<main data-type="source">
+			#简介
+			[CODE constant.ixx]是 Minecraft for C 的常量和配置的集中存储区。
+			#文件结构与文档
+			##[CODE constants (namespace)]
+			这是存储数值常量和配置的命名空间。
+			在该命名空间中，其中每一项都是[CODE const variable]或者[CODE namespace]，在这个命名空间中省略[CODE const variable]。
+			###[CODE thread (namespace)]
+			这里存储了线程管理库用到的数值常量和配置。
+			####[CODE default_name]
+			线程创建时的默认名字。
+			默认值为[CODE "Worker"]。
+			####[CODE max_tasks]
+			任务队列默认的最大任务数，可以在创建任务队列之后动态改变。
+			默认值为[CODE 1024]（即[MATH 2^10]）。
+			##[CODE choices (namespace)]
+			这是存储枚举类型的命名空间。
+			在该命名空间中，其中每一项都是[CODE enum]或者[CODE namespace]，在这个命名空间中省略[CODE enum]。
+			###[CODE thread (namespace)]
+			这里存储了线程管理库用到的枚举类型。
+			####[CODE status]
+			线程的运行状态。包含以下值：
+			- [CODE not_started]
+			- [CODE idle]
+			- [CODE running]
+			- [CODE sleeping]
+			- [CODE terminated]
+			NOTE 这些状态都是线程运行任务的状态，与任务内部是否发生阻塞无关。
+			针对每一种取值究竟是在什么状态下取得，请参见有关类：
+			- [[CODE thread::Worker] TO thread.html#文件结构与文档-thread (namespace)-Thread (class)-status (protected variable)]
+			- [[CODE thread::Distributor] TO thread.html#文件结构与文档-thread (namespace)-Distributor (class)]
+			####[CODE distribute_task_type]
+			分配者线程中可供分配的任务的形式。包含以下值：
+			- [CODE single]，代表单次任务
+			- [CODE loop]，代表循环任务
+			##[CODE errors (namespace)]
+			在该命名空间中，其中每一项都是[NOUN 空壳[CODE class] AS 指只包含继承而不包含类的特例实现]，在这个命名空间中省略[CODE class]。
+			错误的继承层级结构如下（展示最主要继承）：
+			- [CODE BasicError]
+			 - [CODE ThreadError]
+			  - [CODE ThreadStatusError]
+			   - [CODE ThreadStartedError]
+			  - [CODE ThreadTooManyTasksError]
+			###[CODE BasicError]
+			基本错误。是该项目内所有错误的基类。
+			###[CODE ThreadError]
+			线程错误。线程库中产生的错误。
+			###[CODE ThreadStatusError]
+			线程状态异常错误。
+			###[CODE ThreadStartedError]
+			线程已经启动错误。
+			###[CODE ThreadTooManyTasksError]
+			线程任务溢出错误。在任务数不少于限定最大值，并还要添加任务时产生的错误。
+		</main>
+	</body>
+</html>
