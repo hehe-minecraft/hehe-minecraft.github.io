@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/all.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/code.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/page.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../../../css/typesetting.css"/>
+		<script src="../../../../../ts/all.js" type="module" defer></script>
+		<title>
+			hehe-minecraft - thread.ixx
+		</title>
+	</head>
+	<body>
+		<h1>
+			hehe-minecraft - thread.ixx
+		</h1>
+		<nav>
+			<p>
+				内容索引
+			</p>
+			<ol class="catalogue"></ol>
+			<p id="return">
+				<a href="index.html">
+					返回上一页：Minecraft for C 开发者文档
+				</a>
+			</p>
+		</nav>
+		<main data-type="source">
+			#简介
+			[CODE thread.ixx]是 Minecraft for C 的线程管理库，实现了简单的生产者—消费者模型，并支持定时向线程池发送任务。
+			#文件结构与文档
+			##[CODE thread (namespace)]
+			这是线程命名空间，关于线程的类和函数都定义在里面。
+			###[CODE task (type)]
+			```c++
+			using task = std::function&lt;void&gt;;
+			```
+			[CODE task]是线程之间传递的任务类型。[CODE task]应该是一个通过[CODE std::bind]提前传入参数，或者通过[CODE lambda]表达式提前完成捕获的函数。
+			###[CODE TaskQueue (class)]
+			这是任务队列，多个消费者之间会共享同一个任务队列，都会从同样的任务队列之间抽取任务。
+			该类有[CODE thread::Worker]的友元。
+			WARN 请务必保证每一个[CODE TaskQueue]都不会在还有消费者绑定时析构，否则可能内存泄漏。
+			####[CODE queue (protected variable)]
+			任务队列是通过包装[CODE std::queue]实现的。这个成员变量存储的就是任务队列中的任务。
+			####[CODE alarm (protected variable)]
+			这个成员变量是用于在消费者线程因为暂时没有任务而进入睡眠状态之后，出现新的任务时用于唤醒消费者线程的。这本质上是一个[CODE std::condition_variable]。
+			####[CODE mutex (protected variable)]
+			由于[CODE alarm]成员变量需要一个[CODE std::mutex]实现消费者线程的阻塞，故定义这个成员变量。
+			####[CODE max_tasks (public variable)]
+			用于规定这个任务队列最多多少任务。
+			####构造函数
+			[CODE TaskQueue]支持默认构造函数，不支持拷贝构造函数和移动构造函数。
+			由于消费者线程对任务队列的绑定是单向的，所以移动和拷贝这个对象的任何实例都是内存上不安全的，因此没有定义拷贝构造函数和移动构造函数。
+			####[CODE empty (public method)]
+			```c++
+			inline bool empty() const noexcept;
+			```
+			这个方法用于判断任务队列是否为空。
+			FUNCTIONIO
+			O 当任务队列为空时返回[CODE true]，反之返回[CODE false]。
+			END
+			####[CODE add (public method)]
+			```c++
+			void add(const task& task);
+			```
+			这个方法用于向任务队列中添加新的任务。添加新的任务会自动唤醒一个正在睡眠的消费者线程。
+			FUNCTIONIO
+			I [CODE task]代表添加的新任务。
+			END
+			WARN 如果任务队列的任务数量到达上限（由[CODE max_tasks]成员变量控制），会抛出[CODE errors::ThreadTooManyTasksError]异常。
+			####[CODE try_get (public method)]
+			```c++
+			std::optional&lt;task&gt; try_get() noexcept;
+			```
+			这个方法用于尝试获取任务并将其从任务队列删除，在没有任务时不会阻塞线程。
+			FUNCTIONIO
+			O 当任务队列有任务时返回队列开始处（最先添加）的任务，类型为[CODE task]；当队列没有任务时返回[CODE std::nullopt]。
+			END
+			####[CODE get (public method)]
+			```c++
+			task get() noexcept;
+			```
+			这个方法用于获取任务并将其从任务队列删除，在没有任务时会阻塞线程，直到获取到新的任务。
+			FUNCTIONIO
+			O 当任务队列有任务时返回队列开始处（最先添加）的任务，类型为[CODE task]；当队列没有任务时等待直到有任务。
+			END
+			NOTE 这个方法可能会阻塞线程，可能导致线程死锁。
+			###[CODE Thread (class)]
+			这个类是在[CODE std::thread]的基础上包装得到的，作为其他线程的基类。
+			并不是[CODE std::thread]的子类。
+			####[CODE thread (protected variable)]
+			这个线程是通过包装[CODE std::thread]实现的。这个变量就是内部管理的线程。
+			####[CODE status (protected variable)]
+			这个成员变量代表线程的运行状态，它和它的子类中会通过修改这个成员变量实现外界对其的监控。
+			####[CODE run (protected method)]
+			```c++
+			virtual void run() = 0;
+			```
+			这个方法定义了子线程需要执行的操作，不应该在主线程运行。
+			NOTE 这是一个纯虚函数。
+			FUNCTIONIO
+			END
+			####[CODE name (public variable)]
+			这个成员变量规定线程的名字。改变线程的名字不会对线程有任何影响。
+			####构造函数
+			[CODE Thread]支持默认构造函数和移动构造函数，不支持拷贝构造函数。
+			由于[CODE std::thread]是不可拷贝的，因此没有定义拷贝构造函数。
+			####析构函数
+			当该对象被析构时，需要等待线程停止运行并并入主线程。
+			NOTE 这个方法会阻塞线程，可能导致线程死锁。
+			####[CODE start (public method)]
+			```c++
+			virtual void start() = 0;
+			```
+			这个方法中规定的是创建新线程时应该执行的操作。
+			NOTE 这是一个纯虚函数。
+			FUNCTIONIO
+			END
+			####[CODE join (public method)]
+			```c++
+			virtual inline void join() noexcept;
+			```
+			执行这个方法会使主线程等待到这个子线程停止后继续运行。
+			FUNCTIONIO
+			END
+			NOTE 这个方法会阻塞线程，可能导致线程死锁。
+			####[CODE detach (public method)]
+			```c++
+			virtual inline void detach() noexcept;
+			```
+			执行这个方法会使子线程脱离主线程继续执行任务。这个方法不会阻塞主线程。
+			如果即将删除这个线程对象又不想主线程被阻塞，可以在析构前调用这个方法，这样析构时会跳过等待过程。
+			FUNCTIONIO
+			END
+			####[CODE get_status (public method)]
+			```c++
+			inline choices::thread::status get_status() const noexcept;
+			```
+			使用这个方法获取线程的当前状态。
+			FUNCTIONIO
+			O 这个方法返回一个枚举类型，显示线程的当前状态。
+			END
+			###[CODE Worker (class)]
+			消费者线程。
+			这个类继承自[CODE thread::Thread]。
+			消费者线程开始之后，它会每完成一个任务就从任务队列抽取下一个任务。如果没有任务，就等待到有任务为止。等待的过程中，线程不会占用资源。
+			####[CODE status (protected variable)]
+			继承自[CODE thread::Thread]。
+			- 当子线程未启动时为[CODE choices::thread::status::not_started]；
+			- 当子线程启动后（执行[CODE start]方法之后）领取到第一个任务前为[CODE choices::thread::status::idle]；
+			- 当子线程获取到任务，正在执行任务时为[CODE choices::thread::status::running]，子线程在收到了终止信号，正在完成最后一项任务时也为该值；
+			- 当子线程完成了所有任务，正在等待下一项任务时为[CODE choices::thread::status::sleeping]；
+			- 当子线程已经终止为[CODE choices::thread::status::terminated]。
+			####[CODE queue (protected variable)]
+			这个成员变量是消费者线程绑定的任务队列。
+			####[CODE stopping (protected variable)]
+			这个成员变量管理消费者线程是否在完成当前任务后停止。如果该变量为[CODE true]，那么消费者线程会在执行完当前任务后停止。
+			NOTE 一旦这个变量设置为了[CODE true]，就不应该将其再设置为[CODE false]。
+			####[CODE run (protected method)]
+			继承自[CODE thread::Thread]。
+			```c++
+			void run();
+			```
+			子线程的运行过程见类简介。
+			FUNCTIONIO
+			END
+			####构造函数
+			[CODE Worker]支持移动构造函数，不支持默认构造函数和拷贝构造函数。
+			[CODE Worker]支持传参的构造函数。
+			```c++
+			explicit Worker(TaskQueue& queue) noexcept;
+			```
+			FUNCTIONIO
+			I [CODE queue]代表消费者线程要绑定的任务队列，类型为[CODE TaskQueue&]。
+			END
+			####析构函数
+			当该对象被析构时，需要等待线程停止运行并并入主线程。
+			NOTE 这个方法会阻塞线程，可能导致线程死锁。
+			####[CODE start (public method)]
+			继承自[CODE thread::Thread]。
+			```c++
+			void start();
+			```
+			这个方法用于启动子线程。子线程在运行这个函数之前不会创建。
+			WARN 如果之前已经启动过子线程，会抛出[CODE errors::ThreadStartedError]异常。
+			FUNCTIONIO
+			END
+			####[CODE stop_after_current_work (public method)]
+			```c++
+			inline void stop_after_current_work() noexcept;
+			```
+			这个方法用于结束子线程。子线程会在完成当前任务之后被终止。
+			NOTE 为了解决子线程正处于睡眠状态而无法终止的问题，该方法会唤醒绑定任务队列的全部线程。
+			FUNCTIONIO
+			END
+			####[CODE join (public method)]
+			```c++
+			inline void join() noexcept;
+			```
+			执行这个方法会使主线程等待到这个子线程完成当前任务并终止后继续运行。
+			NOTE 这个方法会阻塞线程，可能导致线程死锁。
+			FUNCTIONIO
+			END
+			###[CODE Group (class)]
+			消费者线程组（本类中简称为“线程组”）。
+			其中存储着若干消费者线程与一个任务队列，以便统一管理。所有消费者线程都绑定到同一个任务队列。
+			####[CODE workers (protected variable)]
+			这个成员变量存储各个消费者线程的列表，通过包装[CODE std::vector]实现。
+			####[CODE tasks (protected variable)]
+			这个成员变量存储该线程组内各个消费者线程对应的任务队列。
+			####构造函数
+			[CODE Group]支持默认构造函数和移动构造函数，不支持拷贝构造函数。
+			其中，如果线程组内已经有线程正在运行，那么移动构造函数很慢，它需要结束之前线程组内所有线程、创建名字相对应的新线程、并一个一个将之前线程组内的任务搬运过来（因为[CODE thread::TaskQueue]为使引用安全不支持移动构造函数）。被移动对象依旧处在可使用状态，但是被清空了。
+			由于不知道如何处置拷贝后线程组的任务队列，故没有定义拷贝构造函数。
+			NOTE 移动构造函数会阻塞线程，可能导致线程死锁。
+			####析构函数
+			当该对象被析构时，需要等待线程组内每一个线程停止运行并并入主线程。剩余任务将会被丢弃。
+			NOTE 这个方法会阻塞线程，可能导致线程死锁。
+			####[CODE size (public method)]
+			```c++
+			std::size_t inline size() const noexcept
+			```
+			这个方法输出线程组的总线程数。
+			FUNCTIONIO
+			O 输出线程组的总线程数。
+			END
+			####[CODE add_worker (public method)]
+			```c++
+			void add_worker(const std::string& name = constants::thread::default_name) noexcept
+			```
+			这个方法用于向线程组中添加新的消费者线程。
+			FUNCTIONIO
+			I [CODE name]代表新建消费者线程的名字。
+			END
+			####[CODE add_task (public method)]
+			```c++
+			void inline add_task(const task& task) noexcept
+			```
+			这个方法用于向线程组中添加任务。
+			FUNCTIONIO
+			I [CODE task]代表添加的新任务。
+			END
+			####[CODE join (public method)]
+			```c++
+			void join() noexcept
+			```
+			这个方法用于结束线程组中的全部消费者线程，并将其并入主线程。
+			NOTE 这个方法会阻塞线程，可能导致线程死锁。
+			FUNCTIONIO
+			END
+			###[CODE Distributor (class)]
+			生产者线程。
+			这个类继承自[CODE thread::Thread]。
+			生产者线程开始之后，会按照设定时间向单个或多个任务队列（或线程组内部的任务队列，在这一部分中不再说明）添加任务。在没有到设定时间、或没有任务可供分配的时候，生产者线程会进入睡眠状态。每次线程醒来时，都会检查自己是否应该结束，如果应该就立即结束，结束之后丢弃剩余未分配的任务。
+			可供分配的任务有两种形式：
+			- 循环任务：这种任务会每过设定时间就会被复制一份，添加到任务队列中。
+			- 单次任务：这种任务会在设定时间后添加到任务队列中。
+			NOTE 当当前时间已经超过设定时间时，生产者线程会一次性将已经达到设定时间的任务一并按顺序添加到任务队列中。
+			生产者线程的几种状态如下：
+			- 当子线程未启动时为[CODE choices::thread::status::not_started]；
+			- 当子线程启动后（执行[CODE start]方法之后）领取到第一个任务前，或者没有任务可供分配时为[CODE choices::thread::status::idle]；
+			- 当子线程正在分配任务时为[CODE choices::thread::status::running]，子线程在收到了终止信号，正在分配最后一项任务时也为该值；
+			- 当子线程完成了所有任务，正在等待下一项需要分配的任务时为[CODE choices::thread::status::sleeping]；
+			- 当子线程已经终止为[CODE choices::thread::status::terminated]。
+			例如，以生产者线程开始的时候为 0ms，生产者线程在开始前刚刚有一个[CODE interval=30, delay=20]的循环任务[MATH A]和一个[CODE delay=20]的单次任务[MATH B]：
+			TABLE
+			|::时刻/ms::|::事件::|
+			|:0:|:生产者线程开始。:|
+			|:20:|:分别自动分配任务[MATH A]和[MATH B]。:|
+			|:50:|:自动分配任务[MATH A]。:|
+			|:80:|:自动分配任务[MATH A]。:|
+			|:90:|:给生产者线程添加[CODE delay=10]的单次任务[MATH C]。:|
+			|:95:|:给生产者线程添加[CODE delay=25]的单次任务[MATH D]。:|
+			|:100:|:自动分配任务[MATH C]。:|
+			|:110:|:自动分配任务[MATH A]。:|
+			|:120:|:自动分配任务[MATH D]。:|
+			|:140:|:自动分配任务[MATH A]。:|
+			|:150:|:申请结束生产者线程。生产者线程立即结束。:|
+			END
+			又如，以生产者线程开始的时候为 50ms，在 0ms 时向生产者线程添加一个[CODE interval=10]的循环任务，让生产者线程运行 5ms 后结束，它会分配 5 次循环任务，本应该分别是在 10ms、20ms、30ms、40ms、50ms，但是由于生产者线程在 50ms 之前都没有开始，因此这 5 个循环任务都在 50ms 时分配。
+			这里的例子没有考虑系统线程调度以及程序执行延迟带来的微小误差，因此实际情况时序可能没有这么精准。
+			####[CODE duration (private type)]
+			```c++
+			using duration = std::chrono::milliseconds;
+			```
+			在生产者线程中使用毫秒作为指定单位。
+			####[CODE time_point (private type)]
+			```c++
+			using time_point = std::chrono::steady_clock::time_point;
+			```
+			生产者线程使用[CODE steady_clock]作为计时装置。
+			####[CODE DistributingTask (private struct)]
+			生产者线程中用于存储各个任务数据的数据结构。
+			#####[CODE next_running_time (public variable)]
+			记录该任务下次分配对应的时刻。
+			#####[CODE type (public variable)]
+			记录该任务对应的[类型 TO constant.html#文件结构与文档-choices (namespace)-thread (namespace)-distribute_task_type]。
+			#####[CODE function (public variable)]
+			记录需要分配给任务队列的任务本身。
+			#####[CODE interval (public variable)]
+			记录该任务每两次分配的间隔时间（仅循环任务会被用到）。
+			#####[CODE queue (public variable)]
+			记录该任务需要被分配到的任务队列。
+			#####小于比较运算符重载 [CODE (public method)]
+			```c++
+			inline bool operator&lt;(const DistributingTask& other) const noexcept;
+			```
+			仅用于优先队列的判定。[CODE next_running_time]成员变量越小，位于队列越前端。
+			####[CODE status (protected variable)]
+			继承自[CODE thread::Thread]。
+			具体的值见类简介。
+			####[CODE task_queue (protected variable)]
+			这个成员变量用于存储即将要分配的任务列表，它的类型是[CODE std::priority_queue&lt;thread::Distributor::DistributingTask&gt;]。
+			####[CODE alarm (protected variable)]
+			这个成员变量用于主线程与生产者线程之间的通信，用于在生产者线程等待分配任务睡眠的时候唤醒生产者线程。这本质上是一个[CODE std::condition_variable]。
+			####[CODE mutex (protected variable)]
+			由于[CODE alarm]成员变量需要一个[CODE std::mutex]实现生产者线程的阻塞，故定义这个成员变量。
+			####[CODE stopping (protected variable)]
+			这个成员变量管理生产者线程是否在完成当前任务后停止。如果该变量为[CODE true]，那么生产者线程会在脱离睡眠状态或完成当前任务分配之后停止。
+			NOTE 一旦这个变量设置为了[CODE true]，就不应该将其再设置为[CODE false]。
+			####[CODE run (protected method)]
+			继承自[CODE thread::Thread]。
+			```c++
+			void run();
+			```
+			子线程的运行过程见类简介。
+			FUNCTIONIO
+			END
+			####构造函数
+			[CODE Distributor]支持默认构造函数和移动构造函数，不支持拷贝构造函数。
+			####析构函数
+			当该对象被析构时，需要等待线程停止运行并并入主线程。
+			NOTE 这个方法会阻塞线程，可能导致线程死锁。
+			####[CODE start (public method)]
+			继承自[CODE thread::Thread]。
+			```c++
+			void start();
+			```
+			这个方法用于启动子线程。子线程在运行这个函数之前不会创建。
+			WARN 如果之前已经启动过子线程，会抛出[CODE errors::ThreadStartedError]异常。
+			FUNCTIONIO
+			END
+			####[CODE add_immediate_task (public method)]
+			```c++
+			inline void add_immediate_task(TaskQueue& queue, const task& task) const noexcept;
+			inline void add_immediate_task(Group& group, const task& task) const noexcept;
+			```
+			这个方法用于直接向任务队列或者线程组添加任务。
+			NOTE 这个方法不会影响生产者线程，是主线程执行操作。
+			FUNCTIONIO
+			I [CODE queue]或[CODE group]代表添加任务的任务队列或者线程组目标。
+			I [CODE task]代表添加的新任务。
+			END
+			####[CODE add_single_task (public method)]
+			```c++
+			void add_single_task(TaskQueue& queue, const task& task, const duration& delay) noexcept;
+			inline void add_single_task(Group& group, const task& task, const duration& delay) noexcept;
+			```
+			这个方法用于向任务队列或者线程组添加单次任务。
+			FUNCTIONIO
+			I [CODE queue]或[CODE group]代表添加任务的任务队列或者线程组目标。
+			I [CODE task]代表添加的新任务。
+			I [CODE delay]代表添加任务到分配任务的等待时间。
+			END
+			####[CODE add_loop_task (public method)]
+			```c++
+			void add_loop_task(TaskQueue& queue, const task& task, const duration& interval, const duration& delay) noexcept;
+			inline void add_loop_task(TaskQueue& queue, const task& task, const duration& interval) noexcept;
+			inline void add_loop_task(Group& group, const task& task, const duration& interval, const duration& delay) noexcept;
+			inline void add_loop_task(Group& group, const task& task, const duration& interval) noexcept;
+			```
+			这个方法用于向任务队列或者线程组添加循环任务。
+			NOTE 循环任务是不能手动删除的，一直到生产者线程结束才会销毁。
+			FUNCTIONIO
+			I [CODE queue]或[CODE group]代表添加任务的任务队列或者线程组目标。
+			I [CODE task]代表添加的新任务。
+			I [CODE interval]代表相邻两次循环任务分配之间需要的等待时间。
+			I [CODE delay]代表添加任务到第一次分配前的等待时间。这一项是可选的，若不填写，则代表第一次分配前的等待时间与之后两次分配之间的一样。
+			END
+			####[CODE stop (public method)]
+			```c++
+			inline void stop() noexcept;
+			```
+			这个方法用于结束子线程。
+			具体的结束时刻见类简介。
+			FUNCTIONIO
+			END
+			####[CODE join (public method)]
+			```c++
+			inline void join() noexcept;
+			```
+			执行这个方法会使主线程等待到这个子线程终止后继续运行。
+			NOTE 这个方法会阻塞线程，可能导致线程死锁。
+			FUNCTIONIO
+			END
+		</main>
+	</body>
+</html>

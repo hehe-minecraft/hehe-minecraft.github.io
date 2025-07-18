@@ -656,6 +656,9 @@ export namespace parse_source
 			["\\cell", "mtd"],
 			["\\row", "mtr"]
 		]);
+		export const pre_keywords: ReadonlyMap<string, RegExp> = new Map([
+			["c++", /\b(align(?:as|of)|and(?:_eq)?|asm|atomic_(?:cancel|commit|noexcept)|auto|bit(?:and|or)|bool|break|case|catch|char(?:(?:8|16|32)_t)?|class|compl|concept|const(?:eval|expr|init)?|(?:const|dynamic|static|reinterpret)_cast|continue|(?:contract|static)_assert|co_(?:await|return|yield)|decltype|default|delete|do|double|else|enum|explicit|export|extern|false|float|for|friend|goto|if|inline|int|long|mutable|namespace|new|noexcept|not(?:_eq)?|nullptr|operator|or(?:_eq)?|private|protected|public|reflexpr|register|requires|return|short|(?:un)?signed|sizeof|static|struct|switch|synchronized|template|this|thread_local|throw|true|try|type(?:def|id|name)|union|using|virtual|void|volatile|wchar_t|while|xor(?:_eq)?)\b/g]
+		])
 	}
 	/* --- SOURCE Language Explanation ---
 	In this language, symbols are mainly capital letters.
@@ -1192,6 +1195,7 @@ export namespace parse_source
 				.split(/\n/); // Remove trailing and leading newlines.
 			const tab_count: number = lines[0].match(/^\s*/)![0].length;
 			const element: HTMLPreElement = document.createElement("pre");
+			const language_keywords: RegExp | undefined = constant.pre_keywords.get(language);
 			for (const [each_line_index, each_line_with_tab] of lines.entries())
 			{
 				let each_line = each_line_with_tab.slice(tab_count);
@@ -1201,6 +1205,8 @@ export namespace parse_source
 				const line: HTMLElement = document.createElement("span");
 				line.classList.add("line");
 				line.innerText = each_line;
+				if (language_keywords)
+					line.innerHTML = line.innerHTML.replaceAll(language_keywords, "<span class=\"keyword\">$1</span>");
 				element.appendChild(line_number);
 				element.appendChild(line);
 			}

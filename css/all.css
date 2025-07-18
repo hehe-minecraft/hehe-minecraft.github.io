@@ -18,6 +18,7 @@
 		--color-link: #AAA560;
 		--color-link-visited: #6060AA;
 		--color-math-error: #F66;
+		--color-pre-keyword: #55F;
 		--border-table: #EE858C;
 		--border-key: #AAA;
 		--border-definition: #AAA;
@@ -47,6 +48,7 @@
 		--color-link: #CCC580;
 		--color-link-visited: #9090DD;
 		--color-math-error: #F66;
+		--color-pre-keyword: #88F;
 		--border-table: #EE858C;
 		--border-key: #AAA;
 		--border-definition: #999;
@@ -129,6 +131,11 @@ pre>span.line-number
 	color: var(--color-list-number);
 	font-size: x-small;
 	user-select: none;
+}
+
+pre>span.line span.keyword
+{
+	color: var(--color-pre-keyword);
 }
 
 code
