@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="../../../css/all.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../css/page.css"/>
+		<link rel="stylesheet" type="text/css" href="../../../css/typesetting.css"/>
+		<script src="../../../ts/all.js" type="module" defer></script>
+		<title>
+			hehe-minecraft - C++ 代码规范
+		</title>
+	</head>
+	<body>
+		<h1>
+			hehe-minecraft - C++ 代码规范
+		</h1>
+		<nav>
+			<p>
+				内容索引
+			</p>
+			<ol class="catalogue"></ol>
+			<p id="return">
+				<a href="../index.html">
+					返回上一页：主页
+				</a>
+			</p>
+		</nav>
+		<main data-type="source">
+			NOTE 这里的代码规范仅针对我自己的项目。
+			NOTE 这里不再介绍已经移除或已被弃用的语言特性。
+			#编码
+			统一使用 UTF-8 编码格式编码代码。
+			#宏
+			在什么位置都不要使用宏。
+			[CODE #include]预处理器指令使用[CODE import]代替，[CODE #define]预处理器指令用编译器常量代替。
+			无需定义头文件。C++20 添加的模块系统比头文件更方便也更快捷。大部分时候都直接将声明和实现合为一体，少用前置声明。如果由于关联性太弱，可以分离声明和实现。
+			#作用域
+			##命名空间
+			将绝大部分函数和类（特别是暴露接口）放入命名空间中。允许嵌套命名空间。不允许内联命名空间。
+			只可以在函数体内部使用命名空间的[CODE using namespace]指令，但是尽量少使用。对于很少使用到的命名空间成员，完全可以将它的全部路径拼写出来。
+			命名空间名要是名词。
+			##成员函数
+			将运算符重载都定义为成员函数。
+			##局部变量
+			无需在函数开头声明所有会用到的变量。
+			初始化所有基本数据类型。
+			- 对于[CODE int]及其变种（[CODE unsigned]、[CODE long]等）、[CODE float]、[CODE char]、[CODE bool]、[CODE enum]类型、指针、[CODE std::string]、[CODE std::string_view]，可以直接使用[CODE =]初始化。
+			- 对于其他数据类型，不要使用[CODE =]初始化，改用[CODE {}]初始化。在能使用[CODE {}]初始化时就不要用[CODE ()]初始化。
+			 - 不要对有歧义的项目使用[CODE ()]初始化，譬如[CODE std::vector&gt;int&lt;]的预定容量。这时候先默认初始化，再[CODE .reserve()]即可。
+			##全局变量
+			不允许使用全局变量。
+			##常量
+			使用[CODE constexpr]而非仅仅[CODE const]声明常量。
+			[CODE std::string]不能用于声明[CODE constexpr]，使用[CODE std::string_view]代替。
+			#类
+			##[CODE struct]还是[CODE class]
+			虽然 C++ 标准中[CODE struct]和[CODE class]之间的区别很小，区别仅在于访问修饰符，但是这里将他们视作不一样的语义。
+			[CODE struct]代表简单的结构体，这种结构体往往只有成员变量的声明，最多只有构造、析构、运算符重载的方法。结构体中全部成员都应该是[CODE public]的，而且不用手动写[CODE public]。
+			[CODE class]代表复杂的类，其可以拥有众多独特方法。
+			##参数与返回值
+			尽量不要返回[CODE std::pair]和[CODE std::tuple]，这会使调用方摸不着头脑。
+			##构造函数
+			构造函数应该只初始化，不要产生任何副作用。
+			子类的构造函数一定要调用基类的构造函数。
+			构造函数要使用初始化列表做到简单的将参数拷贝到成员变量。
+			构造时如果有很多可选参数，可以试试取消这些参数，并允许它们被构造之后单独设置。
+			所有[CODE class]定义的类都要显式定义默认、拷贝、移动构造函数，即使它们是[CODE default]的。如无必要，则无需定义拷贝赋值和移动赋值函数。
+			##析构函数
+			如无必要，不用定义析构函数。注意，基类必须是虚析构函数，而编译器自动声明的是非虚的析构函数，这需要显式声明。
+			##类型转换
+			尽量少使用隐式类型转换，因为 C++ 隐式类型转换是可以链式作用的。
+			带参构造函数也是一种隐式类型转换，因此带参构造函数也要加上[CODE explicit]关键字（即使是多参的）。
+			##继承
+			组合优于继承。所有继承都应该是显式声明是[CODE public]、[CODE protected]还是[CODE private]的。尽量使用[CODE public]继承。不要在[CODE struct]上使用继承。
+			##运算符重载
+			运算符重载应当尽量作为成员函数来使用。只有需要隐式类型转换时用非成员函数。
+			#标点
+			不要使用双字符组（用[CODE %:]表示[CODE #]等）。当然，一般也用不到。
+			在对基本数据类型进行操作时，使用[CODE and]、[CODE or]、[CODE not]、[CODE bitand]、[CODE bitor]、[CODE compl]、[CODE xor]（只有这些）替代对应的运算符。尽量不使用[CODE &=]和[CODE |=]，以防[CODE and]和[CODE bitand]混淆，要使用普通的赋值运算符，除非没有对应重载或者性能瓶颈大。
+			#命名
+			[CODE struct]、类型别名、变量、参数、命名空间使用下划线命名法，[CODE struct]不用加[CODE _t]。[CODE class]使用大驼峰命名法。不要使用带类型名缩写的匈牙利命名法（如[CODE iAge]），除非要与[CODE WINAPI]交互。不要使用小驼峰命名法。
+			#注释
+			多使用单行注释。
+			如果有附加文档的话，注释应该只包含实现方法的信息，函数和类的信息应在附加文档中指出。
+			单行注释可以是不完整的词组，也可以是完整的句子，但是首字母要大写，末尾要加句号。
+			当注释范围为下方超过两行时，把注释紧挨着放在范围以前，单起一行。
+			当注释紧挨着语句时，注释前空一个字符。
+			当然，代码即注释肯定是更好的编程准则。
+		</main>
+	</body>
+</html>
