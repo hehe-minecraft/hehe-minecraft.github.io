@@ -656,6 +656,29 @@ export namespace parse_source
 			["\\cell", "mtd"],
 			["\\row", "mtr"]
 		]);
+		export const pre_parse_patterns: ReadonlyMap<string, ReadonlyMap<string, RegExp>> = new Map([
+			["Rust", new Map([
+				["keyword", /\b(?:as(?:ync)?|await|break|const|continue|crate|dyn|else|enum|extern|false|fn|for|if|impl|in|let|loop|match|mod|move|mut|pub|ref|return|[Ss]elf|static|struct|super|trait|true|type|unsafe|use|where|while)\b/g],
+				["class", /\bbool|[ui](?:8|16|32|64|128|size)|f(?:16|32)\b|\b(?<=(?:enum|struct|trait)\s+)\w+/g],
+				["function-identifier", /\b(?<=fn\s+)\w+\b/g],
+				["variable-identifier", /\b(?<=let\s+(mut\s+)?|const\s+)\w+\b/g],
+				["comment", /\/\/.*/g],
+				["number", /\b-*(?:0[bxo])?[0-9A-Fa-f]+(?:_[0-9A-Fa-f]+)*(?:\.[0-9]+(?:_[0-9]+))?(?:[ui](?:8|16|32|64|128|size)|f(?:16|32))?\b/g]])],
+			["HTML", new Map([
+				["keyword", /&lt;\/?[-_a-zA-Z0-9]+|(?<!-)\/?&gt;/g],
+				["variable-identifier", /\b[-_a-zA-Z0-9]+?(?==)/g],
+				["comment", /&lt;!--.*?--&gt;/g],
+				["string", /"[^"]*?"/g]])],
+			["JavaScript", new Map([
+				["keyword", /\b(?:abstract|arguments|boolean|break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|double|else|enum|eval|export|extends|false|final|finally|float|for|function|goto|if|implements|import|int?|instanceof|interface|let|long|native|new|null|package|private|protected|public|return|short|static|super|switch|synchronized|this|throws?|transient|true|try|typeof|var|void|volatile|while|with|yield)\b/g],
+				["comment", /\/\/.*/g],
+				["variable-identifier", /\b(?<=(?:let|var|const)\s+)\w+\b/g],
+				["string", /"(?:[^"]|\\")*"/g],
+				["number", /\b-?(?:0[bxo])?[0-9A-Fa-f]+(?:_[0-9A-Fa-f]+)*(?:\.[0-9]+(?:_[0-9]+))?\b/g]])],
+			["Source", new Map([
+				["keyword", /^(?:#+| *-|===$|```|FUNCTIONIO|TABLE|END)|CODE|FIGURE|MATH|NOUN|AS|KEY|TO(?: BLANK)?/g],
+				["comment", /&lt;!--.*?--&gt;/g]])]
+		]);
 	}
 	/* --- SOURCE Language Explanation ---
 	In this language, symbols are mainly capital letters.
@@ -1192,6 +1215,7 @@ export namespace parse_source
 				.split(/\n/); // Remove trailing and leading newlines.
 			const tab_count: number = lines[0].match(/^\s*/)![0].length;
 			const element: HTMLPreElement = document.createElement("pre");
+			const language_parse_patterns: ReadonlyMap<string, RegExp> | undefined = constant.pre_parse_patterns.get(language);
 			for (const [each_line_index, each_line_with_tab] of lines.entries())
 			{
 				let each_line = each_line_with_tab.slice(tab_count);
@@ -1201,6 +1225,28 @@ export namespace parse_source
 				const line: HTMLElement = document.createElement("span");
 				line.classList.add("line");
 				line.innerText = each_line;
+				if (language_parse_patterns)
+				{
+					const inject_positions: Map<number, string[]> = new Map();
+					for (const [each_pattern_type, each_pattern] of language_parse_patterns.entries())
+					{
+						for (const each_match of line.innerHTML.matchAll(each_pattern))
+						{
+							if (!inject_positions.has(each_match.index))
+								inject_positions.set(each_match.index, new Array());
+							if (!inject_positions.has(each_match.index + each_match[0].length))
+								inject_positions.set(each_match.index + each_match[0].length, new Array());
+							inject_positions.get(each_match.index)!.push(`<span class=${each_pattern_type}>`);
+							inject_positions.get(each_match.index + each_match[0].length)!.splice(0, 0, "</span>");
+						}
+					}
+					let injected_HTML = line.innerHTML;
+					for (const [each_inject_position, each_injections] of [...inject_positions.entries()].sort((a, b) => b[0] - a[0]))
+					{
+						injected_HTML = injected_HTML.substring(0, each_inject_position) + each_injections.join("") + injected_HTML.substring(each_inject_position);
+					}
+					line.innerHTML = injected_HTML
+				}
 				element.appendChild(line_number);
 				element.appendChild(line);
 			}
