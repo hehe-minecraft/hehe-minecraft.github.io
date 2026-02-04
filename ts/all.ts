@@ -663,7 +663,7 @@ export namespace parse_source
 				["function-identifier", /\b(?<=fn\s+)\w+\b/g],
 				["variable-identifier", /\b(?<=let\s+(mut\s+)?|const\s+)\w+\b/g],
 				["comment", /\/\/.*/g],
-				["number", /\b-*(?:0[bxo])?[0-9A-Fa-f]+(?:_[0-9A-Fa-f]+)*(?:\.[0-9]+(?:_[0-9]+))?(?:[ui](?:8|16|32|64|128|size)|f(?:16|32))?\b/g]])],
+				["number", /\b-*(?:[0-9]+(?:_[0-9]+)*(?:\.[0-9]+(?:_[0-9]+))?|0b[01]+(?:_[01]+)*|0o[0-7]+(?:_[0-7]+)*|0x[0-9A-Fa-f]+(?:_[0-9A-Fa-f]+)*)(?:[ui](?:8|16|32|64|128|size)|f(?:16|32))?\b/g]])],
 			["HTML", new Map([
 				["keyword", /&lt;\/?[-_a-zA-Z0-9]+|(?<!-)\/?&gt;/g],
 				["variable-identifier", /\b[-_a-zA-Z0-9]+?(?==)/g],
@@ -674,7 +674,7 @@ export namespace parse_source
 				["comment", /\/\/.*/g],
 				["variable-identifier", /\b(?<=(?:let|var|const)\s+)\w+\b/g],
 				["string", /"(?:[^"]|\\")*"/g],
-				["number", /\b-?(?:0[bxo])?[0-9A-Fa-f]+(?:_[0-9A-Fa-f]+)*(?:\.[0-9]+(?:_[0-9]+))?\b/g]])],
+				["number", /\b-*(?:[0-9]+(?:_[0-9]+)*(?:\.[0-9]+(?:_[0-9]+))?|0b[01]+(?:_[01]+)*|0o[0-7]+(?:_[0-7]+)*|0x[0-9A-Fa-f]+(?:_[0-9A-Fa-f]+)*)\b/g]])],
 			["Source", new Map([
 				["keyword", /^(?:#+| *-|===$|```|FUNCTIONIO|TABLE|END)|CODE|FIGURE|MATH|NOUN|AS|KEY|TO(?: BLANK)?/g],
 				["comment", /&lt;!--.*?--&gt;/g]])]
