@@ -1,8 +1,8 @@
-import { parse_source } from "../all.js";
-import { AnimationHandler } from "../css.js";
-import { tools_database } from "../file.js";
-import { Vector } from "../math.js";
-import { interfaces } from "../interfaces.js";
+import { parse_source } from "../universal/all.js";
+import { AnimationHandler } from "../universal/css.js";
+import { tools_database } from "../universal/file.js";
+import { Vector } from "../universal/math.js";
+import { interfaces } from "../universal/interfaces.js";
 
 namespace constants
 {
