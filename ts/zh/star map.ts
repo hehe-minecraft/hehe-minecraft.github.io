@@ -640,22 +640,14 @@ class StarMap
 	public node_remove(node: star_map_elements.Node): void
 	{
 		const node_index = this.content.nodes.indexOf(node)
-		if (node_index !== -1)
-		{
-			this.content.nodes.splice(node_index, 1);
-			for (const [each_index, each_link] of this.content.links.entries())
-			{
-				if (each_link.from === node || each_link.to === node)
-				{
-					this.content.links.splice(each_index, 1);
-				}
-			}
-			new Log("删除成功", "", "success");
-		}
-		else
+		if (node_index === -1)
 		{
 			new Log("删除失败", "", "error");
+			return;
 		}
+		this.content.nodes.splice(node_index, 1);
+		this.content.links = this.content.links.filter((each_link) => each_link.from !== node && each_link.to !== node);
+		new Log("删除成功", "", "success");
 		this.history.snapshot();
 		this.flush();
 	}
