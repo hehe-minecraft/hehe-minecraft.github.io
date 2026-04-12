@@ -514,7 +514,7 @@ class StarMap
 					const C: Vector = new Vector([hover_place.x, hover_place.y]);
 					const AB: Vector = B.minus(A)!;
 					const AC: Vector = C.minus(A)!;
-					const mouse_distance = Math.abs(AC.cross(AB) as unknown as number) / AB.length * 2;
+					const mouse_distance = Math.abs(AC.cross(AB) as number) / AB.length * 2;
 					if (mouse_distance < each_link.style.width)
 					{
 						hovering = new star_map_elements.Interface(each_link, constants.storage.Link);
